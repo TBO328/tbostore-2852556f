@@ -1,10 +1,16 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
+};
+
+// Helper logging function for enhanced debugging
+const logStep = (step: string, details?: Record<string, unknown>) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
@@ -13,13 +19,16 @@ serve(async (req) => {
   }
 
   try {
+    logStep("Webhook received", { method: req.method });
+    
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
     
     if (!stripeKey) {
-      console.error('STRIPE_SECRET_KEY not found');
+      logStep("ERROR: STRIPE_SECRET_KEY not found");
       throw new Error('Stripe configuration error');
     }
+    logStep("Stripe key verified");
 
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
@@ -27,6 +36,12 @@ serve(async (req) => {
 
     const body = await req.text();
     const signature = req.headers.get('stripe-signature');
+    
+    logStep("Request details", { 
+      hasSignature: !!signature, 
+      hasWebhookSecret: !!webhookSecret,
+      bodyLength: body.length 
+    });
 
     let event: Stripe.Event;
 
@@ -34,26 +49,40 @@ serve(async (req) => {
     if (webhookSecret && signature) {
       try {
         event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+        logStep("Signature verified successfully");
       } catch (err: unknown) {
         const errMessage = err instanceof Error ? err.message : 'Unknown error';
-        console.error('Webhook signature verification failed:', errMessage);
+        logStep("ERROR: Signature verification failed", { error: errMessage });
         return new Response(JSON.stringify({ error: 'Invalid signature' }), {
           status: 400,
-          headers: corsHeaders,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
     } else {
-      // For testing without webhook secret
-      event = JSON.parse(body);
+      // For testing without webhook secret (not recommended for production)
+      logStep("WARNING: Processing without signature verification");
+      try {
+        event = JSON.parse(body);
+      } catch {
+        logStep("ERROR: Failed to parse request body as JSON");
+        return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
-    console.log('Received Stripe event:', event.type);
+    logStep("Event received", { type: event.type, id: event.id });
 
     // Handle the checkout.session.completed event
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       
-      console.log('Processing completed checkout:', session.id);
+      logStep("Processing checkout session", { 
+        sessionId: session.id,
+        customerEmail: session.customer_details?.email,
+        amountTotal: session.amount_total
+      });
       
       // Initialize Supabase client
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -61,13 +90,18 @@ serve(async (req) => {
       const supabase = createClient(supabaseUrl, supabaseKey);
 
       // Generate order number
-      const { data: orderNumberData } = await supabase.rpc('generate_order_number');
+      const { data: orderNumberData, error: rpcError } = await supabase.rpc('generate_order_number');
+      if (rpcError) {
+        logStep("WARNING: Failed to generate order number via RPC", { error: rpcError.message });
+      }
       const orderNumber = orderNumberData || `TBO-${Date.now()}`;
+      logStep("Order number generated", { orderNumber });
 
       // Get line items from the session
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
         expand: ['data.price.product'],
       });
+      logStep("Line items retrieved", { count: lineItems.data.length });
 
       // Prepare order items
       const items = lineItems.data.map((item: Stripe.LineItem) => ({
@@ -77,9 +111,9 @@ serve(async (req) => {
       }));
 
       // Create order in database
-      const { error: orderError } = await supabase.from('orders').insert({
+      const orderData = {
         order_number: orderNumber,
-        customer_name: session.metadata?.customerName || 'Unknown',
+        customer_name: session.metadata?.customerName || session.customer_details?.name || 'Unknown',
         customer_phone: session.metadata?.customerPhone || session.customer_details?.phone || '',
         customer_address: session.metadata?.customerAddress || '',
         items: items,
@@ -89,13 +123,19 @@ serve(async (req) => {
         notes: session.metadata?.couponCode 
           ? `Coupon: ${session.metadata.couponCode} (-${session.metadata.couponDiscount}%) | Stripe Session: ${session.id}`
           : `Stripe Session: ${session.id}`,
-      });
+      };
+      
+      logStep("Inserting order", orderData);
+      
+      const { error: orderError } = await supabase.from('orders').insert(orderData);
 
       if (orderError) {
-        console.error('Error creating order:', orderError);
+        logStep("ERROR: Failed to create order", { error: orderError.message, code: orderError.code });
       } else {
-        console.log('Order created successfully:', orderNumber);
+        logStep("SUCCESS: Order created", { orderNumber });
       }
+    } else {
+      logStep("Event type not handled, ignoring", { type: event.type });
     }
 
     return new Response(JSON.stringify({ received: true }), {
@@ -104,7 +144,7 @@ serve(async (req) => {
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Webhook error:', errorMessage);
+    logStep("ERROR: Webhook processing failed", { error: errorMessage });
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
