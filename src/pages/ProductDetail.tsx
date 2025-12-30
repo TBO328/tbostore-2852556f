@@ -10,6 +10,7 @@ import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
 import ProductCard from '@/components/ProductCard';
 import PriceDisplay from '@/components/PriceDisplay';
+import DesignOptionsForm, { DesignOptions } from '@/components/DesignOptionsForm';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { products as localProducts, Product } from '@/data/products';
@@ -21,6 +22,7 @@ const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
+  const [designOptions, setDesignOptions] = useState<DesignOptions | null>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -252,6 +254,11 @@ const ProductDetail: React.FC = () => {
                     {language === 'ar' ? product.descriptionAr : product.description}
                   </p>
                 </div>
+
+                {/* Design Options Form - Only for Designs category */}
+                {product.category === 'Designs' && (
+                  <DesignOptionsForm onOptionsChange={setDesignOptions} />
+                )}
 
                 {/* Quantity Selector */}
                 <div className="flex items-center gap-4">
