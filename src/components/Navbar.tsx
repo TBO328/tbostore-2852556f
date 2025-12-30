@@ -127,10 +127,20 @@ const Navbar: React.FC = () => {
                   onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 transition-all"
+                  className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 transition-all overflow-hidden"
                 >
-                  <span className="text-sm">{language === 'ar' ? '🇸🇦' : '🇺🇸'}</span>
-                  <span className="text-xs font-medium text-foreground">{language === 'ar' ? 'عربي' : 'EN'}</span>
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={language}
+                      initial={{ y: -20, opacity: 0, rotateX: -90 }}
+                      animate={{ y: 0, opacity: 1, rotateX: 0 }}
+                      exit={{ y: 20, opacity: 0, rotateX: 90 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                      className="text-base"
+                    >
+                      {language === 'ar' ? '🇸🇦' : '🇺🇸'}
+                    </motion.span>
+                  </AnimatePresence>
                 </motion.button>
 
                 {/* Currency Toggle */}
@@ -138,18 +148,28 @@ const Navbar: React.FC = () => {
                   onClick={() => setCurrency(currency === 'SAR' ? 'USD' : 'SAR')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 transition-all"
+                  className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 transition-all overflow-hidden"
                 >
-                  {currency === 'SAR' ? (
-                    <img 
-                      src={sarSymbol} 
-                      alt="SAR" 
-                      className="w-4 h-4" 
-                      style={{ filter: theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)' }} 
-                    />
-                  ) : (
-                    <DollarSign className="w-4 h-4 text-foreground" />
-                  )}
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currency}
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      exit={{ scale: 0, rotate: 180 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                    >
+                      {currency === 'SAR' ? (
+                        <img 
+                          src={sarSymbol} 
+                          alt="SAR" 
+                          className="w-4 h-4" 
+                          style={{ filter: theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)' }} 
+                        />
+                      ) : (
+                        <DollarSign className="w-4 h-4 text-foreground" />
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
                 </motion.button>
               </div>
 
