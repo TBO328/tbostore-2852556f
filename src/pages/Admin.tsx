@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Package, Ticket, Plus, Pencil, Trash2, Loader2, LogOut, ShoppingBag, Settings, ChevronDown, Home, TrendingUp, Users, DollarSign, Tag, Upload, Image } from 'lucide-react';
+import { Package, Ticket, Plus, Pencil, Trash2, Loader2, LogOut, ShoppingBag, Settings, ChevronDown, Home, TrendingUp, Users, DollarSign, Tag, Upload, Image, Star, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAdminReviews } from '@/hooks/useReviews';
+import ReviewsManagement from '@/components/admin/ReviewsManagement';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
 type Product = Tables<'products'>;
@@ -654,7 +656,7 @@ const Admin: React.FC = () => {
 
         {/* Tabs */}
         <Tabs defaultValue="orders" className="w-full">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4 mb-8 bg-card/50 backdrop-blur-sm border border-border p-1 rounded-xl">
+          <TabsList className="grid w-full max-w-3xl grid-cols-5 mb-8 bg-card/50 backdrop-blur-sm border border-border p-1 rounded-xl">
             <TabsTrigger value="orders" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <ShoppingBag className="w-4 h-4" />
               <span className="hidden sm:inline">{t('orders')}</span>
@@ -662,6 +664,10 @@ const Admin: React.FC = () => {
             <TabsTrigger value="products" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Package className="w-4 h-4" />
               <span className="hidden sm:inline">{language === 'en' ? 'Products' : 'المنتجات'}</span>
+            </TabsTrigger>
+            <TabsTrigger value="reviews" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Star className="w-4 h-4" />
+              <span className="hidden sm:inline">{language === 'en' ? 'Reviews' : 'التقييمات'}</span>
             </TabsTrigger>
             <TabsTrigger value="coupons" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Ticket className="w-4 h-4" />
@@ -931,6 +937,11 @@ const Admin: React.FC = () => {
                 </div>
               )}
             </div>
+          </TabsContent>
+
+          {/* Reviews Tab */}
+          <TabsContent value="reviews">
+            <ReviewsManagement language={language} toast={toast} />
           </TabsContent>
 
           {/* Coupons Tab */}

@@ -1,53 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, Star, Shield, Truck, Headphones } from 'lucide-react';
+import { ArrowRight, Sparkles, Star, Shield, Truck, Headphones, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
 import ProductCard from '@/components/ProductCard';
-import { products } from '@/data/products';
+import { useFeaturedProducts } from '@/hooks/useProducts';
+import { useReviews } from '@/hooks/useReviews';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
-const featuredProducts = products.slice(0, 4);
-const reviews = [{
-  id: 1,
-  name: {
-    en: 'Sarah Johnson',
-    ar: 'سارة جونسون'
-  },
-  avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80',
-  rating: 5,
-  review: {
-    en: 'Absolutely love my purchase! The quality exceeded my expectations.',
-    ar: 'أحببت مشترياتي كثيراً! الجودة تجاوزت توقعاتي.'
-  }
-}, {
-  id: 2,
-  name: {
-    en: 'Mohammed Al-Rashid',
-    ar: 'محمد الراشد'
-  },
-  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80',
-  rating: 5,
-  review: {
-    en: 'Best online shopping experience ever! Highly recommend.',
-    ar: 'أفضل تجربة تسوق عبر الإنترنت! أوصي بها بشدة.'
-  }
-}, {
-  id: 3,
-  name: {
-    en: 'Emily Chen',
-    ar: 'إيميلي تشين'
-  },
-  avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80',
-  rating: 5,
-  review: {
-    en: 'The attention to detail is remarkable. Premium quality!',
-    ar: 'الاهتمام بالتفاصيل رائع. جودة فاخرة!'
-  }
-}];
+
 const features = [{
   icon: Shield,
   title: {
@@ -75,6 +39,11 @@ const Index: React.FC = () => {
     t,
     language
   } = useLanguage();
+  
+  const { products: featuredProducts, loading: productsLoading } = useFeaturedProducts(4);
+  const { reviews, loading: reviewsLoading } = useReviews(true);
+  const displayReviews = reviews.slice(0, 3);
+  
   const getColorClasses = (color: string) => {
     switch (color) {
       case 'cyan':
@@ -274,9 +243,17 @@ const Index: React.FC = () => {
             </AnimatedSection>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              {featuredProducts.map((product, index) => <AnimatedSection key={product.id} delay={index * 0.1}>
-                  <ProductCard product={product} />
-                </AnimatedSection>)}
+              {productsLoading ? (
+                <div className="col-span-4 flex justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                featuredProducts.map((product, index) => (
+                  <AnimatedSection key={product.id} delay={index * 0.1}>
+                    <ProductCard product={product} />
+                  </AnimatedSection>
+                ))
+              )}
             </div>
 
             <div className="text-center">
@@ -350,20 +327,46 @@ const Index: React.FC = () => {
             </AnimatedSection>
 
             <div className="grid md:grid-cols-3 gap-8 mb-12">
-              {reviews.map((review, index) => <AnimatedSection key={review.id} delay={index * 0.1}>
-                  <motion.div whileHover={{
-                y: -5
-              }} className="bg-gradient-card rounded-2xl p-6 border border-border">
-                    <div className="flex gap-1 mb-4">
-                      {[...Array(review.rating)].map((_, i) => <Star key={i} className="w-5 h-5 text-primary fill-primary" />)}
-                    </div>
-                    <p className="text-foreground mb-6">"{review.review[language]}"</p>
-                    <div className="flex items-center gap-3">
-                      <img src={review.avatar} alt={review.name[language]} className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/50" />
-                      <div className="font-semibold text-foreground">{review.name[language]}</div>
-                    </div>
-                  </motion.div>
-                </AnimatedSection>)}
+              {reviewsLoading ? (
+                <div className="col-span-3 flex justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : displayReviews.length > 0 ? (
+                displayReviews.map((review, index) => (
+                  <AnimatedSection key={review.id} delay={index * 0.1}>
+                    <motion.div whileHover={{ y: -5 }} className="bg-gradient-card rounded-2xl p-6 border border-border">
+                      <div className="flex gap-1 mb-4">
+                        {[...Array(review.rating)].map((_, i) => (
+                          <Star key={i} className="w-5 h-5 text-primary fill-primary" />
+                        ))}
+                      </div>
+                      <p className="text-foreground mb-6">
+                        "{language === 'ar' ? review.review_text_ar : (review.review_text_en || review.review_text_ar)}"
+                      </p>
+                      <div className="flex items-center gap-3">
+                        {review.customer_avatar ? (
+                          <img 
+                            src={review.customer_avatar} 
+                            alt={review.customer_name} 
+                            className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/50" 
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center ring-2 ring-primary/50">
+                            <span className="text-primary font-bold">
+                              {review.customer_name.charAt(0)}
+                            </span>
+                          </div>
+                        )}
+                        <div className="font-semibold text-foreground">{review.customer_name}</div>
+                      </div>
+                    </motion.div>
+                  </AnimatedSection>
+                ))
+              ) : (
+                <div className="col-span-3 text-center py-12 text-muted-foreground">
+                  {language === 'en' ? 'No reviews yet. Be the first to share your experience!' : 'لا توجد تقييمات بعد. كن أول من يشارك تجربته!'}
+                </div>
+              )}
             </div>
 
             <div className="text-center">

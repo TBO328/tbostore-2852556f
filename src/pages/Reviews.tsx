@@ -1,82 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Star, Quote } from 'lucide-react';
+import { Star, Quote, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
-
-const reviews = [
-  {
-    id: 1,
-    name: { en: 'Sarah Johnson', ar: 'سارة جونسون' },
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80',
-    rating: 5,
-    review: {
-      en: 'Absolutely love my purchase! The quality exceeded my expectations. Fast shipping and beautiful packaging. Will definitely order again!',
-      ar: 'أحببت مشترياتي كثيراً! الجودة تجاوزت توقعاتي. شحن سريع وتغليف جميل. سأطلب مرة أخرى بالتأكيد!'
-    },
-    product: { en: 'Wireless Pro Headphones', ar: 'سماعات لاسلكية برو' },
-  },
-  {
-    id: 2,
-    name: { en: 'Mohammed Al-Rashid', ar: 'محمد الراشد' },
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80',
-    rating: 5,
-    review: {
-      en: 'Best online shopping experience ever! The customer service was incredibly helpful and the product arrived in perfect condition.',
-      ar: 'أفضل تجربة تسوق عبر الإنترنت! خدمة العملاء كانت مفيدة للغاية والمنتج وصل بحالة ممتازة.'
-    },
-    product: { en: 'Smart Watch Ultra', ar: 'ساعة ذكية ألترا' },
-  },
-  {
-    id: 3,
-    name: { en: 'Emily Chen', ar: 'إيميلي تشين' },
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80',
-    rating: 5,
-    review: {
-      en: 'The attention to detail is remarkable. Every product feels premium and the neon aesthetic of the store is just stunning!',
-      ar: 'الاهتمام بالتفاصيل رائع. كل منتج يبدو فاخراً والتصميم النيون للمتجر مذهل!'
-    },
-    product: { en: 'Designer Sunglasses', ar: 'نظارات شمسية مصممة' },
-  },
-  {
-    id: 4,
-    name: { en: 'James Wilson', ar: 'جيمس ويلسون' },
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80',
-    rating: 5,
-    review: {
-      en: 'Outstanding quality and the website is so easy to navigate. The neon design makes shopping here a unique experience!',
-      ar: 'جودة رائعة والموقع سهل التصفح. التصميم النيوني يجعل التسوق هنا تجربة فريدة!'
-    },
-    product: { en: 'Premium Sneakers', ar: 'أحذية رياضية فاخرة' },
-  },
-  {
-    id: 5,
-    name: { en: 'Fatima Al-Salem', ar: 'فاطمة السالم' },
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80',
-    rating: 5,
-    review: {
-      en: 'I love how fast the delivery was! The product quality is amazing and customer support is very responsive.',
-      ar: 'أحب سرعة التوصيل! جودة المنتج مذهلة وخدمة العملاء سريعة الاستجابة.'
-    },
-    product: { en: 'Urban Backpack', ar: 'حقيبة ظهر حضرية' },
-  },
-  {
-    id: 6,
-    name: { en: 'David Park', ar: 'ديفيد بارك' },
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80',
-    rating: 5,
-    review: {
-      en: 'The best e-commerce experience I have had. Clean interface, great products, and excellent service all around.',
-      ar: 'أفضل تجربة تجارة إلكترونية مررت بها. واجهة نظيفة ومنتجات رائعة وخدمة ممتازة.'
-    },
-    product: { en: 'Bluetooth Speaker', ar: 'مكبر صوت بلوتوث' },
-  },
-];
+import ReviewForm from '@/components/ReviewForm';
+import { useReviews } from '@/hooks/useReviews';
 
 const Reviews: React.FC = () => {
   const { language } = useLanguage();
+  const { reviews, loading } = useReviews(true);
 
   return (
     <div className="min-h-screen bg-background">
@@ -136,62 +70,107 @@ const Reviews: React.FC = () => {
           </div>
         </section>
 
+        {/* Add Review Section */}
+        <section className="py-16 md:py-24 bg-gradient-hero relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-neon-cyan/5 rounded-full blur-3xl" />
+          
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="max-w-2xl mx-auto">
+              <AnimatedSection>
+                <ReviewForm />
+              </AnimatedSection>
+            </div>
+          </div>
+        </section>
+
         {/* Reviews Grid */}
         <section className="py-16 md:py-24 bg-background relative overflow-hidden">
           <div className="absolute top-1/2 left-0 w-72 h-72 bg-neon-cyan/5 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-neon-magenta/5 rounded-full blur-3xl" />
 
           <div className="container mx-auto px-4 relative z-10">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {reviews.map((review, index) => (
-                <AnimatedSection key={review.id} delay={index * 0.1}>
-                  <motion.div
-                    whileHover={{ y: -5, scale: 1.02 }}
-                    className="group relative bg-gradient-card rounded-2xl p-6 border border-border hover:border-primary/50 transition-all duration-500 neon-glow h-full"
-                  >
-                    {/* Quote Icon */}
-                    <div className="absolute top-4 right-4 text-primary/20">
-                      <Quote className="w-12 h-12" />
-                    </div>
+            <AnimatedSection>
+              <div className="text-center mb-12">
+                <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+                  {language === 'en' ? 'What Our Customers Say' : 'ماذا يقول عملاؤنا'}
+                </h2>
+              </div>
+            </AnimatedSection>
 
-                    {/* Rating */}
-                    <div className="flex gap-1 mb-4">
-                      {[...Array(review.rating)].map((_, i) => (
-                        <Star key={i} className="w-5 h-5 text-primary fill-primary" />
-                      ))}
-                    </div>
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : reviews.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {reviews.map((review, index) => (
+                  <AnimatedSection key={review.id} delay={index * 0.1}>
+                    <motion.div
+                      whileHover={{ y: -5, scale: 1.02 }}
+                      className="group relative bg-gradient-card rounded-2xl p-6 border border-border hover:border-primary/50 transition-all duration-500 neon-glow h-full"
+                    >
+                      {/* Quote Icon */}
+                      <div className="absolute top-4 right-4 text-primary/20">
+                        <Quote className="w-12 h-12" />
+                      </div>
 
-                    {/* Review Text */}
-                    <p className="text-foreground mb-6 leading-relaxed">
-                      "{review.review[language]}"
-                    </p>
+                      {/* Rating */}
+                      <div className="flex gap-1 mb-4">
+                        {[...Array(review.rating)].map((_, i) => (
+                          <Star key={i} className="w-5 h-5 text-primary fill-primary" />
+                        ))}
+                      </div>
 
-                    {/* Product Tag */}
-                    <div className="inline-block px-3 py-1 bg-muted rounded-full text-xs text-muted-foreground mb-6">
-                      {review.product[language]}
-                    </div>
+                      {/* Review Text */}
+                      <p className="text-foreground mb-6 leading-relaxed">
+                        "{language === 'ar' ? review.review_text_ar : (review.review_text_en || review.review_text_ar)}"
+                      </p>
 
-                    {/* Author */}
-                    <div className="flex items-center gap-3 pt-4 border-t border-border">
-                      <motion.img
-                        whileHover={{ scale: 1.1 }}
-                        src={review.avatar}
-                        alt={review.name[language]}
-                        className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/50"
-                      />
-                      <div>
-                        <div className="font-semibold text-foreground">
-                          {review.name[language]}
+                      {/* Product Tag */}
+                      {(review.product_name_ar || review.product_name_en) && (
+                        <div className="inline-block px-3 py-1 bg-muted rounded-full text-xs text-muted-foreground mb-6">
+                          {language === 'ar' ? review.product_name_ar : (review.product_name_en || review.product_name_ar)}
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          {language === 'en' ? 'Verified Buyer' : 'مشتري موثق'}
+                      )}
+
+                      {/* Author */}
+                      <div className="flex items-center gap-3 pt-4 border-t border-border">
+                        {review.customer_avatar ? (
+                          <motion.img
+                            whileHover={{ scale: 1.1 }}
+                            src={review.customer_avatar}
+                            alt={review.customer_name}
+                            className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/50"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center ring-2 ring-primary/50">
+                            <span className="text-primary font-bold text-lg">
+                              {review.customer_name.charAt(0)}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-semibold text-foreground">
+                            {review.customer_name}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {language === 'en' ? 'Verified Buyer' : 'مشتري موثق'}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                </AnimatedSection>
-              ))}
-            </div>
+                    </motion.div>
+                  </AnimatedSection>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-lg">
+                  {language === 'en' 
+                    ? 'No reviews yet. Be the first to share your experience!' 
+                    : 'لا توجد تقييمات بعد. كن أول من يشارك تجربته!'}
+                </p>
+              </div>
+            )}
           </div>
         </section>
       </main>

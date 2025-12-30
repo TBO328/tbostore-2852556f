@@ -122,13 +122,13 @@ const Footer: React.FC = () => {
               </li>
               <li className="flex items-center gap-3 text-muted-foreground">
                 <Phone className="w-5 h-5 text-primary" />
-                <a href="tel:+905510070277" className="hover:text-primary transition-colors">
-                  +90 551 007 0277
+                <a href="tel:+966500000000" className="hover:text-primary transition-colors">
+                  +966 50 000 0000
                 </a>
               </li>
               <li className="flex items-start gap-3 text-muted-foreground">
                 <MapPin className="w-5 h-5 text-primary shrink-0 mt-1" />
-                <span>{language === 'en' ? 'Istanbul, Turkey' : 'إسطنبول، تركيا'}</span>
+                <span>{language === 'en' ? 'Riyadh, Saudi Arabia' : 'الرياض، المملكة العربية السعودية'}</span>
               </li>
             </ul>
           </div>
