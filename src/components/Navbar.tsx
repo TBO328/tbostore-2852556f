@@ -138,19 +138,18 @@ const Navbar: React.FC = () => {
                   onClick={() => setCurrency(currency === 'SAR' ? 'USD' : 'SAR')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 transition-all"
+                  className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 transition-all"
                 >
                   {currency === 'SAR' ? (
                     <img 
                       src={sarSymbol} 
                       alt="SAR" 
-                      className="w-3.5 h-3.5" 
+                      className="w-4 h-4" 
                       style={{ filter: theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)' }} 
                     />
                   ) : (
-                    <DollarSign className="w-3.5 h-3.5 text-foreground" />
+                    <DollarSign className="w-4 h-4 text-foreground" />
                   )}
-                  <span className="text-xs font-medium text-foreground">{currency === 'SAR' ? 'ر.س' : 'USD'}</span>
                 </motion.button>
               </div>
 
