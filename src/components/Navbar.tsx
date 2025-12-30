@@ -121,47 +121,108 @@ const Navbar: React.FC = () => {
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-2">
-              {/* Currency Toggle */}
-              <motion.button onClick={() => setCurrency(currency === 'SAR' ? 'USD' : 'SAR')} whileHover={{
-              scale: 1.05
-            }} whileTap={{
-              scale: 0.95
-            }} className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-muted text-muted-foreground hover:text-foreground transition-colors">
-                {currency === 'SAR' ? <img src={sarSymbol} alt="SAR" className="w-3 h-3" style={{
-                filter: theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)'
-              }} /> : <DollarSign className="w-3 h-3" />}
-                {currency}
-              </motion.button>
+              {/* Language & Currency Toggle - Combined */}
+              <motion.div 
+                className="hidden sm:flex items-center bg-card/80 backdrop-blur-sm border border-border rounded-full p-1 shadow-lg"
+                whileHover={{ scale: 1.02 }}
+              >
+                {/* Language Toggle */}
+                <div className="flex items-center">
+                  <motion.button
+                    onClick={() => setLanguage('en')}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`relative flex items-center justify-center px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
+                      language === 'en'
+                        ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    <span className="mr-1">🇺🇸</span>
+                    EN
+                    {language === 'en' && (
+                      <motion.div
+                        layoutId="lang-indicator"
+                        className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 rounded-full -z-10"
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                  </motion.button>
+                  <motion.button
+                    onClick={() => setLanguage('ar')}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`relative flex items-center justify-center px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
+                      language === 'ar'
+                        ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    <span className="mr-1">🇸🇦</span>
+                    عربي
+                    {language === 'ar' && (
+                      <motion.div
+                        layoutId="lang-indicator"
+                        className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 rounded-full -z-10"
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                  </motion.button>
+                </div>
 
-              {/* Theme Toggle */}
-              <motion.div whileHover={{
-              scale: 1.05
-            }} whileTap={{
-              scale: 0.95
-            }}>
-                <Button variant="ghost" size="icon" onClick={toggleTheme} className="hidden sm:flex">
-                  {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                </Button>
+                {/* Separator */}
+                <div className="w-px h-5 bg-border mx-1" />
+
+                {/* Currency Toggle */}
+                <motion.button
+                  onClick={() => setCurrency(currency === 'SAR' ? 'USD' : 'SAR')}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                >
+                  <motion.div
+                    key={currency}
+                    initial={{ rotateY: -90, opacity: 0 }}
+                    animate={{ rotateY: 0, opacity: 1 }}
+                    exit={{ rotateY: 90, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex items-center gap-1"
+                  >
+                    {currency === 'SAR' ? (
+                      <>
+                        <img 
+                          src={sarSymbol} 
+                          alt="SAR" 
+                          className="w-3.5 h-3.5" 
+                          style={{ filter: theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)' }} 
+                        />
+                        <span>ر.س</span>
+                      </>
+                    ) : (
+                      <>
+                        <DollarSign className="w-3.5 h-3.5" />
+                        <span>USD</span>
+                      </>
+                    )}
+                  </motion.div>
+                </motion.button>
               </motion.div>
 
-              {/* Language Selector with Animation */}
-              <motion.div className="flex items-center bg-card border border-border rounded-full p-1 shadow-lg" whileHover={{
-              scale: 1.02
-            }}>
-                <motion.button onClick={() => setLanguage('en')} whileHover={{
-                scale: 1.05
-              }} whileTap={{
-                scale: 0.95
-              }} className={`flex items-center justify-center px-3 py-1.5 rounded-full text-sm font-bold transition-all duration-300 ${language === 'en' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-                  EN
-                </motion.button>
-                <motion.button onClick={() => setLanguage('ar')} whileHover={{
-                scale: 1.05
-              }} whileTap={{
-                scale: 0.95
-              }} className={`flex items-center justify-center px-3 py-1.5 rounded-full text-sm font-bold transition-all duration-300 ${language === 'ar' ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}>
-                  عربي
-                </motion.button>
+              {/* Theme Toggle */}
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button variant="ghost" size="icon" onClick={toggleTheme} className="hidden sm:flex">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={theme}
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                    </motion.div>
+                  </AnimatePresence>
+                </Button>
               </motion.div>
 
               {/* Search Button */}
