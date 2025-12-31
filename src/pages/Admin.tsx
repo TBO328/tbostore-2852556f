@@ -17,6 +17,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAdminReviews } from '@/hooks/useReviews';
+import { mapErrorToUserMessage } from '@/lib/errors';
 import ReviewsManagement from '@/components/admin/ReviewsManagement';
 import { UsersManagement } from '@/components/admin/UsersManagement';
 import sarSymbol from '@/assets/sar-symbol.png';
@@ -294,10 +295,10 @@ const Admin: React.FC = () => {
       resetProductForm();
       fetchData();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const userMessage = mapErrorToUserMessage(error, language);
       toast({
-        title: 'Error',
-        description: errorMessage,
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: userMessage,
         variant: 'destructive'
       });
     } finally {
@@ -343,9 +344,10 @@ const Admin: React.FC = () => {
       error
     } = await supabase.from('products').delete().eq('id', id);
     if (error) {
+      const userMessage = mapErrorToUserMessage(error, language);
       toast({
-        title: 'Error',
-        description: error.message,
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: userMessage,
         variant: 'destructive'
       });
     } else {
@@ -387,10 +389,10 @@ const Admin: React.FC = () => {
       resetCouponForm();
       fetchData();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const userMessage = mapErrorToUserMessage(error, language);
       toast({
-        title: 'Error',
-        description: errorMessage,
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: userMessage,
         variant: 'destructive'
       });
     }
@@ -420,9 +422,10 @@ const Admin: React.FC = () => {
       error
     } = await supabase.from('coupons').delete().eq('id', id);
     if (error) {
+      const userMessage = mapErrorToUserMessage(error, language);
       toast({
-        title: 'Error',
-        description: error.message,
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: userMessage,
         variant: 'destructive'
       });
     } else {
@@ -441,9 +444,10 @@ const Admin: React.FC = () => {
       status: newStatus
     }).eq('id', orderId);
     if (error) {
+      const userMessage = mapErrorToUserMessage(error, language);
       toast({
-        title: 'Error',
-        description: error.message,
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: userMessage,
         variant: 'destructive'
       });
     } else {
@@ -478,10 +482,10 @@ const Admin: React.FC = () => {
         title: t('settingsSaved')
       });
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const userMessage = mapErrorToUserMessage(error, language);
       toast({
-        title: 'Error',
-        description: errorMessage,
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: userMessage,
         variant: 'destructive'
       });
     } finally {

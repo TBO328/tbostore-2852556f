@@ -282,6 +282,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_order_rate_limit: { Args: { p_phone: string }; Returns: boolean }
       generate_order_number: { Args: never; Returns: string }
       get_all_users_with_roles: {
         Args: never

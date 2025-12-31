@@ -12,6 +12,9 @@ import { useCart } from '@/contexts/CartContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { orderSchema } from '@/lib/validation';
+import { mapErrorToUserMessage, getValidationErrorMessage } from '@/lib/errors';
+import { z } from 'zod';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
@@ -166,11 +169,11 @@ const Cart: React.FC = () => {
         throw new Error('No checkout URL returned');
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Stripe checkout error:', errorMessage);
+      console.error('Stripe checkout error:', error);
+      const userMessage = mapErrorToUserMessage(error, language);
       toast({
         title: language === 'ar' ? 'خطأ في الدفع' : 'Payment Error',
-        description: errorMessage,
+        description: userMessage,
         variant: 'destructive',
       });
     } finally {
@@ -183,11 +186,37 @@ const Cart: React.FC = () => {
       return handleStripeCheckout();
     }
 
-    if (!customerName.trim() || !customerPhone.trim() || !customerAddress.trim()) {
-      toast({
-        title: t('pleaseEnterInfo'),
-        variant: 'destructive',
-      });
+    // Prepare order data for validation
+    const orderItems = items.map(item => ({
+      id: item.id,
+      name: item.name,
+      nameAr: item.nameAr,
+      price: item.price,
+      quantity: item.quantity,
+      image: item.image,
+    }));
+
+    const orderData = {
+      customer_name: customerName,
+      customer_phone: customerPhone,
+      customer_address: customerAddress,
+      items: orderItems,
+      payment_method: paymentMethod as 'stripe' | 'stc_pay' | 'bank_transfer',
+      total_amount: getFinalTotal(),
+    };
+
+    // Validate input
+    try {
+      orderSchema.parse(orderData);
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        const firstError = validationError.errors[0];
+        toast({
+          title: language === 'en' ? 'Validation Error' : 'خطأ في التحقق',
+          description: firstError?.message || getValidationErrorMessage(language),
+          variant: 'destructive',
+        });
+      }
       return;
     }
 
@@ -198,25 +227,15 @@ const Cart: React.FC = () => {
       const { data: orderNumberData } = await supabase.rpc('generate_order_number');
       const orderNumber = orderNumberData || `TBO-${Date.now()}`;
 
-      // Prepare order items
-      const orderItems = items.map(item => ({
-        id: item.id,
-        name: item.name,
-        nameAr: item.nameAr,
-        price: item.price,
-        quantity: item.quantity,
-        image: item.image,
-      }));
-
-      // Insert order
+      // Insert order with validated data
       const { error } = await supabase.from('orders').insert({
         order_number: orderNumber,
-        customer_name: customerName.trim(),
-        customer_phone: customerPhone.trim(),
-        customer_address: customerAddress.trim(),
-        items: orderItems,
-        payment_method: paymentMethod,
-        total_amount: getFinalTotal(),
+        customer_name: orderData.customer_name.trim(),
+        customer_phone: orderData.customer_phone.trim(),
+        customer_address: orderData.customer_address.trim(),
+        items: orderData.items,
+        payment_method: orderData.payment_method,
+        total_amount: orderData.total_amount,
         status: 'pending',
         notes: appliedCoupon ? `Coupon: ${appliedCoupon.code} (-${appliedCoupon.discount}%)` : null,
       });
@@ -235,10 +254,10 @@ const Cart: React.FC = () => {
         description: `${t('orderNumber')}: ${orderNumber}`,
       });
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const userMessage = mapErrorToUserMessage(error, language);
       toast({
-        title: 'Error',
-        description: errorMessage,
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: userMessage,
         variant: 'destructive',
       });
     } finally {
