@@ -24,6 +24,7 @@ import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
 import PageTransition from "./components/PageTransition";
+import AISupportButton from "./components/AISupportButton";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => (
             <LanguageProvider>
               <CartProvider>
                 <AnimatedRoutes />
+                <AISupportButton />
               </CartProvider>
             </LanguageProvider>
           </BrowserRouter>
