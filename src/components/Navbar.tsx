@@ -127,7 +127,7 @@ const Navbar: React.FC = () => {
                   onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 transition-all overflow-hidden"
+                  className="flex items-center justify-center px-3 h-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 transition-all overflow-hidden"
                 >
                   <AnimatePresence mode="wait">
                     <motion.span
@@ -136,9 +136,9 @@ const Navbar: React.FC = () => {
                       animate={{ y: 0, opacity: 1, rotateX: 0 }}
                       exit={{ y: 20, opacity: 0, rotateX: 90 }}
                       transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="text-base"
+                      className="text-xs font-medium font-display"
                     >
-                      {language === 'ar' ? '🇸🇦' : '🇺🇸'}
+                      {language === 'ar' ? 'عربي' : 'English'}
                     </motion.span>
                   </AnimatePresence>
                 </motion.button>
