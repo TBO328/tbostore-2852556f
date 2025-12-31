@@ -136,7 +136,7 @@ const Navbar: React.FC = () => {
                       animate={{ y: 0, opacity: 1, rotateX: 0 }}
                       exit={{ y: 20, opacity: 0, rotateX: 90 }}
                       transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="text-xs font-medium font-display"
+                      className="text-xs font-medium font-arabic"
                     >
                       {language === 'ar' ? 'عربي' : 'English'}
                     </motion.span>
