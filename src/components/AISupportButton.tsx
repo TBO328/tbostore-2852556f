@@ -178,11 +178,9 @@ const AISupportButton = () => {
                   <Bot className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">
-                    {language === 'ar' ? 'الدعم الذكي' : 'AI Support'}
-                  </h3>
+                  <h3 className="font-semibold">TBO STORE</h3>
                   <p className="text-xs opacity-80">
-                    {language === 'ar' ? 'TBO Store' : 'TBO Store'}
+                    {language === 'ar' ? 'الدعم الذكي' : 'AI Support'}
                   </p>
                 </div>
               </div>
