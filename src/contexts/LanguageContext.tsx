@@ -17,6 +17,7 @@ const translations: Translations = {
   about: { en: 'About Us', ar: 'من نحن' },
   contact: { en: 'Contact', ar: 'اتصل بنا' },
   reviews: { en: 'Reviews', ar: 'التقييمات' },
+  favorites: { en: 'Favorites', ar: 'المفضلة' },
   
   // Hero
   heroTitle: { en: 'Welcome to\nTBO STORE', ar: 'نورتنا في\nTBO STORE' },
