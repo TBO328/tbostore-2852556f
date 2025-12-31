@@ -5,6 +5,7 @@ import { ShoppingCart, Heart, Eye, Star, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
+import { useFavorites } from '@/hooks/useFavorites';
 import { toast } from 'sonner';
 import PriceDisplay from '@/components/PriceDisplay';
 import type { Product } from '@/data/products';
@@ -16,11 +17,13 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const { language, t } = useLanguage();
   const { addToCart, triggerFlyAnimation, cartIconRef } = useCart();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const imageRef = useRef<HTMLImageElement>(null);
+
+  const isLiked = isFavorite(String(product.id));
 
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -56,7 +59,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
   const handleLike = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsLiked(!isLiked);
+    toggleFavorite(String(product.id));
   };
 
   return (

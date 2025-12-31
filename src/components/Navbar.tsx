@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingCart, Search, Moon, Sun, DollarSign, User, AlertTriangle } from 'lucide-react';
+import { Menu, X, ShoppingCart, Search, Moon, Sun, DollarSign, User, AlertTriangle, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAuth } from '@/hooks/useAuth';
+import { useFavorites } from '@/hooks/useFavorites';
 import FlyingCartItem from '@/components/FlyingCartItem';
 import SearchDialog from '@/components/SearchDialog';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
@@ -37,6 +38,7 @@ const Navbar: React.FC = () => {
     user,
     isAdmin
   } = useAuth();
+  const { favorites } = useFavorites();
   const location = useLocation();
   const navLinks = [{
     key: 'home',
@@ -44,6 +46,9 @@ const Navbar: React.FC = () => {
   }, {
     key: 'products',
     to: '/products'
+  }, {
+    key: 'favorites',
+    to: '/favorites'
   }, {
     key: 'about',
     to: '/about'
