@@ -61,10 +61,22 @@ export const useAuth = () => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    setIsAdmin(false);
+    try {
+      // Clear local state first
+      setUser(null);
+      setSession(null);
+      setIsAdmin(false);
+      
+      // Then attempt to sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      
+      // Ignore "session not found" errors - user is already logged out
+      if (error && !error.message.includes('session')) {
+        console.error('Sign out error:', error);
+      }
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
   return { user, session, loading, isAdmin, signOut };
