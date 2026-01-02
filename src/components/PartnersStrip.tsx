@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -27,49 +28,81 @@ const PartnersStrip = () => {
 
   if (partners.length === 0) return null;
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.9 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: 'spring' as const,
+        stiffness: 100,
+        damping: 12
+      }
+    }
+  };
+
   return (
-    <section className="py-10 overflow-hidden relative">
-      {/* Gradient fade edges */}
-      <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
-      
-      <div className="mb-6">
-        <h3 className="font-display text-2xl md:text-3xl font-bold text-center text-foreground">
-          {language === 'en' ? 'Our Partners' : 'شركاؤنا'}
-        </h3>
-      </div>
-      
-      <div className="flex overflow-hidden">
-        <div 
-          className="flex items-center gap-12 animate-marquee"
-          style={{
-            animationDirection: language === 'ar' ? 'reverse' : 'normal',
-            animationDuration: `${partners.length * 8}s`
-          }}
+    <section className="py-12 overflow-hidden relative">
+      <div className="container mx-auto px-4">
+        <motion.h3 
+          initial={{ opacity: 0, y: -10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="font-display text-2xl md:text-3xl font-bold text-center text-foreground mb-10"
         >
-          {/* First set */}
-          {partners.map((partner) => (
-            <div key={`first-${partner.id}`} className="flex items-center gap-12 shrink-0">
-              <img
-                src={partner.logo_url}
-                alt={partner.name}
-                className="h-20 max-w-[200px] object-contain opacity-60 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
-              />
-              <span className="text-4xl text-muted-foreground/30 font-light select-none">—</span>
-            </div>
+          {language === 'en' ? 'Our Partners' : 'شركاؤنا'}
+        </motion.h3>
+        
+        <motion.div 
+          className="flex flex-wrap items-center justify-center gap-8 md:gap-12"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+        >
+          {partners.map((partner, index) => (
+            <motion.div
+              key={partner.id}
+              variants={itemVariants}
+              whileHover={{ 
+                scale: 1.1,
+                transition: { type: 'spring', stiffness: 300 }
+              }}
+              className="relative group"
+            >
+              {/* Neon glow effect on hover */}
+              <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="relative bg-card/50 backdrop-blur-sm rounded-2xl p-6 border border-border/30 group-hover:border-primary/50 transition-all duration-300">
+                <img
+                  src={partner.logo_url}
+                  alt={partner.name}
+                  className="h-16 md:h-20 max-w-[160px] md:max-w-[200px] object-contain opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+                />
+              </div>
+              
+              {/* Separator dash - only show between items on larger screens */}
+              {index < partners.length - 1 && (
+                <span className="hidden lg:block absolute -right-6 md:-right-8 top-1/2 -translate-y-1/2 text-2xl text-muted-foreground/30 font-light select-none">
+                  —
+                </span>
+              )}
+            </motion.div>
           ))}
-          {/* Duplicate set for seamless loop */}
-          {partners.map((partner) => (
-            <div key={`second-${partner.id}`} className="flex items-center gap-12 shrink-0">
-              <img
-                src={partner.logo_url}
-                alt={partner.name}
-                className="h-20 max-w-[200px] object-contain opacity-60 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
-              />
-              <span className="text-4xl text-muted-foreground/30 font-light select-none">—</span>
-            </div>
-          ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
