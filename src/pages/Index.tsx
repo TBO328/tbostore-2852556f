@@ -11,6 +11,7 @@ import ProductCard from '@/components/ProductCard';
 import { useFeaturedProducts } from '@/hooks/useProducts';
 import { useReviews } from '@/hooks/useReviews';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
+import PartnersStrip from '@/components/PartnersStrip';
 
 const features = [{
   icon: Shield,
@@ -366,6 +367,9 @@ const Index: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* Partners Strip */}
+        <PartnersStrip />
 
         {/* Reviews Preview */}
         <section className="py-20 md:py-32 bg-background relative overflow-hidden">
