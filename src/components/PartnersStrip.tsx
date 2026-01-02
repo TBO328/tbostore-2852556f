@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -28,9 +27,6 @@ const PartnersStrip = () => {
 
   if (partners.length === 0) return null;
 
-  // Duplicate partners array for seamless infinite loop
-  const duplicatedPartners = [...partners, ...partners];
-
   return (
     <section className="py-10 overflow-hidden relative">
       {/* Gradient fade edges */}
@@ -43,23 +39,17 @@ const PartnersStrip = () => {
         </h3>
       </div>
       
-      <div className="flex">
-        <motion.div
-          className="flex items-center gap-12"
-          animate={{
-            x: language === 'ar' ? ['0%', '50%'] : ['-50%', '0%']
-          }}
-          transition={{
-            x: {
-              repeat: Infinity,
-              repeatType: 'loop',
-              duration: partners.length * 6,
-              ease: 'linear'
-            }
+      <div className="flex overflow-hidden">
+        <div 
+          className="flex items-center gap-12 animate-marquee"
+          style={{
+            animationDirection: language === 'ar' ? 'reverse' : 'normal',
+            animationDuration: `${partners.length * 8}s`
           }}
         >
-          {duplicatedPartners.map((partner, index) => (
-            <div key={`${partner.id}-${index}`} className="flex items-center gap-12 shrink-0">
+          {/* First set */}
+          {partners.map((partner) => (
+            <div key={`first-${partner.id}`} className="flex items-center gap-12 shrink-0">
               <img
                 src={partner.logo_url}
                 alt={partner.name}
@@ -68,7 +58,18 @@ const PartnersStrip = () => {
               <span className="text-4xl text-muted-foreground/30 font-light select-none">—</span>
             </div>
           ))}
-        </motion.div>
+          {/* Duplicate set for seamless loop */}
+          {partners.map((partner) => (
+            <div key={`second-${partner.id}`} className="flex items-center gap-12 shrink-0">
+              <img
+                src={partner.logo_url}
+                alt={partner.name}
+                className="h-20 max-w-[200px] object-contain opacity-60 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+              />
+              <span className="text-4xl text-muted-foreground/30 font-light select-none">—</span>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
