@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Package, Ticket, Plus, Pencil, Trash2, Loader2, LogOut, ShoppingBag, Settings, ChevronDown, Home, TrendingUp, Users, DollarSign, Tag, Upload, Image, Star, Check, X, Handshake } from 'lucide-react';
+import { Package, Ticket, Plus, Pencil, Trash2, Loader2, ShoppingBag, TrendingUp, DollarSign, Upload, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
@@ -16,15 +15,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useAdminReviews } from '@/hooks/useReviews';
 import { mapErrorToUserMessage } from '@/lib/errors';
 import ReviewsManagement from '@/components/admin/ReviewsManagement';
 import { UsersManagement } from '@/components/admin/UsersManagement';
 import PartnersManagement from '@/components/admin/PartnersManagement';
+import PagesManagement from '@/components/admin/PagesManagement';
+import OrdersManagement from '@/components/admin/OrdersManagement';
+import AdminSidebar from '@/components/admin/AdminSidebar';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
+
 type Product = Tables<'products'>;
 type Coupon = Tables<'coupons'>;
+
 interface Order {
   id: string;
   order_number: string;
@@ -45,39 +48,24 @@ interface Order {
   notes: string | null;
   created_at: string;
 }
+
 interface PaymentSettings {
   stc_pay_number: string;
   bank_name: string;
   bank_account_name: string;
   bank_iban: string;
 }
+
 const Admin: React.FC = () => {
-  const {
-    user,
-    isAdmin,
-    loading: authLoading,
-    signOut
-  } = useAuth();
+  const { user, isAdmin, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
-  const {
-    language,
-    t
-  } = useLanguage();
-  const {
-    formatPrice,
-    currency
-  } = useCurrency();
+  const { toast } = useToast();
+  const { language, t } = useLanguage();
+  const { formatPrice, currency } = useCurrency();
   const { theme } = useTheme();
-  
-  // SAR symbol filter based on theme
-  const symbolFilter = theme === 'light' 
-    ? 'brightness(0)' 
-    : 'brightness(0) invert(1)';
-  
-  // Custom format price with SAR symbol component
+
+  const symbolFilter = theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)';
+
   const formatPriceWithSymbol = (price: number) => {
     if (currency === 'SAR') {
       return (
@@ -89,6 +77,8 @@ const Admin: React.FC = () => {
     }
     return <span>{formatPrice(price)}</span>;
   };
+
+  const [activeTab, setActiveTab] = useState('orders');
   const [products, setProducts] = useState<Product[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -139,16 +129,13 @@ const Admin: React.FC = () => {
     is_active: true
   });
 
-  // Order details dialog
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
   const [adminCheckComplete, setAdminCheckComplete] = useState(false);
+
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
         navigate('/auth');
       } else {
-        // Give time for admin role check to complete
         const timer = setTimeout(() => {
           setAdminCheckComplete(true);
         }, 1000);
@@ -156,6 +143,7 @@ const Admin: React.FC = () => {
       }
     }
   }, [user, authLoading, navigate]);
+
   useEffect(() => {
     if (adminCheckComplete && !isAdmin) {
       toast({
@@ -166,21 +154,23 @@ const Admin: React.FC = () => {
       navigate('/');
     }
   }, [adminCheckComplete, isAdmin, navigate, toast, language]);
+
   useEffect(() => {
     if (isAdmin) {
       fetchData();
     }
   }, [isAdmin]);
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [productsRes, couponsRes, ordersRes, settingsRes] = await Promise.all([supabase.from('products').select('*').order('created_at', {
-        ascending: false
-      }), supabase.from('coupons').select('*').order('created_at', {
-        ascending: false
-      }), supabase.from('orders').select('*').order('created_at', {
-        ascending: false
-      }), supabase.from('payment_settings').select('*')]);
+      const [productsRes, couponsRes, ordersRes, settingsRes] = await Promise.all([
+        supabase.from('products').select('*').order('created_at', { ascending: false }),
+        supabase.from('coupons').select('*').order('created_at', { ascending: false }),
+        supabase.from('orders').select('*').order('created_at', { ascending: false }),
+        supabase.from('payment_settings').select('*')
+      ]);
+
       if (productsRes.data) setProducts(productsRes.data);
       if (couponsRes.data) setCoupons(couponsRes.data);
       if (ordersRes.data) {
@@ -197,10 +187,7 @@ const Admin: React.FC = () => {
           bank_account_name: '',
           bank_iban: ''
         };
-        settingsRes.data.forEach((item: {
-          setting_key: string;
-          setting_value: string;
-        }) => {
+        settingsRes.data.forEach((item: { setting_key: string; setting_value: string }) => {
           if (item.setting_key in settings) {
             settings[item.setting_key as keyof PaymentSettings] = item.setting_value;
           }
@@ -257,7 +244,6 @@ const Admin: React.FC = () => {
     try {
       let imageUrl = productForm.image_url;
 
-      // Upload new image if selected
       if (imageFile) {
         const uploadedUrl = await uploadProductImage(imageFile);
         if (uploadedUrl) {
@@ -282,15 +268,11 @@ const Admin: React.FC = () => {
       if (editingProduct) {
         const { error } = await supabase.from('products').update(productData).eq('id', editingProduct.id);
         if (error) throw error;
-        toast({
-          title: language === 'en' ? 'Product updated!' : 'تم تحديث المنتج!'
-        });
+        toast({ title: language === 'en' ? 'Product updated!' : 'تم تحديث المنتج!' });
       } else {
         const { error } = await supabase.from('products').insert(productData);
         if (error) throw error;
-        toast({
-          title: language === 'en' ? 'Product created!' : 'تم إنشاء المنتج!'
-        });
+        toast({ title: language === 'en' ? 'Product created!' : 'تم إنشاء المنتج!' });
       }
       setProductDialogOpen(false);
       resetProductForm();
@@ -306,6 +288,7 @@ const Admin: React.FC = () => {
       setUploadingImage(false);
     }
   };
+
   const resetProductForm = () => {
     setEditingProduct(null);
     setProductForm({
@@ -322,6 +305,7 @@ const Admin: React.FC = () => {
     setImageFile(null);
     setImagePreview(null);
   };
+
   const editProduct = (product: Product) => {
     setEditingProduct(product);
     setProductForm({
@@ -339,11 +323,10 @@ const Admin: React.FC = () => {
     setImageFile(null);
     setProductDialogOpen(true);
   };
+
   const deleteProduct = async (id: string) => {
     if (!confirm(language === 'en' ? 'Delete this product?' : 'حذف هذا المنتج؟')) return;
-    const {
-      error
-    } = await supabase.from('products').delete().eq('id', id);
+    const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) {
       const userMessage = mapErrorToUserMessage(error, language);
       toast({
@@ -352,9 +335,7 @@ const Admin: React.FC = () => {
         variant: 'destructive'
       });
     } else {
-      toast({
-        title: language === 'en' ? 'Product deleted' : 'تم حذف المنتج'
-      });
+      toast({ title: language === 'en' ? 'Product deleted' : 'تم حذف المنتج' });
       fetchData();
     }
   };
@@ -370,21 +351,13 @@ const Admin: React.FC = () => {
     };
     try {
       if (editingCoupon) {
-        const {
-          error
-        } = await supabase.from('coupons').update(couponData).eq('id', editingCoupon.id);
+        const { error } = await supabase.from('coupons').update(couponData).eq('id', editingCoupon.id);
         if (error) throw error;
-        toast({
-          title: language === 'en' ? 'Coupon updated!' : 'تم تحديث الكوبون!'
-        });
+        toast({ title: language === 'en' ? 'Coupon updated!' : 'تم تحديث الكوبون!' });
       } else {
-        const {
-          error
-        } = await supabase.from('coupons').insert(couponData);
+        const { error } = await supabase.from('coupons').insert(couponData);
         if (error) throw error;
-        toast({
-          title: language === 'en' ? 'Coupon created!' : 'تم إنشاء الكوبون!'
-        });
+        toast({ title: language === 'en' ? 'Coupon created!' : 'تم إنشاء الكوبون!' });
       }
       setCouponDialogOpen(false);
       resetCouponForm();
@@ -398,6 +371,7 @@ const Admin: React.FC = () => {
       });
     }
   };
+
   const resetCouponForm = () => {
     setEditingCoupon(null);
     setCouponForm({
@@ -407,6 +381,7 @@ const Admin: React.FC = () => {
       is_active: true
     });
   };
+
   const editCoupon = (coupon: Coupon) => {
     setEditingCoupon(coupon);
     setCouponForm({
@@ -417,11 +392,10 @@ const Admin: React.FC = () => {
     });
     setCouponDialogOpen(true);
   };
+
   const deleteCoupon = async (id: string) => {
     if (!confirm(language === 'en' ? 'Delete this coupon?' : 'حذف هذا الكوبون؟')) return;
-    const {
-      error
-    } = await supabase.from('coupons').delete().eq('id', id);
+    const { error } = await supabase.from('coupons').delete().eq('id', id);
     if (error) {
       const userMessage = mapErrorToUserMessage(error, language);
       toast({
@@ -430,37 +404,9 @@ const Admin: React.FC = () => {
         variant: 'destructive'
       });
     } else {
-      toast({
-        title: language === 'en' ? 'Coupon deleted' : 'تم حذف الكوبون'
-      });
+      toast({ title: language === 'en' ? 'Coupon deleted' : 'تم حذف الكوبون' });
       fetchData();
     }
-  };
-
-  // Order handlers
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
-    const {
-      error
-    } = await supabase.from('orders').update({
-      status: newStatus
-    }).eq('id', orderId);
-    if (error) {
-      const userMessage = mapErrorToUserMessage(error, language);
-      toast({
-        title: language === 'en' ? 'Error' : 'خطأ',
-        description: userMessage,
-        variant: 'destructive'
-      });
-    } else {
-      toast({
-        title: language === 'en' ? 'Status updated!' : 'تم تحديث الحالة!'
-      });
-      fetchData();
-    }
-  };
-  const viewOrderDetails = (order: Order) => {
-    setSelectedOrder(order);
-    setOrderDetailsOpen(true);
   };
 
   // Payment settings handler
@@ -472,16 +418,12 @@ const Admin: React.FC = () => {
         setting_value: value
       }));
       for (const update of updates) {
-        const {
-          error
-        } = await supabase.from('payment_settings').update({
+        const { error } = await supabase.from('payment_settings').update({
           setting_value: update.setting_value
         }).eq('setting_key', update.setting_key);
         if (error) throw error;
       }
-      toast({
-        title: t('settingsSaved')
-      });
+      toast({ title: t('settingsSaved') });
     } catch (error: unknown) {
       const userMessage = mapErrorToUserMessage(error, language);
       toast({
@@ -493,287 +435,40 @@ const Admin: React.FC = () => {
       setSavingSettings(false);
     }
   };
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-yellow-500/20 text-yellow-400';
-      case 'confirmed':
-        return 'bg-blue-500/20 text-blue-400';
-      case 'shipped':
-        return 'bg-purple-500/20 text-purple-400';
-      case 'delivered':
-        return 'bg-green-500/20 text-green-400';
-      case 'cancelled':
-        return 'bg-red-500/20 text-red-400';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
-  const getStatusText = (status: string) => {
-    const statusMap: Record<string, {
-      en: string;
-      ar: string;
-    }> = {
-      pending: {
-        en: 'Pending',
-        ar: 'في الانتظار'
-      },
-      confirmed: {
-        en: 'Confirmed',
-        ar: 'مؤكد'
-      },
-      shipped: {
-        en: 'Shipped',
-        ar: 'تم الشحن'
-      },
-      delivered: {
-        en: 'Delivered',
-        ar: 'تم التسليم'
-      },
-      cancelled: {
-        en: 'Cancelled',
-        ar: 'ملغي'
-      }
-    };
-    return statusMap[status]?.[language] || status;
-  };
+
   if (authLoading || loading || !adminCheckComplete) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>;
+      </div>
+    );
   }
+
   if (!isAdmin) return null;
 
   // Calculate stats
   const totalRevenue = orders.reduce((sum, order) => sum + order.total_amount, 0);
   const pendingOrders = orders.filter(o => o.status === 'pending').length;
   const deliveredOrders = orders.filter(o => o.status === 'delivered').length;
-  return <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      {/* Header */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-xl sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link to="/">
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                <Home className="w-5 h-5" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="font-display text-2xl font-bold text-foreground">
-                {language === 'en' ? 'Admin Dashboard' : 'لوحة التحكم'}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {language === 'en' ? 'Manage your store' : 'إدارة متجرك'}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-primary">{user?.email}</span>
-            </div>
-            <Button variant="outline" size="sm" onClick={signOut} className="gap-2">
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">{language === 'en' ? 'Sign Out' : 'خروج'}</span>
-            </Button>
-          </div>
-        </div>
-      </header>
 
-      <main className="container mx-auto px-4 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <motion.div initial={{
-          opacity: 0,
-          y: 20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          delay: 0
-        }} className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl p-4 border border-primary/20">
-            <div className="flex items-center justify-between mb-2">
-              <ShoppingBag className="w-5 h-5 text-primary" />
-              <span className="text-xs text-primary bg-primary/20 px-2 py-0.5 rounded-full">
-                {language === 'en' ? 'Total' : 'الكل'}
-              </span>
-            </div>
-            <p className="text-2xl font-bold text-foreground">{orders.length}</p>
-            <p className="text-xs text-muted-foreground">{language === 'en' ? 'Orders' : 'طلب'}</p>
-          </motion.div>
+  const isRTL = language === 'ar';
 
-          <motion.div initial={{
-          opacity: 0,
-          y: 20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          delay: 0.1
-        }} className="bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 rounded-2xl p-4 border border-yellow-500/20">
-            <div className="flex items-center justify-between mb-2">
-              <TrendingUp className="w-5 h-5 text-yellow-500" />
-              <span className="text-xs text-yellow-500 bg-yellow-500/20 px-2 py-0.5 rounded-full">
-                {language === 'en' ? 'Pending' : 'معلق'}
-              </span>
-            </div>
-            <p className="text-2xl font-bold text-foreground">{pendingOrders}</p>
-            <p className="text-xs text-muted-foreground">{language === 'en' ? 'Awaiting' : 'بانتظار'}</p>
-          </motion.div>
-
-          <motion.div initial={{
-          opacity: 0,
-          y: 20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          delay: 0.2
-        }} className="bg-gradient-to-br from-green-500/20 to-green-500/5 rounded-2xl p-4 border border-green-500/20">
-            <div className="flex items-center justify-between mb-2">
-              <Package className="w-5 h-5 text-green-500" />
-              <span className="text-xs text-green-500 bg-green-500/20 px-2 py-0.5 rounded-full">
-                {language === 'en' ? 'Done' : 'مكتمل'}
-              </span>
-            </div>
-            <p className="text-2xl font-bold text-foreground">{deliveredOrders}</p>
-            <p className="text-xs text-muted-foreground">{language === 'en' ? 'Delivered' : 'تم التسليم'}</p>
-          </motion.div>
-
-          <motion.div initial={{
-          opacity: 0,
-          y: 20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          delay: 0.3
-        }} className="bg-gradient-to-br from-secondary/20 to-secondary/5 rounded-2xl p-4 border border-secondary/20">
-            <div className="flex items-center justify-between mb-2">
-              <DollarSign className="w-5 h-5 text-secondary" />
-              <span className="text-xs text-secondary bg-secondary/20 px-2 py-0.5 rounded-full">
-                {language === 'en' ? 'Revenue' : 'الإيرادات'}
-              </span>
-            </div>
-            <p className="text-2xl font-bold text-foreground">{formatPriceWithSymbol(totalRevenue)}</p>
-            <p className="text-xs text-muted-foreground">{language === 'en' ? 'Total Sales' : 'إجمالي المبيعات'}</p>
-          </motion.div>
-        </div>
-
-        {/* Tabs */}
-        <Tabs defaultValue="orders" className="w-full">
-          <TabsList className="grid w-full max-w-5xl grid-cols-7 mb-8 bg-card/50 backdrop-blur-sm border border-border p-1 rounded-xl">
-            <TabsTrigger value="orders" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <ShoppingBag className="w-4 h-4" />
-              <span className="hidden sm:inline">{t('orders')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="products" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Package className="w-4 h-4" />
-              <span className="hidden sm:inline">{language === 'en' ? 'Products' : 'المنتجات'}</span>
-            </TabsTrigger>
-            <TabsTrigger value="reviews" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Star className="w-4 h-4" />
-              <span className="hidden sm:inline">{language === 'en' ? 'Reviews' : 'التقييمات'}</span>
-            </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Users className="w-4 h-4" />
-              <span className="hidden sm:inline">{language === 'en' ? 'Users' : 'المستخدمين'}</span>
-            </TabsTrigger>
-            <TabsTrigger value="partners" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Handshake className="w-4 h-4" />
-              <span className="hidden sm:inline">{language === 'en' ? 'Partners' : 'الشركاء'}</span>
-            </TabsTrigger>
-            <TabsTrigger value="coupons" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Ticket className="w-4 h-4" />
-              <span className="hidden sm:inline">{language === 'en' ? 'Coupons' : 'الكوبونات'}</span>
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Settings className="w-4 h-4" />
-              <span className="hidden sm:inline">{language === 'en' ? 'Settings' : 'الإعدادات'}</span>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Orders Tab */}
-          <TabsContent value="orders">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-foreground">
-                {t('manageOrders')}
-              </h2>
-              <span className="text-sm text-muted-foreground">
-                {orders.length} {language === 'en' ? 'orders' : 'طلب'}
-              </span>
-            </div>
-
-            <div className="grid gap-4">
-              {orders.map(order => <motion.div key={order.id} initial={{
-              opacity: 0,
-              y: 10
-            }} animate={{
-              opacity: 1,
-              y: 0
-            }} className="bg-card rounded-xl border border-border p-5 hover:border-primary/50 transition-colors">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="font-mono font-bold text-foreground text-lg">{order.order_number}</span>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                          {getStatusText(order.status)}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <p className="text-muted-foreground">
-                          <span className="text-foreground font-medium">{order.customer_name}</span>
-                        </p>
-                        <p className="text-muted-foreground">{order.customer_phone}</p>
-                      </div>
-                      <div className="flex items-center gap-4 mt-2">
-                        <span className="text-primary font-bold">{formatPriceWithSymbol(order.total_amount)}</span>
-                        <span className="text-sm text-muted-foreground">• {order.items.length} {language === 'en' ? 'items' : 'منتجات'}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(order.created_at).toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US')}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Select value={order.status} onValueChange={value => updateOrderStatus(order.id, value)}>
-                        <SelectTrigger className="w-[140px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">{getStatusText('pending')}</SelectItem>
-                          <SelectItem value="confirmed">{getStatusText('confirmed')}</SelectItem>
-                          <SelectItem value="shipped">{getStatusText('shipped')}</SelectItem>
-                          <SelectItem value="delivered">{getStatusText('delivered')}</SelectItem>
-                          <SelectItem value="cancelled">{getStatusText('cancelled')}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button variant="outline" size="sm" onClick={() => viewOrderDetails(order)} className="gap-2">
-                        <Tag className="w-4 h-4" />
-                        {language === 'ar' ? 'التفاصيل' : 'Details'}
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>)}
-              {orders.length === 0 && (
-                <div className="text-center py-12 bg-card rounded-xl border border-border">
-                  <ShoppingBag className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground">{t('noOrders')}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{language === 'en' ? 'Orders will appear here when customers place them' : 'ستظهر الطلبات هنا عندما يقوم العملاء بالطلب'}</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Products Tab */}
-          <TabsContent value="products">
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'orders':
+        return <OrdersManagement orders={orders} onRefresh={fetchData} />;
+      
+      case 'products':
+        return (
+          <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-foreground">
                 {language === 'en' ? 'Manage Products' : 'إدارة المنتجات'}
               </h2>
               <Dialog open={productDialogOpen} onOpenChange={open => {
-              setProductDialogOpen(open);
-              if (!open) resetProductForm();
-            }}>
+                setProductDialogOpen(open);
+                if (!open) resetProductForm();
+              }}>
                 <DialogTrigger asChild>
                   <Button variant="neon-filled">
                     <Plus className="w-4 h-4 mr-2" />
@@ -783,63 +478,42 @@ const Admin: React.FC = () => {
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>
-                      {editingProduct ? language === 'en' ? 'Edit Product' : 'تعديل المنتج' : language === 'en' ? 'Add Product' : 'إضافة منتج'}
+                      {editingProduct ? (language === 'en' ? 'Edit Product' : 'تعديل المنتج') : (language === 'en' ? 'Add Product' : 'إضافة منتج')}
                     </DialogTitle>
                   </DialogHeader>
                   <form onSubmit={handleProductSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Name (EN)</Label>
-                        <Input value={productForm.name_en} onChange={e => setProductForm({
-                        ...productForm,
-                        name_en: e.target.value
-                      })} required />
+                        <Input value={productForm.name_en} onChange={e => setProductForm({ ...productForm, name_en: e.target.value })} required />
                       </div>
                       <div className="space-y-2">
                         <Label>Name (AR)</Label>
-                        <Input value={productForm.name_ar} onChange={e => setProductForm({
-                        ...productForm,
-                        name_ar: e.target.value
-                      })} required dir="rtl" />
+                        <Input value={productForm.name_ar} onChange={e => setProductForm({ ...productForm, name_ar: e.target.value })} required dir="rtl" />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Description (EN)</Label>
-                        <Textarea value={productForm.description_en} onChange={e => setProductForm({
-                        ...productForm,
-                        description_en: e.target.value
-                      })} />
+                        <Textarea value={productForm.description_en} onChange={e => setProductForm({ ...productForm, description_en: e.target.value })} />
                       </div>
                       <div className="space-y-2">
                         <Label>Description (AR)</Label>
-                        <Textarea value={productForm.description_ar} onChange={e => setProductForm({
-                        ...productForm,
-                        description_ar: e.target.value
-                      })} dir="rtl" />
+                        <Textarea value={productForm.description_ar} onChange={e => setProductForm({ ...productForm, description_ar: e.target.value })} dir="rtl" />
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label>Price</Label>
-                        <Input type="number" step="0.01" value={productForm.price} onChange={e => setProductForm({
-                        ...productForm,
-                        price: e.target.value
-                      })} required />
+                        <Input type="number" step="0.01" value={productForm.price} onChange={e => setProductForm({ ...productForm, price: e.target.value })} required />
                       </div>
                       <div className="space-y-2">
                         <Label>Original Price</Label>
-                        <Input type="number" step="0.01" value={productForm.original_price} onChange={e => setProductForm({
-                        ...productForm,
-                        original_price: e.target.value
-                      })} />
+                        <Input type="number" step="0.01" value={productForm.original_price} onChange={e => setProductForm({ ...productForm, original_price: e.target.value })} />
                       </div>
                       <div className="space-y-2">
                         <Label>{language === 'en' ? 'Category' : 'الفئة'}</Label>
-                        <Select value={productForm.category} onValueChange={value => setProductForm({
-                          ...productForm,
-                          category: value
-                        })}>
+                        <Select value={productForm.category} onValueChange={value => setProductForm({ ...productForm, category: value })}>
                           <SelectTrigger>
                             <SelectValue placeholder={language === 'en' ? 'Select category' : 'اختر الفئة'} />
                           </SelectTrigger>
@@ -853,31 +527,40 @@ const Admin: React.FC = () => {
                         </Select>
                       </div>
                     </div>
+                    
+                    {/* Image Upload */}
                     <div className="space-y-2">
                       <Label>{language === 'en' ? 'Product Image' : 'صورة المنتج'}</Label>
-                      <div className="flex items-center gap-4">
-                        <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary hover:bg-muted/50 transition-colors">
-                          <Upload className="w-5 h-5 text-muted-foreground" />
+                      {imagePreview ? (
+                        <div className="relative w-full h-48 rounded-xl overflow-hidden border border-border">
+                          <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="absolute top-2 right-2"
+                            onClick={() => {
+                              setImageFile(null);
+                              setImagePreview(null);
+                              setProductForm({ ...productForm, image_url: '' });
+                            }}
+                          >
+                            {language === 'en' ? 'Remove' : 'إزالة'}
+                          </Button>
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 transition-colors">
+                          <Upload className="w-8 h-8 text-muted-foreground mb-2" />
                           <span className="text-sm text-muted-foreground">
-                            {imageFile ? imageFile.name : (language === 'en' ? 'Choose image file' : 'اختر ملف الصورة')}
+                            {language === 'en' ? 'Click to upload image' : 'انقر لرفع صورة'}
                           </span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            className="hidden"
-                          />
+                          <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                         </label>
-                        {imagePreview && (
-                          <img src={imagePreview} alt="Preview" className="w-16 h-16 rounded-lg object-cover" />
-                        )}
-                      </div>
+                      )}
                     </div>
+
                     <div className="flex items-center gap-2">
-                      <Switch checked={productForm.in_stock} onCheckedChange={checked => setProductForm({
-                      ...productForm,
-                      in_stock: checked
-                    })} />
+                      <Switch checked={productForm.in_stock} onCheckedChange={checked => setProductForm({ ...productForm, in_stock: checked })} />
                       <Label>{language === 'en' ? 'In Stock' : 'متوفر'}</Label>
                     </div>
                     <Button type="submit" variant="neon-filled" className="w-full" disabled={uploadingImage}>
@@ -895,84 +578,74 @@ const Admin: React.FC = () => {
               </Dialog>
             </div>
 
-            <div className="grid gap-4">
-              {products.map(product => <motion.div key={product.id} initial={{
-              opacity: 0,
-              y: 10
-            }} animate={{
-              opacity: 1,
-              y: 0
-            }} className="bg-card rounded-xl border border-border p-5 hover:border-primary/50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-muted flex-shrink-0">
-                      {product.image_url ? (
-                        <img src={product.image_url} alt={product.name_en} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-8 h-8 text-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-foreground truncate">{language === 'ar' ? product.name_ar : product.name_en}</h3>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${product.in_stock ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                          {product.in_stock ? (language === 'ar' ? 'متوفر' : 'In Stock') : (language === 'ar' ? 'نفذ' : 'Out')}
-                        </span>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {products.map(product => (
+                <motion.div key={product.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-colors">
+                  <div className="aspect-video bg-muted relative overflow-hidden">
+                    {product.image_url ? (
+                      <img src={product.image_url} alt={product.name_en} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Image className="w-12 h-12 text-muted-foreground" />
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">{language === 'ar' ? (
-                        product.category === 'Subscriptions' ? 'اشتراكات' :
-                        product.category === 'Designs' ? 'تصاميم' :
-                        product.category === 'Engagement' ? 'تفاعل' :
-                        product.category === 'Discord' ? 'ديسكورد' : product.category
-                      ) : product.category}</p>
-                      <div className="flex items-center gap-3">
-                        <span className="text-primary font-bold">{formatPriceWithSymbol(Number(product.price))}</span>
-                        {product.original_price && (
-                          <span className="text-muted-foreground text-sm line-through">{formatPriceWithSymbol(Number(product.original_price))}</span>
-                        )}
+                    )}
+                    {!product.in_stock && (
+                      <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+                        <span className="text-destructive font-medium">{language === 'en' ? 'Out of Stock' : 'غير متوفر'}</span>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => editProduct(product)} className="hover:bg-primary/10 hover:text-primary">
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => deleteProduct(product.id)} className="hover:bg-destructive/10 hover:text-destructive">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-bold text-foreground truncate">{language === 'ar' ? product.name_ar : product.name_en}</h3>
+                    <p className="text-sm text-muted-foreground truncate">{product.category}</p>
+                    <div className="flex items-center justify-between mt-3">
+                      <span className="text-primary font-bold">{formatPriceWithSymbol(Number(product.price))}</span>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => editProduct(product)} className="hover:bg-primary/10 hover:text-primary">
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => deleteProduct(product.id)} className="hover:bg-destructive/10 hover:text-destructive">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </motion.div>)}
-              {products.length === 0 && (
-                <div className="text-center py-12 bg-card rounded-xl border border-border">
-                  <Package className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground">{language === 'en' ? 'No products yet' : 'لا توجد منتجات بعد'}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{language === 'en' ? 'Add your first product to get started' : 'أضف أول منتج للبدء'}</p>
-                </div>
-              )}
+                </motion.div>
+              ))}
             </div>
-          </TabsContent>
 
-          {/* Reviews Tab */}
-          <TabsContent value="reviews">
-            <ReviewsManagement language={language} toast={toast} />
-          </TabsContent>
+            {products.length === 0 && (
+              <div className="text-center py-12 bg-card rounded-xl border border-border">
+                <Package className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+                <p className="text-muted-foreground">{language === 'en' ? 'No products yet' : 'لا توجد منتجات بعد'}</p>
+              </div>
+            )}
+          </div>
+        );
 
-          {/* Users Tab */}
-          <TabsContent value="users">
-            <UsersManagement language={language} toast={toast} currentUserId={user?.id} />
-          </TabsContent>
+      case 'reviews':
+        return <ReviewsManagement language={language} toast={toast} />;
 
-          {/* Coupons Tab */}
-          <TabsContent value="coupons">
+      case 'users':
+        return <UsersManagement language={language} toast={toast} currentUserId={user?.id} />;
+
+      case 'partners':
+        return <PartnersManagement />;
+
+      case 'pages':
+        return <PagesManagement />;
+
+      case 'coupons':
+        return (
+          <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-foreground">
                 {language === 'en' ? 'Manage Coupons' : 'إدارة الكوبونات'}
               </h2>
               <Dialog open={couponDialogOpen} onOpenChange={open => {
-              setCouponDialogOpen(open);
-              if (!open) resetCouponForm();
-            }}>
+                setCouponDialogOpen(open);
+                if (!open) resetCouponForm();
+              }}>
                 <DialogTrigger asChild>
                   <Button variant="neon-filled">
                     <Plus className="w-4 h-4 mr-2" />
@@ -982,40 +655,28 @@ const Admin: React.FC = () => {
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>
-                      {editingCoupon ? language === 'en' ? 'Edit Coupon' : 'تعديل الكوبون' : language === 'en' ? 'Add Coupon' : 'إضافة كوبون'}
+                      {editingCoupon ? (language === 'en' ? 'Edit Coupon' : 'تعديل الكوبون') : (language === 'en' ? 'Add Coupon' : 'إضافة كوبون')}
                     </DialogTitle>
                   </DialogHeader>
                   <form onSubmit={handleCouponSubmit} className="space-y-4">
                     <div className="space-y-2">
                       <Label>Code</Label>
-                      <Input value={couponForm.code} onChange={e => setCouponForm({
-                      ...couponForm,
-                      code: e.target.value
-                    })} placeholder="e.g., SAVE20" required />
+                      <Input value={couponForm.code} onChange={e => setCouponForm({ ...couponForm, code: e.target.value })} required className="uppercase" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Discount (%)</Label>
-                      <Input type="number" min="1" max="100" value={couponForm.discount_percent} onChange={e => setCouponForm({
-                      ...couponForm,
-                      discount_percent: e.target.value
-                    })} required />
+                      <Label>Discount %</Label>
+                      <Input type="number" min="1" max="100" value={couponForm.discount_percent} onChange={e => setCouponForm({ ...couponForm, discount_percent: e.target.value })} required />
                     </div>
                     <div className="space-y-2">
                       <Label>Expires At (optional)</Label>
-                      <Input type="date" value={couponForm.expires_at} onChange={e => setCouponForm({
-                      ...couponForm,
-                      expires_at: e.target.value
-                    })} />
+                      <Input type="date" value={couponForm.expires_at} onChange={e => setCouponForm({ ...couponForm, expires_at: e.target.value })} />
                     </div>
                     <div className="flex items-center gap-2">
-                      <Switch checked={couponForm.is_active} onCheckedChange={checked => setCouponForm({
-                      ...couponForm,
-                      is_active: checked
-                    })} />
+                      <Switch checked={couponForm.is_active} onCheckedChange={checked => setCouponForm({ ...couponForm, is_active: checked })} />
                       <Label>Active</Label>
                     </div>
                     <Button type="submit" variant="neon-filled" className="w-full">
-                      {editingCoupon ? language === 'en' ? 'Update' : 'تحديث' : language === 'en' ? 'Create' : 'إنشاء'}
+                      {editingCoupon ? (language === 'en' ? 'Update' : 'تحديث') : (language === 'en' ? 'Create' : 'إنشاء')}
                     </Button>
                   </form>
                 </DialogContent>
@@ -1023,13 +684,8 @@ const Admin: React.FC = () => {
             </div>
 
             <div className="grid gap-4">
-              {coupons.map(coupon => <motion.div key={coupon.id} initial={{
-              opacity: 0,
-              y: 10
-            }} animate={{
-              opacity: 1,
-              y: 0
-            }} className="bg-card rounded-xl border border-border p-5 hover:border-primary/50 transition-colors">
+              {coupons.map(coupon => (
+                <motion.div key={coupon.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-xl border border-border p-5 hover:border-primary/50 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center flex-shrink-0">
                       <Ticket className="w-7 h-7 text-primary" />
@@ -1057,144 +713,179 @@ const Admin: React.FC = () => {
                       </Button>
                     </div>
                   </div>
-                </motion.div>)}
+                </motion.div>
+              ))}
               {coupons.length === 0 && (
                 <div className="text-center py-12 bg-card rounded-xl border border-border">
                   <Ticket className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
                   <p className="text-muted-foreground">{language === 'en' ? 'No coupons yet' : 'لا توجد كوبونات بعد'}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{language === 'en' ? 'Create a coupon to offer discounts' : 'أنشئ كوبون لتقديم خصومات'}</p>
                 </div>
               )}
             </div>
-          </TabsContent>
+          </div>
+        );
 
-          {/* Payment Settings Tab */}
-          <TabsContent value="settings">
-            <div className="max-w-2xl">
-              <h2 className="text-xl font-semibold text-foreground mb-6">
-                {t('paymentSettings')}
-              </h2>
+      case 'settings':
+        return (
+          <div className="max-w-2xl">
+            <h2 className="text-xl font-semibold text-foreground mb-6">
+              {t('paymentSettings')}
+            </h2>
 
-              <div className="space-y-6">
-                {/* STC Pay Settings */}
-                <div className="bg-card rounded-xl border border-border p-6">
-                  <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                    <span className="text-primary">📱</span> STC Pay
-                  </h3>
-                  <div className="space-y-2">
-                    <Label>{language === 'en' ? 'STC Pay Number' : 'رقم STC Pay'}</Label>
-                    <Input value={paymentSettings.stc_pay_number} onChange={e => setPaymentSettings({
-                    ...paymentSettings,
-                    stc_pay_number: e.target.value
-                  })} placeholder="05xxxxxxxx" />
-                  </div>
-                </div>
-
-                {/* Bank Transfer Settings */}
-                <div className="bg-card rounded-xl border border-border p-6">
-                  <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                    <span className="text-primary">🏦</span> {t('bankTransfer')}
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>{t('bankName')}</Label>
-                      <Input value={paymentSettings.bank_name} onChange={e => setPaymentSettings({
-                      ...paymentSettings,
-                      bank_name: e.target.value
-                    })} placeholder={language === 'ar' ? 'مثال: الراجحي' : 'e.g., Al Rajhi Bank'} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{t('accountName')}</Label>
-                      <Input value={paymentSettings.bank_account_name} onChange={e => setPaymentSettings({
-                      ...paymentSettings,
-                      bank_account_name: e.target.value
-                    })} placeholder={language === 'ar' ? 'اسم صاحب الحساب' : 'Account holder name'} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{t('iban')}</Label>
-                      <Input value={paymentSettings.bank_iban} onChange={e => setPaymentSettings({
-                      ...paymentSettings,
-                      bank_iban: e.target.value
-                    })} placeholder="SA..." />
-                    </div>
-                  </div>
-                </div>
-
-                <Button variant="neon-filled" onClick={savePaymentSettings} disabled={savingSettings} className="w-full">
-                  {savingSettings ? <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {language === 'en' ? 'Saving...' : 'جاري الحفظ...'}
-                    </> : t('saveSettings')}
-                </Button>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* Partners Tab */}
-          <TabsContent value="partners">
-            <PartnersManagement />
-          </TabsContent>
-        </Tabs>
-      </main>
-
-      {/* Order Details Dialog */}
-      <Dialog open={orderDetailsOpen} onOpenChange={setOrderDetailsOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t('orderDetails')}</DialogTitle>
-          </DialogHeader>
-          {selectedOrder && <div className="space-y-6">
-              {/* Order Info */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">{t('orderNumber')}</p>
-                  <p className="font-mono font-bold">{selectedOrder.order_number}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{language === 'en' ? 'Date' : 'التاريخ'}</p>
-                  <p className="font-medium">{new Date(selectedOrder.created_at).toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US')}</p>
-                </div>
-              </div>
-
-              {/* Customer Info */}
-              <div className="bg-muted rounded-lg p-4 space-y-2">
-                <h4 className="font-semibold">{t('customerInfo')}</h4>
-                <p><span className="text-muted-foreground">{t('fullName')}:</span> {selectedOrder.customer_name}</p>
-                <p><span className="text-muted-foreground">{t('phoneNumber')}:</span> {selectedOrder.customer_phone}</p>
-                <p><span className="text-muted-foreground">{t('address')}:</span> {selectedOrder.customer_address}</p>
-              </div>
-
-              {/* Items */}
-              <div>
-                <h4 className="font-semibold mb-3">{language === 'en' ? 'Items' : 'المنتجات'}</h4>
+            <div className="space-y-6">
+              {/* STC Pay Settings */}
+              <div className="bg-card rounded-xl border border-border p-6">
+                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <span className="text-primary">📱</span> STC Pay
+                </h3>
                 <div className="space-y-2">
-                  {selectedOrder.items.map((item, index) => <div key={index} className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg">
-                      <img src={item.image} alt={item.name} className="w-12 h-12 rounded object-cover" />
-                      <div className="flex-1">
-                        <p className="font-medium">{language === 'ar' ? item.nameAr : item.name}</p>
-                        <p className="text-sm text-muted-foreground">x{item.quantity}</p>
-                      </div>
-                      <p className="font-medium">{formatPriceWithSymbol(item.price * item.quantity)}</p>
-                    </div>)}
+                  <Label>{language === 'en' ? 'STC Pay Number' : 'رقم STC Pay'}</Label>
+                  <Input 
+                    value={paymentSettings.stc_pay_number} 
+                    onChange={e => setPaymentSettings({ ...paymentSettings, stc_pay_number: e.target.value })} 
+                    placeholder="05xxxxxxxx" 
+                  />
                 </div>
               </div>
 
-              {/* Payment & Total */}
-              <div className="border-t border-border pt-4">
-                <div className="flex justify-between mb-2">
-                  <span className="text-muted-foreground">{t('paymentMethod')}</span>
-                  <span className="font-medium">
-                    {selectedOrder.payment_method === 'stc_pay' ? 'STC Pay' : t('bankTransfer')}
-                  </span>
-                </div>
-                <div className="flex justify-between text-lg font-bold">
-                  <span>{t('totalPrice')}</span>
-                  <span className="text-primary">{formatPriceWithSymbol(selectedOrder.total_amount)}</span>
+              {/* Bank Transfer Settings */}
+              <div className="bg-card rounded-xl border border-border p-6">
+                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <span className="text-primary">🏦</span> {t('bankTransfer')}
+                </h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>{t('bankName')}</Label>
+                    <Input 
+                      value={paymentSettings.bank_name} 
+                      onChange={e => setPaymentSettings({ ...paymentSettings, bank_name: e.target.value })} 
+                      placeholder={language === 'ar' ? 'مثال: الراجحي' : 'e.g., Al Rajhi Bank'} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('accountName')}</Label>
+                    <Input 
+                      value={paymentSettings.bank_account_name} 
+                      onChange={e => setPaymentSettings({ ...paymentSettings, bank_account_name: e.target.value })} 
+                      placeholder={language === 'ar' ? 'اسم صاحب الحساب' : 'Account holder name'} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{t('iban')}</Label>
+                    <Input 
+                      value={paymentSettings.bank_iban} 
+                      onChange={e => setPaymentSettings({ ...paymentSettings, bank_iban: e.target.value })} 
+                      placeholder="SA..." 
+                    />
+                  </div>
                 </div>
               </div>
-            </div>}
-        </DialogContent>
-      </Dialog>
-    </div>;
+
+              <Button variant="neon-filled" onClick={savePaymentSettings} disabled={savingSettings} className="w-full">
+                {savingSettings ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {language === 'en' ? 'Saving...' : 'جاري الحفظ...'}
+                  </>
+                ) : t('saveSettings')}
+              </Button>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      {/* Sidebar */}
+      <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {/* Main Content */}
+      <main className={`min-h-screen transition-all ${isRTL ? 'mr-64' : 'ml-64'}`}>
+        <div className="p-8">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0 }}
+              className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl p-4 border border-primary/20"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <ShoppingBag className="w-5 h-5 text-primary" />
+                <span className="text-xs text-primary bg-primary/20 px-2 py-0.5 rounded-full">
+                  {language === 'en' ? 'Total' : 'الكل'}
+                </span>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{orders.length}</p>
+              <p className="text-xs text-muted-foreground">{language === 'en' ? 'Orders' : 'طلب'}</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 rounded-2xl p-4 border border-yellow-500/20"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <TrendingUp className="w-5 h-5 text-yellow-500" />
+                <span className="text-xs text-yellow-500 bg-yellow-500/20 px-2 py-0.5 rounded-full">
+                  {language === 'en' ? 'Pending' : 'معلق'}
+                </span>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{pendingOrders}</p>
+              <p className="text-xs text-muted-foreground">{language === 'en' ? 'Awaiting' : 'بانتظار'}</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-gradient-to-br from-green-500/20 to-green-500/5 rounded-2xl p-4 border border-green-500/20"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <Package className="w-5 h-5 text-green-500" />
+                <span className="text-xs text-green-500 bg-green-500/20 px-2 py-0.5 rounded-full">
+                  {language === 'en' ? 'Done' : 'مكتمل'}
+                </span>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{deliveredOrders}</p>
+              <p className="text-xs text-muted-foreground">{language === 'en' ? 'Delivered' : 'تم التسليم'}</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-gradient-to-br from-secondary/20 to-secondary/5 rounded-2xl p-4 border border-secondary/20"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <DollarSign className="w-5 h-5 text-secondary" />
+                <span className="text-xs text-secondary bg-secondary/20 px-2 py-0.5 rounded-full">
+                  {language === 'en' ? 'Revenue' : 'الإيرادات'}
+                </span>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{formatPriceWithSymbol(totalRevenue)}</p>
+              <p className="text-xs text-muted-foreground">{language === 'en' ? 'Total Sales' : 'إجمالي المبيعات'}</p>
+            </motion.div>
+          </div>
+
+          {/* Content Area */}
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {renderContent()}
+          </motion.div>
+        </div>
+      </main>
+    </div>
+  );
 };
+
 export default Admin;
