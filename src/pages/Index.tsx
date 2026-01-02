@@ -122,7 +122,7 @@ const Index: React.FC = () => {
               </AnimatedSection>
 
               <AnimatedSection delay={0.1}>
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6">
+                <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold mb-6">
                   <motion.span 
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -208,7 +208,7 @@ const Index: React.FC = () => {
                     whileHover={{ y: -5, scale: 1.02 }} 
                     className="text-center p-3 rounded-xl bg-primary/5 backdrop-blur-sm border border-primary/10"
                   >
-                    <div className="text-3xl md:text-4xl font-bold text-primary glow-text-cyan">500+</div>
+                    <div className="font-display text-3xl md:text-4xl font-bold text-primary glow-text-cyan">500+</div>
                     <div className="text-sm text-muted-foreground mt-1">
                       {language === 'en' ? 'Products' : 'منتج'}
                     </div>
@@ -217,7 +217,7 @@ const Index: React.FC = () => {
                     whileHover={{ y: -5, scale: 1.02 }} 
                     className="text-center p-3 rounded-xl bg-secondary/5 backdrop-blur-sm border border-secondary/10"
                   >
-                    <div className="text-3xl md:text-4xl font-bold text-secondary glow-text-magenta">10K+</div>
+                    <div className="font-display text-3xl md:text-4xl font-bold text-secondary glow-text-magenta">10K+</div>
                     <div className="text-sm text-muted-foreground mt-1">
                       {language === 'en' ? 'Customers' : 'عميل'}
                     </div>
@@ -226,7 +226,7 @@ const Index: React.FC = () => {
                     whileHover={{ y: -5, scale: 1.02 }} 
                     className="text-center p-3 rounded-xl bg-accent/5 backdrop-blur-sm border border-accent/10"
                   >
-                    <div className="text-3xl md:text-4xl font-bold text-accent">4.9★</div>
+                    <div className="font-display text-3xl md:text-4xl font-bold text-accent">4.9★</div>
                     <div className="text-sm text-muted-foreground mt-1">
                       {language === 'en' ? 'Rating' : 'تقييم'}
                     </div>
@@ -290,7 +290,7 @@ const Index: React.FC = () => {
           <div className="container mx-auto px-4 relative z-10">
             <AnimatedSection>
               <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+                <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
                   {t('featuredProducts')}
                 </h2>
                 <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -340,7 +340,7 @@ const Index: React.FC = () => {
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-3xl mx-auto text-center">
               <AnimatedSection>
-                <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
+                <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-6">
                   {t('aboutTitle')}
                 </h2>
               </AnimatedSection>
@@ -374,7 +374,7 @@ const Index: React.FC = () => {
           <div className="container mx-auto px-4 relative z-10">
             <AnimatedSection>
               <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+                <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
                   {t('customerReviews')}
                 </h2>
                 <p className="text-muted-foreground">
