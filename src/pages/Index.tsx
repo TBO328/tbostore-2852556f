@@ -84,17 +84,6 @@ const Index: React.FC = () => {
               }} />
             </div>
 
-            {/* Animated Gradient Lines */}
-            <motion.div 
-              animate={{ opacity: [0.3, 0.6, 0.3] }}
-              transition={{ duration: 3, repeat: Infinity }}
-              className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-neon-cyan/40 to-transparent" 
-            />
-            <motion.div 
-              animate={{ opacity: [0.3, 0.6, 0.3] }}
-              transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}
-              className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-transparent via-neon-magenta/40 to-transparent" 
-            />
 
             {/* Floating Orbs */}
             <motion.div 
