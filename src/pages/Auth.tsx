@@ -165,13 +165,13 @@ const Auth: React.FC = () => {
           </Link>
 
           {/* Title */}
-          <h1 className="font-display text-2xl font-bold text-center text-foreground mb-2">
+          <h1 className="font-cairo text-2xl font-bold text-center text-foreground mb-2">
             {isLogin 
               ? (language === 'en' ? 'Welcome Back' : 'مرحباً بعودتك')
               : (language === 'en' ? 'Create Account' : 'إنشاء حساب')
             }
           </h1>
-          <p className="text-muted-foreground text-center mb-8">
+          <p className="font-cairo text-muted-foreground text-center mb-8">
             {isLogin
               ? (language === 'en' ? 'Sign in to your account' : 'سجل دخولك إلى حسابك')
               : (language === 'en' ? 'Join TBO Store today' : 'انضم إلى متجر TBO اليوم')
@@ -182,7 +182,7 @@ const Auth: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="space-y-2">
-                <Label htmlFor="fullName">
+                <Label htmlFor="fullName" className="font-cairo">
                   {language === 'en' ? 'Full Name' : 'الاسم الكامل'}
                 </Label>
                 <div className="relative">
@@ -201,7 +201,7 @@ const Auth: React.FC = () => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">
+              <Label htmlFor="email" className="font-cairo">
                 {language === 'en' ? 'Email' : 'البريد الإلكتروني'}
               </Label>
               <div className="relative">
@@ -219,7 +219,7 @@ const Auth: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">
+              <Label htmlFor="password" className="font-cairo">
                 {language === 'en' ? 'Password' : 'كلمة المرور'}
               </Label>
               <div className="relative">
@@ -239,7 +239,7 @@ const Auth: React.FC = () => {
                 <div className="text-right">
                   <Link 
                     to="/forgot-password" 
-                    className="text-sm text-primary hover:text-primary/80 transition-colors"
+                    className="font-cairo text-sm text-primary hover:text-primary/80 transition-colors"
                   >
                     {language === 'en' ? 'Forgot Password?' : 'نسيت كلمة المرور؟'}
                   </Link>
@@ -251,7 +251,7 @@ const Auth: React.FC = () => {
               type="submit"
               variant="neon-filled"
               size="lg"
-              className="w-full group"
+              className="w-full group font-cairo"
               disabled={loading}
             >
               {loading ? (
@@ -274,7 +274,7 @@ const Auth: React.FC = () => {
               <div className="w-full border-t border-border"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-card px-4 text-muted-foreground">
+              <span className="font-cairo bg-card px-4 text-muted-foreground">
                 {language === 'en' ? 'Or continue with' : 'أو تابع عبر'}
               </span>
             </div>
@@ -318,7 +318,7 @@ const Auth: React.FC = () => {
 
           {/* Toggle */}
           <div className="mt-6 text-center">
-            <p className="text-muted-foreground">
+            <p className="font-cairo text-muted-foreground">
               {isLogin 
                 ? (language === 'en' ? "Don't have an account?" : 'ليس لديك حساب؟')
                 : (language === 'en' ? 'Already have an account?' : 'لديك حساب بالفعل؟')
@@ -326,7 +326,7 @@ const Auth: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
-                className="ml-2 text-primary hover:text-primary/80 font-medium transition-colors"
+                className="font-cairo ml-2 text-primary hover:text-primary/80 font-medium transition-colors"
               >
                 {isLogin 
                   ? (language === 'en' ? 'Sign Up' : 'سجل الآن')
@@ -340,7 +340,7 @@ const Auth: React.FC = () => {
           <div className="mt-4 text-center">
             <Link 
               to="/" 
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="font-cairo text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               {language === 'en' ? '← Back to Store' : '← العودة إلى المتجر'}
             </Link>
