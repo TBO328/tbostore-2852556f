@@ -115,6 +115,45 @@ export type Database = {
         }
         Relationships: []
       }
+      page_content: {
+        Row: {
+          content_ar: string | null
+          content_en: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          metadata: Json | null
+          page_key: string
+          title_ar: string | null
+          title_en: string | null
+          updated_at: string
+        }
+        Insert: {
+          content_ar?: string | null
+          content_en?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          metadata?: Json | null
+          page_key: string
+          title_ar?: string | null
+          title_en?: string | null
+          updated_at?: string
+        }
+        Update: {
+          content_ar?: string | null
+          content_en?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          metadata?: Json | null
+          page_key?: string
+          title_ar?: string | null
+          title_en?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       partners: {
         Row: {
           created_at: string
