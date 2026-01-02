@@ -28,8 +28,8 @@ const PartnersStrip = () => {
 
   if (partners.length === 0) return null;
 
-  // Duplicate partners array multiple times for seamless infinite loop
-  const duplicatedPartners = [...partners, ...partners, ...partners, ...partners, ...partners, ...partners];
+  // Duplicate partners array for seamless infinite loop
+  const duplicatedPartners = [...partners, ...partners];
 
   return (
     <section className="py-10 overflow-hidden relative">
@@ -43,31 +43,33 @@ const PartnersStrip = () => {
         </h3>
       </div>
       
-      <motion.div
-        className="flex items-center gap-12"
-        animate={{
-          x: language === 'ar' ? ['0%', '16.66%'] : ['-16.66%', '0%']
-        }}
-        transition={{
-          x: {
-            repeat: Infinity,
-            repeatType: 'loop',
-            duration: partners.length * 6,
-            ease: 'linear'
-          }
-        }}
-      >
-        {duplicatedPartners.map((partner, index) => (
-          <div key={`${partner.id}-${index}`} className="flex items-center gap-12 shrink-0">
-            <img
-              src={partner.logo_url}
-              alt={partner.name}
-              className="h-20 max-w-[200px] object-contain opacity-60 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
-            />
-            <span className="text-4xl text-muted-foreground/30 font-light select-none">—</span>
-          </div>
-        ))}
-      </motion.div>
+      <div className="flex">
+        <motion.div
+          className="flex items-center gap-12"
+          animate={{
+            x: language === 'ar' ? ['0%', '50%'] : ['-50%', '0%']
+          }}
+          transition={{
+            x: {
+              repeat: Infinity,
+              repeatType: 'loop',
+              duration: partners.length * 6,
+              ease: 'linear'
+            }
+          }}
+        >
+          {duplicatedPartners.map((partner, index) => (
+            <div key={`${partner.id}-${index}`} className="flex items-center gap-12 shrink-0">
+              <img
+                src={partner.logo_url}
+                alt={partner.name}
+                className="h-20 max-w-[200px] object-contain opacity-60 hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+              />
+              <span className="text-4xl text-muted-foreground/30 font-light select-none">—</span>
+            </div>
+          ))}
+        </motion.div>
+      </div>
     </section>
   );
 };
