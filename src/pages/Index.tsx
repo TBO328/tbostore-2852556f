@@ -133,7 +133,7 @@ const Index: React.FC = () => {
               </AnimatedSection>
 
               <AnimatedSection delay={0.1}>
-                <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold mb-8">
+                <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold mb-6">
                   <motion.span 
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -146,7 +146,7 @@ const Index: React.FC = () => {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5, duration: 0.6 }}
-                    className="text-gradient-neon glow-text-cyan block mt-4"
+                    className="text-gradient-neon glow-text-cyan block mt-2"
                   >
                     {t('heroTitle').split('\n')[1]}
                   </motion.span>
@@ -158,7 +158,7 @@ const Index: React.FC = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.7, duration: 0.6 }}
-                  className="text-xl md:text-2xl text-muted-foreground mb-4 font-medium"
+                  className="text-lg md:text-xl text-muted-foreground mb-4"
                 >
                   {t('heroSubtitle')}
                 </motion.p>
@@ -169,14 +169,14 @@ const Index: React.FC = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.9, duration: 0.6 }}
-                  className="text-lg text-muted-foreground/70 max-w-2xl mx-auto mb-12"
+                  className="text-base text-muted-foreground/80 max-w-2xl mx-auto mb-10"
                 >
                   {t('heroDescription')}
                 </motion.p>
               </AnimatedSection>
 
               <AnimatedSection delay={0.4}>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <motion.div 
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -185,9 +185,9 @@ const Index: React.FC = () => {
                     whileTap={{ scale: 0.95 }}
                   >
                     <Link to="/products">
-                      <Button variant="neon-filled" size="xl" className="group px-8 py-6 text-lg">
+                      <Button variant="neon-filled" size="lg" className="group">
                         {t('shopNow')}
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     </Link>
                   </motion.div>
@@ -199,7 +199,7 @@ const Index: React.FC = () => {
                     whileTap={{ scale: 0.95 }}
                   >
                     <Link to="/about">
-                      <Button variant="neon" size="xl" className="px-8 py-6 text-lg">
+                      <Button variant="neon" size="lg">
                         {t('exploreMore')}
                       </Button>
                     </Link>
@@ -213,32 +213,32 @@ const Index: React.FC = () => {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.4 }}
-                  className="grid grid-cols-3 gap-6 md:gap-12 mt-20 pt-10 border-t border-primary/20"
+                  className="grid grid-cols-3 gap-4 md:gap-8 mt-16 pt-8 border-t border-border/50"
                 >
                   <motion.div 
-                    whileHover={{ y: -8, scale: 1.05 }} 
-                    className="text-center p-4 rounded-xl bg-primary/5 backdrop-blur-sm border border-primary/10"
+                    whileHover={{ y: -5, scale: 1.02 }} 
+                    className="text-center p-3 rounded-xl bg-primary/5 backdrop-blur-sm border border-primary/10"
                   >
-                    <div className="font-display text-4xl md:text-5xl font-bold text-primary glow-text-cyan">500+</div>
-                    <div className="text-sm font-medium text-muted-foreground mt-2">
+                    <div className="font-display text-3xl md:text-4xl font-bold text-primary glow-text-cyan">500+</div>
+                    <div className="text-sm text-muted-foreground mt-1">
                       {language === 'en' ? 'Products' : 'منتج'}
                     </div>
                   </motion.div>
                   <motion.div 
-                    whileHover={{ y: -8, scale: 1.05 }} 
-                    className="text-center p-4 rounded-xl bg-secondary/5 backdrop-blur-sm border border-secondary/10"
+                    whileHover={{ y: -5, scale: 1.02 }} 
+                    className="text-center p-3 rounded-xl bg-secondary/5 backdrop-blur-sm border border-secondary/10"
                   >
-                    <div className="font-display text-4xl md:text-5xl font-bold text-secondary glow-text-magenta">10K+</div>
-                    <div className="text-sm font-medium text-muted-foreground mt-2">
+                    <div className="font-display text-3xl md:text-4xl font-bold text-secondary glow-text-magenta">10K+</div>
+                    <div className="text-sm text-muted-foreground mt-1">
                       {language === 'en' ? 'Customers' : 'عميل'}
                     </div>
                   </motion.div>
                   <motion.div 
-                    whileHover={{ y: -8, scale: 1.05 }} 
-                    className="text-center p-4 rounded-xl bg-accent/5 backdrop-blur-sm border border-accent/10"
+                    whileHover={{ y: -5, scale: 1.02 }} 
+                    className="text-center p-3 rounded-xl bg-accent/5 backdrop-blur-sm border border-accent/10"
                   >
-                    <div className="font-display text-4xl md:text-5xl font-bold text-accent">4.9★</div>
-                    <div className="text-sm font-medium text-muted-foreground mt-2">
+                    <div className="font-display text-3xl md:text-4xl font-bold text-accent">4.9★</div>
+                    <div className="text-sm text-muted-foreground mt-1">
                       {language === 'en' ? 'Rating' : 'تقييم'}
                     </div>
                   </motion.div>
