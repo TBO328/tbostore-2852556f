@@ -22,6 +22,7 @@ import PartnersManagement from '@/components/admin/PartnersManagement';
 import PagesManagement from '@/components/admin/PagesManagement';
 import OrdersManagement from '@/components/admin/OrdersManagement';
 import AdminSidebar from '@/components/admin/AdminSidebar';
+import IconsManagement from '@/components/admin/IconsManagement';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -634,6 +635,9 @@ const Admin: React.FC = () => {
 
       case 'pages':
         return <PagesManagement />;
+
+      case 'icons':
+        return <IconsManagement />;
 
       case 'coupons':
         return (
