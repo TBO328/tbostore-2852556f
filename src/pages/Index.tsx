@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles, Star, Shield, Truck, Headphones, Loader2 } from 'lucide-react';
@@ -13,7 +13,6 @@ import { useReviews } from '@/hooks/useReviews';
 import { useMultiplePageContent } from '@/hooks/usePageContent';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
 import PartnersStrip from '@/components/PartnersStrip';
-import { supabase } from '@/integrations/supabase/client';
 
 const features = [{
   icon: Shield,
@@ -39,26 +38,8 @@ const Index: React.FC = () => {
   const { reviews, loading: reviewsLoading } = useReviews(true);
   const displayReviews = reviews.slice(0, 3);
   
-  // جلب محتوى الصفحات من قاعدة البيانات
-  const { getText, refetch } = useMultiplePageContent(['hero', 'features', 'products_section', 'about', 'reviews_section']);
-  
-  // الاستماع للتغييرات في الوقت الحقيقي
-  useEffect(() => {
-    const channel = supabase
-      .channel('index-page-content')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'page_content'
-      }, () => {
-        refetch();
-      })
-      .subscribe();
-    
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [refetch]);
+  // جلب محتوى الصفحات من قاعدة البيانات مع التحديث التلقائي
+  const { getText } = useMultiplePageContent(['hero', 'features', 'products_section', 'about', 'reviews_section']);
   
   const getColorClasses = (color: string) => {
     switch (color) {
