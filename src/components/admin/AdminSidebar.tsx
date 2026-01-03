@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   ShoppingBag, Package, Star, Users, Handshake, 
-  Ticket, Settings, FileText, Home, LogOut
+  Ticket, Settings, FileText, Home, LogOut, Palette
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,7 @@ const menuItems = [
   { id: 'partners', icon: Handshake, labelEn: 'Partners', labelAr: 'الشركاء' },
   { id: 'coupons', icon: Ticket, labelEn: 'Coupons', labelAr: 'الكوبونات' },
   { id: 'pages', icon: FileText, labelEn: 'Pages', labelAr: 'الصفحات' },
+  { id: 'icons', icon: Palette, labelEn: 'Icons', labelAr: 'الأيقونات' },
   { id: 'settings', icon: Settings, labelEn: 'Settings', labelAr: 'الإعدادات' },
 ];
 

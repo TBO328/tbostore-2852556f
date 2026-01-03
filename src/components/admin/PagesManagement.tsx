@@ -27,7 +27,7 @@ interface PageContent {
 const pageLabels: Record<string, { en: string; ar: string; description_en: string; description_ar: string }> = {
   hero: { 
     en: 'Hero Section', 
-    ar: 'قسم البطل',
+    ar: 'القسم الرئيسي',
     description_en: 'Main banner on homepage',
     description_ar: 'البانر الرئيسي في الصفحة الرئيسية'
   },
@@ -48,6 +48,54 @@ const pageLabels: Record<string, { en: string; ar: string; description_en: strin
     ar: 'التذييل',
     description_en: 'Footer content and links',
     description_ar: 'محتوى وروابط التذييل'
+  },
+  navbar: { 
+    en: 'Navigation Bar', 
+    ar: 'شريط التنقل',
+    description_en: 'Top navigation menu',
+    description_ar: 'قائمة التنقل العلوية'
+  },
+  products_page: { 
+    en: 'Products Page', 
+    ar: 'صفحة المنتجات',
+    description_en: 'Products listing page',
+    description_ar: 'صفحة عرض المنتجات'
+  },
+  cart_page: { 
+    en: 'Cart Page', 
+    ar: 'صفحة السلة',
+    description_en: 'Shopping cart page',
+    description_ar: 'صفحة سلة التسوق'
+  },
+  checkout: { 
+    en: 'Checkout Page', 
+    ar: 'صفحة الدفع',
+    description_en: 'Checkout and payment',
+    description_ar: 'صفحة إتمام الطلب والدفع'
+  },
+  reviews_page: { 
+    en: 'Reviews Page', 
+    ar: 'صفحة التقييمات',
+    description_en: 'Customer reviews section',
+    description_ar: 'قسم تقييمات العملاء'
+  },
+  policies: { 
+    en: 'Policies Page', 
+    ar: 'صفحة السياسات',
+    description_en: 'Privacy and return policies',
+    description_ar: 'سياسات الخصوصية والإرجاع'
+  },
+  favorites_page: { 
+    en: 'Favorites Page', 
+    ar: 'صفحة المفضلة',
+    description_en: 'Wishlist page content',
+    description_ar: 'محتوى صفحة المفضلة'
+  },
+  profile_page: { 
+    en: 'Profile Page', 
+    ar: 'صفحة الملف الشخصي',
+    description_en: 'User profile page',
+    description_ar: 'صفحة الملف الشخصي للمستخدم'
   },
 };
 
