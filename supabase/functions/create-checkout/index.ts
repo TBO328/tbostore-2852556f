@@ -1,10 +1,31 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const CheckoutItemSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  nameAr: z.string().trim().min(1).max(200),
+  price: z.number().positive().max(999999),
+  quantity: z.number().int().positive().max(100),
+  image: z.string().url().optional().or(z.literal('')),
+});
+
+const CheckoutSchema = z.object({
+  items: z.array(CheckoutItemSchema).min(1).max(50),
+  customerName: z.string().trim().min(2).max(100),
+  customerPhone: z.string().trim().min(8).max(20),
+  customerAddress: z.string().trim().min(5).max(500),
+  couponCode: z.string().max(50).optional().nullable(),
+  couponDiscount: z.number().int().min(0).max(100).optional(),
+  successUrl: z.string().url(),
+  cancelUrl: z.string().url(),
+});
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -19,22 +40,31 @@ serve(async (req) => {
       throw new Error('Stripe configuration error');
     }
 
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validationResult = CheckoutSchema.safeParse(rawBody);
+    
+    if (!validationResult.success) {
+      console.error('Validation error:', validationResult.error.errors);
+      return new Response(
+        JSON.stringify({ error: 'Invalid input data', details: validationResult.error.errors }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      );
+    }
+
+    const { items, customerName, customerPhone, customerAddress, couponCode, couponDiscount, successUrl, cancelUrl } = validationResult.data;
+
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
     });
 
-    const { items, customerName, customerPhone, customerAddress, couponCode, couponDiscount, successUrl, cancelUrl } = await req.json();
-
     console.log('Creating checkout session for:', { itemCount: items.length, customerName });
 
     // Create line items for Stripe
-    const lineItems = items.map((item: {
-      name: string;
-      nameAr: string;
-      price: number;
-      quantity: number;
-      image: string;
-    }) => ({
+    const lineItems = items.map((item) => ({
       price_data: {
         currency: 'sar',
         product_data: {
