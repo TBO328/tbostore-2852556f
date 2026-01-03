@@ -113,13 +113,17 @@ const Admin: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  // Available categories
-  const availableCategories = [
+  // Available categories - now with state for dynamic categories
+  const [availableCategories, setAvailableCategories] = useState([
     { value: 'Subscriptions', labelEn: 'Subscriptions', labelAr: 'اشتراكات' },
     { value: 'Designs', labelEn: 'Designs', labelAr: 'تصاميم' },
     { value: 'Engagement', labelEn: 'Engagement', labelAr: 'تفاعل' },
     { value: 'Discord', labelEn: 'Discord', labelAr: 'ديسكورد' },
-  ];
+  ]);
+  
+  // Category dialog state
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [newCategory, setNewCategory] = useState({ value: '', labelEn: '', labelAr: '' });
 
   // Coupon form state
   const [couponDialogOpen, setCouponDialogOpen] = useState(false);
@@ -470,22 +474,82 @@ const Admin: React.FC = () => {
               <h2 className="text-xl font-semibold text-foreground">
                 {language === 'en' ? 'Manage Products' : 'إدارة المنتجات'}
               </h2>
-              <Dialog open={productDialogOpen} onOpenChange={open => {
-                setProductDialogOpen(open);
-                if (!open) resetProductForm();
-              }}>
-                <DialogTrigger asChild>
-                  <Button variant="neon-filled">
-                    <Plus className="w-4 h-4 mr-2" />
-                    {language === 'en' ? 'Add Product' : 'إضافة منتج'}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>
-                      {editingProduct ? (language === 'en' ? 'Edit Product' : 'تعديل المنتج') : (language === 'en' ? 'Add Product' : 'إضافة منتج')}
-                    </DialogTitle>
-                  </DialogHeader>
+              <div className="flex items-center gap-2">
+                {/* Add Category Button */}
+                <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Plus className="w-4 h-4 mr-2" />
+                      {language === 'en' ? 'Add Category' : 'إضافة فئة'}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>
+                        {language === 'en' ? 'Add New Category' : 'إضافة فئة جديدة'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>{language === 'en' ? 'Category ID (English, no spaces)' : 'معرف الفئة (إنجليزي، بدون مسافات)'}</Label>
+                        <Input 
+                          value={newCategory.value} 
+                          onChange={e => setNewCategory({ ...newCategory, value: e.target.value.replace(/\s/g, '') })} 
+                          placeholder="e.g., Electronics"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{language === 'en' ? 'Category Name (EN)' : 'اسم الفئة (إنجليزي)'}</Label>
+                        <Input 
+                          value={newCategory.labelEn} 
+                          onChange={e => setNewCategory({ ...newCategory, labelEn: e.target.value })} 
+                          placeholder="Electronics"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{language === 'en' ? 'Category Name (AR)' : 'اسم الفئة (عربي)'}</Label>
+                        <Input 
+                          value={newCategory.labelAr} 
+                          onChange={e => setNewCategory({ ...newCategory, labelAr: e.target.value })} 
+                          placeholder="إلكترونيات"
+                          dir="rtl"
+                        />
+                      </div>
+                      <Button 
+                        className="w-full"
+                        onClick={() => {
+                          if (newCategory.value && newCategory.labelEn && newCategory.labelAr) {
+                            setAvailableCategories(prev => [...prev, newCategory]);
+                            setNewCategory({ value: '', labelEn: '', labelAr: '' });
+                            setCategoryDialogOpen(false);
+                            toast({ title: language === 'en' ? 'Category added!' : 'تمت إضافة الفئة!' });
+                          }
+                        }}
+                        disabled={!newCategory.value || !newCategory.labelEn || !newCategory.labelAr}
+                      >
+                        {language === 'en' ? 'Add Category' : 'إضافة الفئة'}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Add Product Button */}
+                <Dialog open={productDialogOpen} onOpenChange={open => {
+                  setProductDialogOpen(open);
+                  if (!open) resetProductForm();
+                }}>
+                  <DialogTrigger asChild>
+                    <Button variant="neon-filled">
+                      <Plus className="w-4 h-4 mr-2" />
+                      {language === 'en' ? 'Add Product' : 'إضافة منتج'}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingProduct ? (language === 'en' ? 'Edit Product' : 'تعديل المنتج') : (language === 'en' ? 'Add Product' : 'إضافة منتج')}
+                      </DialogTitle>
+                    </DialogHeader>
                   <form onSubmit={handleProductSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -581,6 +645,7 @@ const Admin: React.FC = () => {
                   </form>
                 </DialogContent>
               </Dialog>
+              </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

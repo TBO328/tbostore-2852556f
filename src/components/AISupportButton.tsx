@@ -189,18 +189,47 @@ const AISupportButton = () => {
             {/* Messages Area */}
             <div className="flex-1 p-4 overflow-y-auto bg-background space-y-3">
               {messages.length === 0 && (
-                <div className="flex gap-2">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Bot className="w-4 h-4 text-primary" />
+                <>
+                  <div className="flex gap-2">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Bot className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="bg-muted rounded-2xl rounded-tl-sm p-3 max-w-[80%]">
+                      <p className="text-sm text-foreground">
+                        {language === 'ar' 
+                          ? 'مرحباً! 👋 أنا مساعدك الذكي من TBO Store. كيف يمكنني مساعدتك اليوم؟'
+                          : 'Hello! 👋 I\'m your AI assistant from TBO Store. How can I help you today?'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="bg-muted rounded-2xl rounded-tl-sm p-3 max-w-[80%]">
-                    <p className="text-sm text-foreground">
-                      {language === 'ar' 
-                        ? 'مرحباً! 👋 أنا مساعدك الذكي من TBO Store. كيف يمكنني مساعدتك اليوم؟'
-                        : 'Hello! 👋 I\'m your AI assistant from TBO Store. How can I help you today?'}
-                    </p>
+                  
+                  {/* Quick Questions */}
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {(language === 'ar' ? [
+                      'ما هي طرق الدفع المتاحة؟',
+                      'كم مدة التوصيل؟',
+                      'هل يوجد ضمان؟',
+                      'كيف أتتبع طلبي؟',
+                      'ما سياسة الإرجاع؟',
+                    ] : [
+                      'What payment methods are available?',
+                      'How long is delivery?',
+                      'Is there a warranty?',
+                      'How do I track my order?',
+                      'What is the return policy?',
+                    ]).map((question) => (
+                      <button
+                        key={question}
+                        onClick={() => {
+                          setInput(question);
+                        }}
+                        className="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-full hover:bg-primary/20 transition-colors"
+                      >
+                        {question}
+                      </button>
+                    ))}
                   </div>
-                </div>
+                </>
               )}
               
               {messages.map((message, index) => (
