@@ -412,7 +412,32 @@ const VisualEditorOverlay: React.FC = () => {
               <MousePointer className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-primary">وضع التحرير المرئي</span>
             </div>
-            <span className="text-sm text-muted-foreground">اضغط على أي عنصر لتعديله</span>
+            
+            {/* Page Navigation */}
+            <div className="flex items-center gap-1 bg-muted rounded-full p-1">
+              {[
+                { path: '/', label: 'الرئيسية' },
+                { path: '/products', label: 'المنتجات' },
+                { path: '/about', label: 'من نحن' },
+                { path: '/contact', label: 'اتصل بنا' },
+                { path: '/reviews', label: 'التقييمات' },
+                { path: '/policies', label: 'السياسات' },
+              ].map((page) => (
+                <button
+                  key={page.path}
+                  onClick={() => {
+                    window.location.href = page.path;
+                  }}
+                  className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                    window.location.pathname === page.path
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-background'
+                  }`}
+                >
+                  {page.label}
+                </button>
+              ))}
+            </div>
           </div>
           
           <div className="flex items-center gap-2">

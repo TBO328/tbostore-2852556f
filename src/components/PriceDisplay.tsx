@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import sarSymbol from '@/assets/sar-symbol.png';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -20,6 +21,9 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({
 }) => {
   const { currency, exchangeRate } = useCurrency();
   const { theme } = useTheme();
+  const [displayedPrice, setDisplayedPrice] = useState(price);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const prevPriceRef = useRef(price);
 
   const sizeClasses = {
     sm: { text: 'text-sm', symbol: 'h-3 w-3' },
@@ -28,7 +32,41 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({
     xl: { text: 'text-3xl', symbol: 'h-6 w-6' },
   };
 
-  const displayPrice = currency === 'SAR' ? price : price / exchangeRate;
+  // Animate price when it changes
+  useEffect(() => {
+    if (prevPriceRef.current !== price) {
+      setIsAnimating(true);
+      
+      const startPrice = prevPriceRef.current;
+      const endPrice = price;
+      const duration = 500;
+      const startTime = Date.now();
+
+      const animatePrice = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function
+        const easeOutQuad = (t: number) => t * (2 - t);
+        const easedProgress = easeOutQuad(progress);
+        
+        const currentPrice = startPrice + (endPrice - startPrice) * easedProgress;
+        setDisplayedPrice(currentPrice);
+
+        if (progress < 1) {
+          requestAnimationFrame(animatePrice);
+        } else {
+          setDisplayedPrice(endPrice);
+          setIsAnimating(false);
+        }
+      };
+
+      requestAnimationFrame(animatePrice);
+      prevPriceRef.current = price;
+    }
+  }, [price]);
+
+  const finalDisplayPrice = currency === 'SAR' ? displayedPrice : displayedPrice / exchangeRate;
   const displayOriginalPrice = originalPrice ? (currency === 'SAR' ? originalPrice : originalPrice / exchangeRate) : null;
 
   // Invert color for light mode (dark symbol) or dark mode (light symbol)
@@ -39,9 +77,13 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({
   if (currency === 'USD') {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
-        <span className={`font-arabic font-bold text-primary ${sizeClasses[size].text}`}>
-          ${displayPrice.toFixed(2)}
-        </span>
+        <motion.span 
+          className={`font-arabic font-bold text-primary ${sizeClasses[size].text}`}
+          animate={isAnimating ? { scale: [1, 1.1, 1] } : {}}
+          transition={{ duration: 0.3 }}
+        >
+          ${finalDisplayPrice.toFixed(2)}
+        </motion.span>
         {showOriginal && displayOriginalPrice && (
           <span className={`text-muted-foreground line-through ${size === 'xl' ? 'text-lg' : 'text-sm'}`}>
             ${displayOriginalPrice.toFixed(2)}
@@ -53,15 +95,29 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <span className={`font-arabic font-bold text-primary flex items-center gap-1 ${sizeClasses[size].text}`}>
-        {displayPrice.toFixed(2)}
+      <motion.span 
+        className={`font-arabic font-bold text-primary flex items-center gap-1 ${sizeClasses[size].text}`}
+        animate={isAnimating ? { scale: [1, 1.15, 1], color: ['hsl(var(--primary))', 'hsl(142 76% 46%)', 'hsl(var(--primary))'] } : {}}
+        transition={{ duration: 0.4 }}
+      >
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={Math.round(finalDisplayPrice)}
+            initial={isAnimating ? { y: -10, opacity: 0 } : false}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 10, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            {finalDisplayPrice.toFixed(2)}
+          </motion.span>
+        </AnimatePresence>
         <img 
           src={sarSymbol} 
           alt="ر.س" 
           className={`inline-block ${sizeClasses[size].symbol}`}
           style={{ filter: symbolFilter }}
         />
-      </span>
+      </motion.span>
       {showOriginal && displayOriginalPrice && (
         <span className={`text-muted-foreground line-through flex items-center gap-1 ${size === 'xl' ? 'text-lg' : 'text-sm'}`}>
           {displayOriginalPrice.toFixed(2)}
