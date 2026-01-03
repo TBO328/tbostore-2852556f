@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useEffect } from 'react';
 
 interface PageContentMetadata {
   texts?: Record<string, string>;
@@ -23,6 +24,7 @@ interface PageContent {
 
 export const usePageContent = (pageKey: string) => {
   const { language } = useLanguage();
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['page-content', pageKey],
@@ -36,8 +38,31 @@ export const usePageContent = (pageKey: string) => {
       if (error) throw error;
       return data as PageContent | null;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
+
+  // Realtime subscription for automatic updates
+  useEffect(() => {
+    const channel = supabase
+      .channel(`page-content-${pageKey}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'page_content',
+          filter: `page_key=eq.${pageKey}`,
+        },
+        () => {
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [pageKey, refetch]);
 
   // Get text content with fallback
   const getText = (key: string, fallback: string = ''): string => {
@@ -85,9 +110,9 @@ export const usePageContent = (pageKey: string) => {
   };
 };
 
-// Hook to fetch multiple pages at once
 export const useMultiplePageContent = (pageKeys: string[]) => {
   const { language } = useLanguage();
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['page-content-multiple', pageKeys],
@@ -99,7 +124,6 @@ export const useMultiplePageContent = (pageKeys: string[]) => {
 
       if (error) throw error;
       
-      // Convert to a map for easy access
       const contentMap: Record<string, PageContent> = {};
       (data as PageContent[])?.forEach(item => {
         contentMap[item.page_key] = item;
@@ -109,6 +133,31 @@ export const useMultiplePageContent = (pageKeys: string[]) => {
     },
     staleTime: 1000 * 60 * 5,
   });
+
+  // Realtime subscription for automatic updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('page-content-multiple')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'page_content',
+        },
+        (payload) => {
+          const changedKey = (payload.new as PageContent)?.page_key;
+          if (pageKeys.includes(changedKey)) {
+            refetch();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [pageKeys, refetch]);
 
   const getText = (pageKey: string, textKey: string, fallback: string = ''): string => {
     const page = data?.[pageKey];
