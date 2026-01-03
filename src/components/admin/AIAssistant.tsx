@@ -17,7 +17,7 @@ interface Message {
 }
 
 interface ActionData {
-  action: 'update' | 'insert' | 'delete' | 'none';
+  action: 'update' | 'insert' | 'delete' | 'upsert' | 'none';
   table?: string;
   data?: Record<string, unknown>;
   condition?: Record<string, unknown>;
@@ -84,8 +84,8 @@ const AIAssistant: React.FC = () => {
           m.id === messageId ? { ...m, actionStatus: 'success' as const } : m
         ));
         toast({
-          title: language === 'en' ? 'Success' : 'تم بنجاح',
-          description: result.message || (language === 'en' ? 'Action executed successfully' : 'تم تنفيذ الإجراء بنجاح'),
+          title: 'تم بنجاح ✓',
+          description: result.message || 'تم تنفيذ الإجراء بنجاح',
         });
       } else {
         throw new Error(result.error);
@@ -95,8 +95,8 @@ const AIAssistant: React.FC = () => {
         m.id === messageId ? { ...m, actionStatus: 'error' as const } : m
       ));
       toast({
-        title: language === 'en' ? 'Error' : 'خطأ',
-        description: error instanceof Error ? error.message : 'Failed to execute action',
+        title: 'خطأ',
+        description: error instanceof Error ? error.message : 'فشل في تنفيذ الإجراء',
         variant: 'destructive',
       });
     }
@@ -201,14 +201,12 @@ const AIAssistant: React.FC = () => {
       setMessages(prev => prev.map(m =>
         m.id === assistantMessageId ? {
           ...m,
-          content: language === 'en' 
-            ? 'Sorry, an error occurred. Please try again.'
-            : 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.',
+          content: 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.',
         } : m
       ));
       toast({
-        title: language === 'en' ? 'Error' : 'خطأ',
-        description: error instanceof Error ? error.message : 'Connection error',
+        title: 'خطأ',
+        description: error instanceof Error ? error.message : 'خطأ في الاتصال',
         variant: 'destructive',
       });
     } finally {
@@ -224,28 +222,31 @@ const AIAssistant: React.FC = () => {
   };
 
   const getActionTableName = (table?: string) => {
-    const names: Record<string, { en: string; ar: string }> = {
-      products: { en: 'Products', ar: 'المنتجات' },
-      page_content: { en: 'Page Content', ar: 'محتوى الصفحة' },
-      reviews: { en: 'Reviews', ar: 'التقييمات' },
-      partners: { en: 'Partners', ar: 'الشركاء' },
-      payment_settings: { en: 'Payment Settings', ar: 'إعدادات الدفع' },
-      coupons: { en: 'Coupons', ar: 'الكوبونات' },
+    const names: Record<string, string> = {
+      products: 'المنتجات',
+      page_content: 'محتوى الصفحة',
+      reviews: 'التقييمات',
+      partners: 'الشركاء',
+      payment_settings: 'إعدادات الدفع',
+      coupons: 'الكوبونات',
+      orders: 'الطلبات',
+      profiles: 'الملفات الشخصية',
     };
-    return names[table || '']?.[language] || table;
+    return names[table || ''] || table;
   };
 
   const getActionName = (action?: string) => {
-    const names: Record<string, { en: string; ar: string }> = {
-      update: { en: 'Update', ar: 'تحديث' },
-      insert: { en: 'Add', ar: 'إضافة' },
-      delete: { en: 'Delete', ar: 'حذف' },
+    const names: Record<string, string> = {
+      update: 'تحديث',
+      insert: 'إضافة',
+      delete: 'حذف',
+      upsert: 'تحديث/إضافة',
     };
-    return names[action || '']?.[language] || action;
+    return names[action || ''] || action;
   };
 
   return (
-    <div className="h-[calc(100vh-200px)] flex flex-col bg-background rounded-xl border border-border overflow-hidden">
+    <div className="h-[calc(100vh-200px)] flex flex-col bg-background rounded-xl border border-border overflow-hidden" dir="rtl">
       {/* Header */}
       <div className="p-4 border-b border-border bg-gradient-to-r from-primary/10 to-secondary/10">
         <div className="flex items-center gap-3">
@@ -253,13 +254,9 @@ const AIAssistant: React.FC = () => {
             <Sparkles className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
-            <h2 className="font-semibold text-foreground">
-              {language === 'en' ? 'AI Assistant' : 'المساعد الذكي'}
-            </h2>
+            <h2 className="font-semibold text-foreground">مساعد TBO الذكي</h2>
             <p className="text-xs text-muted-foreground">
-              {language === 'en' 
-                ? 'Describe what you want to change and I will do it' 
-                : 'صف ما تريد تغييره وسأقوم بتنفيذه'}
+              صف ما تريد تغييره وسأقوم بتنفيذه فوراً
             </p>
           </div>
         </div>
@@ -274,20 +271,18 @@ const AIAssistant: React.FC = () => {
                 <Bot className="w-8 h-8 text-muted-foreground" />
               </div>
               <div>
-                <h3 className="font-medium text-foreground mb-2">
-                  {language === 'en' ? 'How can I help you?' : 'كيف يمكنني مساعدتك؟'}
-                </h3>
+                <h3 className="font-medium text-foreground mb-2">كيف يمكنني مساعدتك؟</h3>
                 <p className="text-sm text-muted-foreground">
-                  {language === 'en' 
-                    ? 'Try saying: "Change the hero title to Welcome to TBO Store" or "Add a new product called Premium Design"'
-                    : 'جرب قول: "غير عنوان الصفحة الرئيسية إلى مرحباً بكم في متجر TBO" أو "أضف منتج جديد اسمه تصميم مميز"'}
+                  أنا مساعدك الذكي لإدارة متجر TBO. يمكنني تعديل المنتجات، المحتوى، التقييمات، الكوبونات، والمزيد!
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {[
-                  language === 'en' ? 'Change hero title' : 'غير عنوان الصفحة',
-                  language === 'en' ? 'Add new product' : 'أضف منتج جديد',
-                  language === 'en' ? 'Update about page' : 'حدث صفحة من نحن',
+                  'غير عنوان الصفحة الرئيسية',
+                  'أضف منتج جديد بسعر 100 ريال',
+                  'أنشئ كوبون خصم 20%',
+                  'عرض جميع الطلبات',
+                  'غير رقم STC Pay',
                 ].map((suggestion, i) => (
                   <Button
                     key={i}
@@ -337,11 +332,11 @@ const AIAssistant: React.FC = () => {
                         ? "bg-primary text-primary-foreground rounded-tr-sm"
                         : "bg-muted rounded-tl-sm"
                     )}>
-                      <p className="text-sm whitespace-pre-wrap" dir={isRTL ? 'rtl' : 'ltr'}>
+                      <p className="text-sm whitespace-pre-wrap" dir="rtl">
                         {message.content || (
                           <span className="flex items-center gap-2">
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            {language === 'en' ? 'Thinking...' : 'جاري التفكير...'}
+                            جاري التفكير...
                           </span>
                         )}
                       </p>
@@ -375,7 +370,7 @@ const AIAssistant: React.FC = () => {
                             onClick={() => executeAction(message.action!, message.id)}
                             className="w-full"
                           >
-                            {language === 'en' ? 'Execute' : 'تنفيذ'}
+                            تنفيذ الإجراء
                           </Button>
                         )}
                         
@@ -383,7 +378,7 @@ const AIAssistant: React.FC = () => {
                           <div className="flex items-center justify-center gap-2 py-2">
                             <Loader2 className="w-4 h-4 animate-spin" />
                             <span className="text-sm text-muted-foreground">
-                              {language === 'en' ? 'Executing...' : 'جاري التنفيذ...'}
+                              جاري التنفيذ...
                             </span>
                           </div>
                         )}
@@ -400,18 +395,6 @@ const AIAssistant: React.FC = () => {
       {/* Input */}
       <div className="p-4 border-t border-border bg-card/50">
         <div className="flex gap-2">
-          <Textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={language === 'en' 
-              ? 'Describe what you want to change...' 
-              : 'صف ما تريد تغييره...'}
-            className="min-h-[44px] max-h-[120px] resize-none"
-            dir={isRTL ? 'rtl' : 'ltr'}
-            disabled={isLoading}
-          />
           <Button
             onClick={sendMessage}
             disabled={!input.trim() || isLoading}
@@ -421,9 +404,19 @@ const AIAssistant: React.FC = () => {
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <Send className={cn("w-5 h-5", isRTL && "rotate-180")} />
+              <Send className="w-5 h-5 rotate-180" />
             )}
           </Button>
+          <Textarea
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="صف ما تريد تغييره... مثال: غير سعر المنتج الأول إلى 150 ريال"
+            className="min-h-[44px] max-h-[120px] resize-none"
+            dir="rtl"
+            disabled={isLoading}
+          />
         </div>
       </div>
     </div>
