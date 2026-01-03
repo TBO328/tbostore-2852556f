@@ -1,23 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Search, Save, Loader2, X,
-  Home, ShoppingBag, Heart, User, Settings, Phone, Mail, MapPin,
-  Star, Package, Truck, CreditCard, Shield, Clock, Check, AlertCircle,
-  ChevronRight, ChevronLeft, Menu, Plus, Minus, Trash2, Pencil, Eye,
-  Facebook, Twitter, Instagram, Youtube, Linkedin, Send, MessageCircle,
-  Bell, Gift, Percent, Tag, Bookmark, Share2, Download, Upload,
-  Camera, Image, Video, Music, FileText, Folder, Archive, Link,
-  Globe, Wifi, Zap, Battery, Sun, Moon, Cloud, Umbrella,
-  Car, Plane, Train, Bus, Bike, Ship, Rocket, Compass,
-  Coffee, Pizza, Apple, Cake, Utensils, Wine, Beer, IceCream,
-  Book, GraduationCap, Award, Trophy, Medal, Target, Flag, Lightbulb,
-  Palette, Brush, Scissors, Ruler, Hammer, Wrench, Key, Lock,
-  Headphones, Speaker, Mic, Radio, Tv, Monitor, Smartphone, Tablet,
-  Watch, Glasses, Shirt, Footprints, Diamond, Crown, Gem, Flower2,
-  TreePine, Mountain, Waves, Flame, Snowflake, Wind, Droplet, Leaf,
-  Activity, Thermometer, Pill, Stethoscope, Syringe, Dna, Brain, Bone
-} from 'lucide-react';
+import { Search, Loader2, Pencil, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -25,140 +8,51 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import type { LucideIcon } from 'lucide-react';
+import { 
+  IconConfig, 
+  getIconByName, 
+  allIconsList, 
+  getDefaultIcons 
+} from '@/hooks/useIcons';
 
-interface IconConfig {
-  id: string;
-  location: string;
-  location_ar: string;
-  icon_name: string;
-}
-
-const allIcons: { name: string; icon: LucideIcon }[] = [
-  { name: 'Home', icon: Home },
-  { name: 'ShoppingBag', icon: ShoppingBag },
-  { name: 'Heart', icon: Heart },
-  { name: 'User', icon: User },
-  { name: 'Settings', icon: Settings },
-  { name: 'Phone', icon: Phone },
-  { name: 'Mail', icon: Mail },
-  { name: 'MapPin', icon: MapPin },
-  { name: 'Star', icon: Star },
-  { name: 'Package', icon: Package },
-  { name: 'Truck', icon: Truck },
-  { name: 'CreditCard', icon: CreditCard },
-  { name: 'Shield', icon: Shield },
-  { name: 'Clock', icon: Clock },
-  { name: 'Check', icon: Check },
-  { name: 'AlertCircle', icon: AlertCircle },
-  { name: 'ChevronRight', icon: ChevronRight },
-  { name: 'ChevronLeft', icon: ChevronLeft },
-  { name: 'Menu', icon: Menu },
-  { name: 'Plus', icon: Plus },
-  { name: 'Minus', icon: Minus },
-  { name: 'Trash2', icon: Trash2 },
-  { name: 'Pencil', icon: Pencil },
-  { name: 'Eye', icon: Eye },
-  { name: 'Facebook', icon: Facebook },
-  { name: 'Twitter', icon: Twitter },
-  { name: 'Instagram', icon: Instagram },
-  { name: 'Youtube', icon: Youtube },
-  { name: 'Linkedin', icon: Linkedin },
-  { name: 'Send', icon: Send },
-  { name: 'MessageCircle', icon: MessageCircle },
-  { name: 'Bell', icon: Bell },
-  { name: 'Gift', icon: Gift },
-  { name: 'Percent', icon: Percent },
-  { name: 'Tag', icon: Tag },
-  { name: 'Bookmark', icon: Bookmark },
-  { name: 'Share2', icon: Share2 },
-  { name: 'Download', icon: Download },
-  { name: 'Upload', icon: Upload },
-  { name: 'Camera', icon: Camera },
-  { name: 'Image', icon: Image },
-  { name: 'Video', icon: Video },
-  { name: 'Music', icon: Music },
-  { name: 'FileText', icon: FileText },
-  { name: 'Folder', icon: Folder },
-  { name: 'Archive', icon: Archive },
-  { name: 'Link', icon: Link },
-  { name: 'Globe', icon: Globe },
-  { name: 'Wifi', icon: Wifi },
-  { name: 'Zap', icon: Zap },
-  { name: 'Battery', icon: Battery },
-  { name: 'Sun', icon: Sun },
-  { name: 'Moon', icon: Moon },
-  { name: 'Cloud', icon: Cloud },
-  { name: 'Umbrella', icon: Umbrella },
-  { name: 'Car', icon: Car },
-  { name: 'Plane', icon: Plane },
-  { name: 'Train', icon: Train },
-  { name: 'Bus', icon: Bus },
-  { name: 'Bike', icon: Bike },
-  { name: 'Ship', icon: Ship },
-  { name: 'Rocket', icon: Rocket },
-  { name: 'Compass', icon: Compass },
-  { name: 'Coffee', icon: Coffee },
-  { name: 'Pizza', icon: Pizza },
-  { name: 'Apple', icon: Apple },
-  { name: 'Cake', icon: Cake },
-  { name: 'Utensils', icon: Utensils },
-  { name: 'Wine', icon: Wine },
-  { name: 'Beer', icon: Beer },
-  { name: 'IceCream', icon: IceCream },
-  { name: 'Book', icon: Book },
-  { name: 'GraduationCap', icon: GraduationCap },
-  { name: 'Award', icon: Award },
-  { name: 'Trophy', icon: Trophy },
-  { name: 'Medal', icon: Medal },
-  { name: 'Target', icon: Target },
-  { name: 'Flag', icon: Flag },
-  { name: 'Lightbulb', icon: Lightbulb },
-  { name: 'Palette', icon: Palette },
-  { name: 'Brush', icon: Brush },
-  { name: 'Scissors', icon: Scissors },
-  { name: 'Ruler', icon: Ruler },
-  { name: 'Hammer', icon: Hammer },
-  { name: 'Wrench', icon: Wrench },
-  { name: 'Key', icon: Key },
-  { name: 'Lock', icon: Lock },
-  { name: 'Headphones', icon: Headphones },
-  { name: 'Speaker', icon: Speaker },
-  { name: 'Mic', icon: Mic },
-  { name: 'Radio', icon: Radio },
-  { name: 'Tv', icon: Tv },
-  { name: 'Monitor', icon: Monitor },
-  { name: 'Smartphone', icon: Smartphone },
-  { name: 'Tablet', icon: Tablet },
-  { name: 'Watch', icon: Watch },
-  { name: 'Glasses', icon: Glasses },
-  { name: 'Shirt', icon: Shirt },
-  { name: 'Footprints', icon: Footprints },
-  { name: 'Diamond', icon: Diamond },
-  { name: 'Crown', icon: Crown },
-  { name: 'Gem', icon: Gem },
-  { name: 'Flower2', icon: Flower2 },
-  { name: 'TreePine', icon: TreePine },
-  { name: 'Mountain', icon: Mountain },
-  { name: 'Waves', icon: Waves },
-  { name: 'Flame', icon: Flame },
-  { name: 'Snowflake', icon: Snowflake },
-  { name: 'Wind', icon: Wind },
-  { name: 'Droplet', icon: Droplet },
-  { name: 'Leaf', icon: Leaf },
-  { name: 'Activity', icon: Activity },
-  { name: 'Thermometer', icon: Thermometer },
-  { name: 'Pill', icon: Pill },
-  { name: 'Stethoscope', icon: Stethoscope },
-  { name: 'Syringe', icon: Syringe },
-  { name: 'Dna', icon: Dna },
-  { name: 'Brain', icon: Brain },
-  { name: 'Bone', icon: Bone },
-];
-
-export const getIconByName = (name: string): LucideIcon => {
-  const found = allIcons.find(i => i.name === name);
-  return found?.icon || Star;
+// Section preview images - using placeholder descriptions
+const sectionPreviews: Record<string, { description_en: string; description_ar: string }> = {
+  'Navbar': { 
+    description_en: 'Top navigation bar with logo, menu links, search, cart, and user profile icons',
+    description_ar: 'شريط التنقل العلوي مع الشعار وروابط القائمة والبحث والسلة وأيقونات الملف الشخصي'
+  },
+  'Hero': { 
+    description_en: 'Main landing section with premium badge and call-to-action buttons',
+    description_ar: 'القسم الرئيسي مع شارة الجودة وأزرار الإجراء'
+  },
+  'Product Card': { 
+    description_en: 'Product display cards with cart, favorites, view, and rating icons',
+    description_ar: 'بطاقات عرض المنتجات مع أيقونات السلة والمفضلة والعرض والتقييم'
+  },
+  'Cart': { 
+    description_en: 'Shopping cart page with quantity controls, delete, payment, and checkout icons',
+    description_ar: 'صفحة سلة التسوق مع أزرار الكمية والحذف والدفع وإتمام الطلب'
+  },
+  'About': { 
+    description_en: 'About section with feature icons: security, delivery, support, and quality',
+    description_ar: 'قسم من نحن مع أيقونات المميزات: الأمان والتوصيل والدعم والجودة'
+  },
+  'Contact': { 
+    description_en: 'Contact page with email, phone, location, hours, and social media icons',
+    description_ar: 'صفحة التواصل مع أيقونات البريد والهاتف والموقع وساعات العمل ووسائل التواصل'
+  },
+  'Footer': { 
+    description_en: 'Page footer with contact info and social media icons',
+    description_ar: 'تذييل الصفحة مع معلومات التواصل وأيقونات وسائل التواصل'
+  },
+  'Reviews': { 
+    description_en: 'Customer reviews section with rating stars and quote icons',
+    description_ar: 'قسم تقييمات العملاء مع نجوم التقييم وأيقونات الاقتباس'
+  },
+  'Authentication': { 
+    description_en: 'Login, logout, and registration pages with user authentication icons',
+    description_ar: 'صفحات الدخول والخروج والتسجيل مع أيقونات المصادقة'
+  },
 };
 
 const IconsManagement: React.FC = () => {
@@ -170,6 +64,7 @@ const IconsManagement: React.FC = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingIcon, setEditingIcon] = useState<IconConfig | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['Navbar']));
 
   const fetchIcons = async () => {
     setLoading(true);
@@ -181,10 +76,20 @@ const IconsManagement: React.FC = () => {
         .single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      
+
       if (data?.metadata) {
         const metadata = data.metadata as { icons?: IconConfig[] };
-        setIcons(metadata.icons || getDefaultIcons());
+        if (metadata.icons && metadata.icons.length > 0) {
+          // Merge saved icons with defaults
+          const savedIconsMap = new Map(metadata.icons.map(i => [i.id, i]));
+          const mergedIcons = getDefaultIcons().map(defaultIcon => {
+            const savedIcon = savedIconsMap.get(defaultIcon.id);
+            return savedIcon ? { ...defaultIcon, icon_name: savedIcon.icon_name } : defaultIcon;
+          });
+          setIcons(mergedIcons);
+        } else {
+          setIcons(getDefaultIcons());
+        }
       } else {
         setIcons(getDefaultIcons());
       }
@@ -196,19 +101,6 @@ const IconsManagement: React.FC = () => {
     }
   };
 
-  const getDefaultIcons = (): IconConfig[] => [
-    { id: '1', location: 'Navbar - Home', location_ar: 'شريط التنقل - الرئيسية', icon_name: 'Home' },
-    { id: '2', location: 'Navbar - Cart', location_ar: 'شريط التنقل - السلة', icon_name: 'ShoppingBag' },
-    { id: '3', location: 'Navbar - Favorites', location_ar: 'شريط التنقل - المفضلة', icon_name: 'Heart' },
-    { id: '4', location: 'Navbar - Profile', location_ar: 'شريط التنقل - الملف الشخصي', icon_name: 'User' },
-    { id: '5', location: 'Footer - Phone', location_ar: 'التذييل - الهاتف', icon_name: 'Phone' },
-    { id: '6', location: 'Footer - Email', location_ar: 'التذييل - البريد', icon_name: 'Mail' },
-    { id: '7', location: 'Footer - Location', location_ar: 'التذييل - الموقع', icon_name: 'MapPin' },
-    { id: '8', location: 'Product - Rating', location_ar: 'المنتج - التقييم', icon_name: 'Star' },
-    { id: '9', location: 'Checkout - Delivery', location_ar: 'الدفع - التوصيل', icon_name: 'Truck' },
-    { id: '10', location: 'Checkout - Payment', location_ar: 'الدفع - الدفع', icon_name: 'CreditCard' },
-  ];
-
   useEffect(() => {
     fetchIcons();
   }, []);
@@ -216,6 +108,7 @@ const IconsManagement: React.FC = () => {
   const handleEdit = (icon: IconConfig) => {
     setEditingIcon(icon);
     setDialogOpen(true);
+    setSearchTerm('');
   };
 
   const handleSelectIcon = async (iconName: string) => {
@@ -223,7 +116,7 @@ const IconsManagement: React.FC = () => {
 
     setSaving(true);
     try {
-      const updatedIcons = icons.map(i => 
+      const updatedIcons = icons.map(i =>
         i.id === editingIcon.id ? { ...i, icon_name: iconName } : i
       );
 
@@ -233,18 +126,23 @@ const IconsManagement: React.FC = () => {
         .eq('page_key', 'icons')
         .single();
 
+      const metadataPayload = JSON.parse(JSON.stringify({ icons: updatedIcons }));
+
       if (checkError && checkError.code === 'PGRST116') {
         const { error } = await supabase
           .from('page_content')
           .insert([{
             page_key: 'icons',
-            metadata: JSON.parse(JSON.stringify({ icons: updatedIcons }))
+            metadata: metadataPayload
           }]);
         if (error) throw error;
       } else if (existingData) {
         const { error } = await supabase
           .from('page_content')
-          .update({ metadata: JSON.parse(JSON.stringify({ icons: updatedIcons })) })
+          .update({ 
+            metadata: metadataPayload,
+            updated_at: new Date().toISOString()
+          })
           .eq('page_key', 'icons');
         if (error) throw error;
       }
@@ -265,9 +163,31 @@ const IconsManagement: React.FC = () => {
     }
   };
 
-  const filteredIcons = allIcons.filter(icon =>
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(section)) {
+        newSet.delete(section);
+      } else {
+        newSet.add(section);
+      }
+      return newSet;
+    });
+  };
+
+  const filteredIcons = allIconsList.filter(icon =>
     icon.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Group icons by section
+  const groupedIcons = icons.reduce((acc, icon) => {
+    const section = icon.section;
+    if (!acc[section]) {
+      acc[section] = [];
+    }
+    acc[section].push(icon);
+    return acc;
+  }, {} as Record<string, IconConfig[]>);
 
   if (loading) {
     return (
@@ -281,39 +201,113 @@ const IconsManagement: React.FC = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-foreground">
-          {language === 'en' ? 'Manage Icons' : 'إدارة الأيقونات'}
+          {language === 'en' ? 'Manage Store Icons' : 'إدارة أيقونات المتجر'}
         </h2>
         <span className="text-sm text-muted-foreground">
           {icons.length} {language === 'en' ? 'icons' : 'أيقونة'}
         </span>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {icons.map((icon) => {
-          const IconComponent = getIconByName(icon.icon_name);
+      <p className="text-muted-foreground mb-6">
+        {language === 'en' 
+          ? 'Click on any icon to change it. Changes will be applied immediately across the store.'
+          : 'اضغط على أي أيقونة لتغييرها. سيتم تطبيق التغييرات فوراً في جميع أنحاء المتجر.'}
+      </p>
+
+      {/* Sections */}
+      <div className="space-y-4">
+        {Object.entries(groupedIcons).map(([section, sectionIcons]) => {
+          const isExpanded = expandedSections.has(section);
+          const sectionInfo = sectionPreviews[section];
+          const sectionAr = sectionIcons[0]?.section_ar || section;
+
           return (
-            <motion.div
-              key={icon.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-card rounded-xl border border-border p-5 hover:border-primary/50 transition-colors cursor-pointer group"
-              onClick={() => handleEdit(icon)}
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                  <IconComponent className="w-7 h-7 text-primary" />
+            <div key={section} className="bg-card rounded-xl border border-border overflow-hidden">
+              {/* Section Header */}
+              <button
+                onClick={() => toggleSection(section)}
+                className="w-full px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    {isExpanded ? (
+                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    )}
+                    <h3 className="font-bold text-foreground text-lg">
+                      {language === 'en' ? section : sectionAr}
+                    </h3>
+                  </div>
+                  <span className="text-sm text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                    {sectionIcons.length} {language === 'en' ? 'icons' : 'أيقونة'}
+                  </span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-foreground text-sm">
-                    {language === 'en' ? icon.location : icon.location_ar}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {icon.icon_name}
-                  </p>
+                <div className="flex -space-x-2">
+                  {sectionIcons.slice(0, 5).map((icon) => {
+                    const IconComponent = getIconByName(icon.icon_name);
+                    return (
+                      <div
+                        key={icon.id}
+                        className="w-8 h-8 rounded-full bg-primary/10 border-2 border-background flex items-center justify-center"
+                      >
+                        <IconComponent className="w-4 h-4 text-primary" />
+                      </div>
+                    );
+                  })}
+                  {sectionIcons.length > 5 && (
+                    <div className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center text-xs font-medium text-muted-foreground">
+                      +{sectionIcons.length - 5}
+                    </div>
+                  )}
                 </div>
-                <Pencil className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-            </motion.div>
+              </button>
+
+              {/* Section Content */}
+              {isExpanded && (
+                <div className="px-6 pb-6 border-t border-border">
+                  {/* Section Description */}
+                  {sectionInfo && (
+                    <div className="mt-4 mb-4 p-4 bg-muted/30 rounded-lg">
+                      <p className="text-sm text-muted-foreground">
+                        📍 {language === 'en' ? sectionInfo.description_en : sectionInfo.description_ar}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Icons Grid */}
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mt-4">
+                    {sectionIcons.map((icon) => {
+                      const IconComponent = getIconByName(icon.icon_name);
+                      return (
+                        <motion.div
+                          key={icon.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-muted/50 rounded-xl p-4 hover:bg-muted transition-colors cursor-pointer group"
+                          onClick={() => handleEdit(icon)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                              <IconComponent className="w-6 h-6 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-foreground text-sm truncate">
+                                {language === 'en' ? icon.location : icon.location_ar}
+                              </h4>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {icon.icon_name}
+                              </p>
+                            </div>
+                            <Pencil className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
@@ -333,12 +327,12 @@ const IconsManagement: React.FC = () => {
                 <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
                   {React.createElement(getIconByName(editingIcon.icon_name), { className: 'w-6 h-6 text-primary' })}
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="font-medium text-foreground">
                     {language === 'en' ? editingIcon.location : editingIcon.location_ar}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {language === 'en' ? 'Current:' : 'الحالية:'} {editingIcon.icon_name}
+                    {language === 'en' ? editingIcon.section : editingIcon.section_ar} • {language === 'en' ? 'Current:' : 'الحالية:'} {editingIcon.icon_name}
                   </p>
                 </div>
               </div>
@@ -377,6 +371,10 @@ const IconsManagement: React.FC = () => {
                 })}
               </div>
             </ScrollArea>
+
+            <p className="text-xs text-muted-foreground text-center">
+              {filteredIcons.length} {language === 'en' ? 'icons available' : 'أيقونة متاحة'}
+            </p>
           </div>
         </DialogContent>
       </Dialog>
