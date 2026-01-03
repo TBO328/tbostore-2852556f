@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Bot, User, Loader2, Sparkles, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, CheckCircle, XCircle, AlertCircle, Image, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   id: string;
@@ -14,6 +15,7 @@ interface Message {
   content: string;
   action?: ActionData;
   actionStatus?: 'pending' | 'success' | 'error';
+  imageUrl?: string;
 }
 
 interface ActionData {
@@ -24,6 +26,13 @@ interface ActionData {
   message?: string;
 }
 
+interface UploadedImage {
+  file: File;
+  preview: string;
+  uploading: boolean;
+  url?: string;
+}
+
 const ADMIN_AI_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-ai`;
 
 const AIAssistant: React.FC = () => {
@@ -32,16 +41,77 @@ const AIAssistant: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const isRTL = language === 'ar';
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'خطأ',
+        description: 'يرجى اختيار ملف صورة صالح',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const preview = URL.createObjectURL(file);
+    setUploadedImage({ file, preview, uploading: false });
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!uploadedImage) return null;
+
+    setIsUploading(true);
+    try {
+      const fileExt = uploadedImage.file.name.split('.').pop();
+      const fileName = `ai-upload-${Date.now()}.${fileExt}`;
+      const filePath = `ai-uploads/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('products')
+        .upload(filePath, uploadedImage.file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('products')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: 'خطأ في رفع الصورة',
+        description: error instanceof Error ? error.message : 'فشل رفع الصورة',
+        variant: 'destructive',
+      });
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removeImage = () => {
+    if (uploadedImage?.preview) {
+      URL.revokeObjectURL(uploadedImage.preview);
+    }
+    setUploadedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const parseAIResponse = (content: string): { text: string; action?: ActionData } => {
     try {
@@ -103,16 +173,32 @@ const AIAssistant: React.FC = () => {
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+    if ((!input.trim() && !uploadedImage) || isLoading) return;
+
+    // Upload image first if present
+    let imageUrl: string | null = null;
+    if (uploadedImage) {
+      imageUrl = await uploadImage();
+      if (!imageUrl && uploadedImage) {
+        // Upload failed, don't send message
+        return;
+      }
+    }
+
+    const messageContent = imageUrl 
+      ? `${input.trim()}\n\n[صورة مرفوعة: ${imageUrl}]`
+      : input.trim();
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input.trim(),
+      content: input.trim() || 'صورة مرفقة',
+      imageUrl: imageUrl || undefined,
     };
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    removeImage();
     setIsLoading(true);
 
     const assistantMessageId = (Date.now() + 1).toString();
@@ -132,7 +218,7 @@ const AIAssistant: React.FC = () => {
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({
-          messages: [...messages, userMessage].map(m => ({
+          messages: [...messages, { role: 'user', content: messageContent }].map(m => ({
             role: m.role,
             content: m.content,
           })),
@@ -332,6 +418,13 @@ const AIAssistant: React.FC = () => {
                         ? "bg-primary text-primary-foreground rounded-tr-sm"
                         : "bg-muted rounded-tl-sm"
                     )}>
+                      {message.imageUrl && (
+                        <img 
+                          src={message.imageUrl} 
+                          alt="صورة مرفقة" 
+                          className="max-w-full h-auto rounded-lg mb-2 max-h-48 object-cover"
+                        />
+                      )}
                       <p className="text-sm whitespace-pre-wrap" dir="rtl">
                         {message.content || (
                           <span className="flex items-center gap-2">
@@ -392,16 +485,37 @@ const AIAssistant: React.FC = () => {
         )}
       </ScrollArea>
 
+      {/* Image Preview */}
+      {uploadedImage && (
+        <div className="px-4 py-2 border-t border-border bg-muted/50">
+          <div className="relative inline-block">
+            <img 
+              src={uploadedImage.preview} 
+              alt="معاينة الصورة" 
+              className="h-20 w-auto rounded-lg object-cover"
+            />
+            <Button
+              variant="destructive"
+              size="icon"
+              className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+              onClick={removeImage}
+            >
+              <X className="w-3 h-3" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Input */}
       <div className="p-4 border-t border-border bg-card/50">
         <div className="flex gap-2">
           <Button
             onClick={sendMessage}
-            disabled={!input.trim() || isLoading}
+            disabled={(!input.trim() && !uploadedImage) || isLoading || isUploading}
             size="icon"
             className="h-[44px] w-[44px] flex-shrink-0"
           >
-            {isLoading ? (
+            {isLoading || isUploading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               <Send className="w-5 h-5 rotate-180" />
@@ -412,11 +526,27 @@ const AIAssistant: React.FC = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="صف ما تريد تغييره... مثال: غير سعر المنتج الأول إلى 150 ريال"
+            placeholder="صف ما تريد تغييره... مثال: استخدم هذه الصورة للمنتج الأول"
             className="min-h-[44px] max-h-[120px] resize-none"
             dir="rtl"
             disabled={isLoading}
           />
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageSelect}
+            accept="image/*"
+            className="hidden"
+          />
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-[44px] w-[44px] flex-shrink-0"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading || !!uploadedImage}
+          >
+            <Image className="w-5 h-5" />
+          </Button>
         </div>
       </div>
     </div>
