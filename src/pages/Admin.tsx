@@ -23,6 +23,7 @@ import PagesManagement from '@/components/admin/PagesManagement';
 import OrdersManagement from '@/components/admin/OrdersManagement';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import IconsManagement from '@/components/admin/IconsManagement';
+import AIAssistant from '@/components/admin/AIAssistant';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -456,6 +457,9 @@ const Admin: React.FC = () => {
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'ai-assistant':
+        return <AIAssistant />;
+      
       case 'orders':
         return <OrdersManagement orders={orders} onRefresh={fetchData} />;
       
