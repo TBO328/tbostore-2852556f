@@ -1,18 +1,23 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Type, Image, Save, Trash2, Undo, MousePointer, Palette, Move } from 'lucide-react';
+import { X, Type, Image, Save, Undo, MousePointer, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useVisualEditor } from '@/contexts/VisualEditorContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 
-interface EditableElement {
+interface HistoryItem {
   element: HTMLElement;
-  type: 'text' | 'image' | 'button' | 'other';
-  bounds: DOMRect;
+  original: string;
+  pageKey: string;
+  contentField: 'text' | 'image';
+}
+
+interface PendingChange {
+  pageKey: string;
+  field: string;
+  value: string;
 }
 
 const VisualEditorOverlay: React.FC = () => {
@@ -20,9 +25,45 @@ const VisualEditorOverlay: React.FC = () => {
   const [editValue, setEditValue] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-  const [history, setHistory] = useState<{ element: HTMLElement; original: string }[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [pendingChanges, setPendingChanges] = useState<PendingChange[]>([]);
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [isCursorVisible, setIsCursorVisible] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+
+  // Detect page key from element or URL
+  const detectPageKey = (element: HTMLElement): string => {
+    // Check for data-page-key attribute on parent elements
+    let current: HTMLElement | null = element;
+    while (current) {
+      const pageKey = current.getAttribute('data-page-key');
+      if (pageKey) return pageKey;
+      current = current.parentElement;
+    }
+
+    // Fallback to URL-based detection
+    const pathname = window.location.pathname;
+    const pathMap: Record<string, string> = {
+      '/': 'hero',
+      '/about': 'about',
+      '/products': 'products',
+      '/cart': 'cart',
+      '/contact': 'contact',
+      '/reviews': 'reviews',
+      '/policies': 'policies',
+      '/favorites': 'favorites',
+      '/profile': 'profile',
+    };
+
+    return pathMap[pathname] || 'hero';
+  };
+
+  // Detect if text is Arabic
+  const isArabicText = (text: string): boolean => {
+    return /[\u0600-\u06FF]/.test(text);
+  };
 
   const getElementType = (element: HTMLElement): 'text' | 'image' | 'button' | 'other' => {
     if (element.tagName === 'IMG') return 'image';
@@ -48,11 +89,32 @@ const VisualEditorOverlay: React.FC = () => {
     return '/' + parts.join('/');
   };
 
+  // Custom cursor tracking
+  useEffect(() => {
+    if (!isEditMode) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setCursorPosition({ x: e.clientX, y: e.clientY });
+      setIsCursorVisible(true);
+    };
+
+    const handleMouseLeave = () => {
+      setIsCursorVisible(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [isEditMode]);
+
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isEditMode) return;
     const target = e.target as HTMLElement;
     
-    // Ignore overlay elements
     if (overlayRef.current?.contains(target)) return;
     if (target.closest('[data-visual-editor-toolbar]')) return;
     
@@ -69,7 +131,6 @@ const VisualEditorOverlay: React.FC = () => {
     
     const target = e.target as HTMLElement;
     
-    // Ignore overlay elements
     if (overlayRef.current?.contains(target)) return;
     if (target.closest('[data-visual-editor-toolbar]')) return;
     
@@ -101,7 +162,7 @@ const VisualEditorOverlay: React.FC = () => {
     if (isEditMode) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('click', handleClick, true);
-      document.body.style.cursor = 'crosshair';
+      document.body.style.cursor = 'none';
     }
     
     return () => {
@@ -114,9 +175,27 @@ const VisualEditorOverlay: React.FC = () => {
   const handleSaveText = () => {
     if (!selectedElement) return;
     
-    setHistory(prev => [...prev, { element: selectedElement.element, original: selectedElement.originalContent }]);
+    const pageKey = detectPageKey(selectedElement.element);
+    const isArabic = isArabicText(editValue);
+    
+    setHistory(prev => [...prev, { 
+      element: selectedElement.element, 
+      original: selectedElement.originalContent,
+      pageKey,
+      contentField: 'text'
+    }]);
+    
+    // Apply change to DOM immediately
     selectedElement.element.innerText = editValue;
-    toast.success('تم تحديث النص بنجاح');
+    
+    // Add to pending changes
+    setPendingChanges(prev => [...prev, {
+      pageKey,
+      field: isArabic ? 'content_ar' : 'content_en',
+      value: editValue,
+    }]);
+    
+    toast.success('تم تحديث النص - اضغط "حفظ للجميع" لحفظ التغييرات');
     setSelectedElement(null);
   };
 
@@ -140,15 +219,94 @@ const VisualEditorOverlay: React.FC = () => {
         .getPublicUrl(fileName);
       
       const newUrl = publicData.publicUrl;
-      setHistory(prev => [...prev, { element: selectedElement.element, original: selectedElement.originalContent }]);
+      const pageKey = detectPageKey(selectedElement.element);
+      
+      setHistory(prev => [...prev, { 
+        element: selectedElement.element, 
+        original: selectedElement.originalContent,
+        pageKey,
+        contentField: 'image'
+      }]);
+      
+      // Apply change to DOM immediately
       (selectedElement.element as HTMLImageElement).src = newUrl;
       setImageUrl(newUrl);
-      toast.success('تم تحديث الصورة بنجاح');
+      
+      // Add to pending changes
+      setPendingChanges(prev => [...prev, {
+        pageKey,
+        field: 'image_url',
+        value: newUrl,
+      }]);
+      
+      toast.success('تم تحديث الصورة - اضغط "حفظ للجميع" لحفظ التغييرات');
     } catch (error) {
       console.error('Error uploading image:', error);
       toast.error('فشل في رفع الصورة');
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // Save all pending changes to database
+  const handleSaveAllToDatabase = async () => {
+    if (pendingChanges.length === 0) {
+      toast.info('لا توجد تغييرات للحفظ');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Group changes by page key
+      const changesByPage = new Map<string, Record<string, string>>();
+      
+      pendingChanges.forEach(change => {
+        const existing = changesByPage.get(change.pageKey) || {};
+        existing[change.field] = change.value;
+        changesByPage.set(change.pageKey, existing);
+      });
+
+      // Save each page's changes
+      for (const [pageKey, updates] of changesByPage) {
+        // Check if page exists
+        const { data: existingPage } = await supabase
+          .from('page_content')
+          .select('id')
+          .eq('page_key', pageKey)
+          .single();
+
+        if (existingPage) {
+          // Update existing
+          const { error } = await supabase
+            .from('page_content')
+            .update({
+              ...updates,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('page_key', pageKey);
+
+          if (error) throw error;
+        } else {
+          // Insert new
+          const { error } = await supabase
+            .from('page_content')
+            .insert({
+              page_key: pageKey,
+              ...updates,
+            });
+
+          if (error) throw error;
+        }
+      }
+
+      setPendingChanges([]);
+      setHistory([]);
+      toast.success('تم حفظ جميع التغييرات بنجاح! التغييرات مرئية للجميع الآن');
+    } catch (error) {
+      console.error('Error saving to database:', error);
+      toast.error('فشل في حفظ التغييرات');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -162,21 +320,46 @@ const VisualEditorOverlay: React.FC = () => {
       last.element.innerText = last.original;
     }
     
+    // Remove corresponding pending change
+    setPendingChanges(prev => prev.slice(0, -1));
     setHistory(prev => prev.slice(0, -1));
     setSelectedElement(null);
     toast.success('تم التراجع عن التغيير');
   };
 
   const handleClose = () => {
+    if (pendingChanges.length > 0) {
+      const confirmClose = window.confirm('لديك تغييرات غير محفوظة. هل تريد الإغلاق بدون حفظ؟');
+      if (!confirmClose) return;
+    }
     disableEditMode();
     setSelectedElement(null);
     setHistory([]);
+    setPendingChanges([]);
   };
 
   if (!isEditMode) return null;
 
   return (
     <>
+      {/* Custom Cursor */}
+      {isCursorVisible && (
+        <div
+          className="fixed pointer-events-none z-[100000]"
+          style={{
+            left: cursorPosition.x,
+            top: cursorPosition.y,
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          {/* Outer circle */}
+          <div className="w-12 h-12 rounded-full border-2 border-[#2dd4bf] flex items-center justify-center bg-transparent">
+            {/* Inner dot */}
+            <div className="w-3 h-3 rounded-full bg-[#2dd4bf]" />
+          </div>
+        </div>
+      )}
+
       {/* Hover Highlight */}
       <AnimatePresence>
         {hoveredElement && !selectedElement && (
@@ -221,6 +404,7 @@ const VisualEditorOverlay: React.FC = () => {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: -100, opacity: 0 }}
         className="fixed top-0 left-0 right-0 z-[9999] bg-card/95 backdrop-blur-xl border-b border-border shadow-2xl"
+        style={{ cursor: 'default' }}
       >
         <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -232,6 +416,18 @@ const VisualEditorOverlay: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-2">
+            {pendingChanges.length > 0 && (
+              <Button 
+                variant="default" 
+                size="sm" 
+                onClick={handleSaveAllToDatabase}
+                disabled={isSaving}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Save className="w-4 h-4 ml-2" />
+                {isSaving ? 'جاري الحفظ...' : `حفظ للجميع (${pendingChanges.length})`}
+              </Button>
+            )}
             {history.length > 0 && (
               <Button variant="outline" size="sm" onClick={handleUndo}>
                 <Undo className="w-4 h-4 ml-2" />
@@ -255,6 +451,7 @@ const VisualEditorOverlay: React.FC = () => {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 100, opacity: 0 }}
             className="fixed top-20 left-4 z-[9999] w-80 bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl p-4"
+            style={{ cursor: 'default' }}
           >
             <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border">
               {selectedElement.type === 'text' ? (
@@ -286,7 +483,7 @@ const VisualEditorOverlay: React.FC = () => {
                 />
                 <Button onClick={handleSaveText} className="w-full">
                   <Save className="w-4 h-4 ml-2" />
-                  حفظ التغييرات
+                  تطبيق التغييرات
                 </Button>
               </div>
             ) : (
@@ -310,7 +507,7 @@ const VisualEditorOverlay: React.FC = () => {
                   className="w-full"
                   disabled={isUploading}
                 >
-                  <Image className="w-4 h-4 ml-2" />
+                  <Upload className="w-4 h-4 ml-2" />
                   {isUploading ? 'جاري الرفع...' : 'اختر صورة جديدة'}
                 </Button>
               </div>

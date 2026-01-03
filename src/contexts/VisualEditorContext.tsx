@@ -5,6 +5,7 @@ interface SelectedElement {
   type: 'text' | 'image' | 'button' | 'other';
   originalContent: string;
   xpath: string;
+  pageKey?: string;
 }
 
 interface VisualEditorContextType {
