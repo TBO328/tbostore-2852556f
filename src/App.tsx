@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
+import { VisualEditorProvider } from "@/contexts/VisualEditorContext";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
@@ -25,6 +26,7 @@ import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
 import PageTransition from "./components/PageTransition";
 import AISupportButton from "./components/AISupportButton";
+import VisualEditorOverlay from "./components/admin/VisualEditorOverlay";
 
 const queryClient = new QueryClient();
 
@@ -64,8 +66,11 @@ const App = () => (
           <BrowserRouter>
             <LanguageProvider>
               <CartProvider>
-                <AnimatedRoutes />
-                <AISupportButton />
+                <VisualEditorProvider>
+                  <AnimatedRoutes />
+                  <VisualEditorOverlay />
+                  <AISupportButton />
+                </VisualEditorProvider>
               </CartProvider>
             </LanguageProvider>
           </BrowserRouter>

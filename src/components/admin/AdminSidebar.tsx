@@ -2,12 +2,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   ShoppingBag, Package, Star, Users, Handshake, 
-  Ticket, Settings, FileText, Home, LogOut, Palette, Sparkles
+  Ticket, Settings, FileText, Home, LogOut, Palette, Sparkles, MousePointer
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
+import { useVisualEditor } from '@/contexts/VisualEditorContext';
 import { cn } from '@/lib/utils';
 
 interface AdminSidebarProps {
@@ -17,6 +18,7 @@ interface AdminSidebarProps {
 
 const menuItems = [
   { id: 'ai-assistant', icon: Sparkles, labelEn: 'AI Assistant', labelAr: 'المساعد الذكي' },
+  { id: 'visual-editor', icon: MousePointer, labelEn: 'Visual Edits', labelAr: 'التحرير المرئي', isSpecial: true },
   { id: 'orders', icon: ShoppingBag, labelEn: 'Orders', labelAr: 'الطلبات' },
   { id: 'products', icon: Package, labelEn: 'Products', labelAr: 'المنتجات' },
   { id: 'reviews', icon: Star, labelEn: 'Reviews', labelAr: 'التقييمات' },
@@ -31,8 +33,18 @@ const menuItems = [
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChange }) => {
   const { language } = useLanguage();
   const { user, signOut } = useAuth();
+  const { enableEditMode } = useVisualEditor();
+  const navigate = useNavigate();
   const isRTL = language === 'ar';
 
+  const handleTabClick = (item: typeof menuItems[0]) => {
+    if (item.id === 'visual-editor') {
+      enableEditMode();
+      navigate('/');
+    } else {
+      onTabChange(item.id);
+    }
+  };
   return (
     <motion.aside
       initial={{ opacity: 0, x: isRTL ? 50 : -50 }}
@@ -59,28 +71,30 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChange }) =
         </Link>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
+          const isSpecial = 'isSpecial' in item && item.isSpecial;
           
           return (
             <button
               key={item.id}
-              onClick={() => onTabChange(item.id)}
+              onClick={() => handleTabClick(item)}
               className={cn(
                 "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
-                isActive
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                isSpecial 
+                  ? "bg-gradient-to-r from-secondary/20 to-primary/20 text-primary border border-primary/30 hover:from-secondary/30 hover:to-primary/30"
+                  : isActive
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
               <span className="font-medium">
                 {language === 'en' ? item.labelEn : item.labelAr}
               </span>
-              {isActive && (
+              {isActive && !isSpecial && (
                 <motion.div
                   layoutId="activeIndicator"
                   className={cn(
