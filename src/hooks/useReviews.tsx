@@ -90,12 +90,37 @@ export const useAdminReviews = () => {
   };
 
   const uploadAvatar = async (file: File): Promise<string | null> => {
-    const fileExt = file.name.split('.').pop();
+    // Validate file type (MIME type, not extension)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      console.error('Invalid file type. Only JPEG, PNG, WebP, and GIF images are allowed.');
+      return null;
+    }
+    
+    // Validate file size - max 5MB
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      console.error('File too large. Maximum size is 5MB.');
+      return null;
+    }
+    
+    // Use MIME type to determine extension instead of trusting filename
+    const mimeToExt: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+      'image/gif': 'gif'
+    };
+    const fileExt = mimeToExt[file.type] || 'jpg';
+    
     const fileName = `review-avatars/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
-      .upload(fileName, file);
+      .upload(fileName, file, {
+        contentType: file.type,
+        upsert: false
+      });
 
     if (uploadError) {
       console.error('Upload error:', uploadError);

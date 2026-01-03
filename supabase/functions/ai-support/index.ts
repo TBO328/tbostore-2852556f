@@ -1,9 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Input validation schema - only allow 'user' and 'assistant' roles, block 'system'
+const MessageSchema = z.object({
+  role: z.enum(['user', 'assistant']),
+  content: z.string().min(1).max(2000),
+});
+
+const RequestSchema = z.object({
+  messages: z.array(MessageSchema).min(1).max(50),
+});
 
 const STORE_CONTEXT = `
 أنت مساعد دعم فني ذكي لمتجر TBO Store. تتحدث بالعربية والإنجليزية.
@@ -57,7 +68,30 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const rawBody = await req.json();
+    
+    // Validate input
+    const validationResult = RequestSchema.safeParse(rawBody);
+    
+    if (!validationResult.success) {
+      console.error('Validation error:', validationResult.error.errors);
+      return new Response(
+        JSON.stringify({ error: 'Invalid input data' }), 
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    const { messages } = validationResult.data;
+    
+    // Additional sanitization - ensure only user/assistant roles and trim content
+    const sanitizedMessages = messages.map(m => ({
+      role: m.role,
+      content: m.content.slice(0, 2000).trim()
+    }));
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -74,7 +108,7 @@ serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: STORE_CONTEXT },
-          ...messages,
+          ...sanitizedMessages,
         ],
         stream: true,
       }),
