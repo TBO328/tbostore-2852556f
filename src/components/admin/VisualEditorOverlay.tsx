@@ -353,9 +353,9 @@ const VisualEditorOverlay: React.FC = () => {
           }}
         >
           {/* Outer circle */}
-          <div className="w-12 h-12 rounded-full border-2 border-[#2dd4bf] flex items-center justify-center bg-transparent">
+          <div className="w-6 h-6 rounded-full border-2 border-[#2dd4bf] flex items-center justify-center bg-transparent">
             {/* Inner dot */}
-            <div className="w-3 h-3 rounded-full bg-[#2dd4bf]" />
+            <div className="w-1.5 h-1.5 rounded-full bg-[#2dd4bf]" />
           </div>
         </div>
       )}
