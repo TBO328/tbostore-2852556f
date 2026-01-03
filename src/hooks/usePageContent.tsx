@@ -3,6 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEffect } from 'react';
 
+interface LocalizedText {
+  en?: string;
+  ar?: string;
+}
+
 interface PageContentMetadata {
   texts?: Record<string, string>;
   images?: Record<string, string>;
@@ -64,17 +69,24 @@ export const usePageContent = (pageKey: string) => {
     };
   }, [pageKey, refetch]);
 
-  // Get text content with fallback
+  // Get text content with fallback - supports both formats
   const getText = (key: string, fallback: string = ''): string => {
-    if (!data?.metadata?.texts) return fallback;
-    const texts = data.metadata.texts;
+    if (!data?.metadata) return fallback;
+    const metadata = data.metadata as Record<string, unknown>;
     
-    // Try language-specific key first
-    const langKey = `${key}_${language}`;
-    if (texts[langKey]) return texts[langKey];
+    // Check if key exists directly in metadata as { en, ar } object
+    const textObj = metadata[key] as LocalizedText | undefined;
+    if (textObj && typeof textObj === 'object' && (textObj.en || textObj.ar)) {
+      return textObj[language] || fallback;
+    }
     
-    // Try generic key
-    if (texts[key]) return texts[key];
+    // Fallback to texts sub-object
+    if (metadata.texts) {
+      const texts = metadata.texts as Record<string, string>;
+      const langKey = `${key}_${language}`;
+      if (texts[langKey]) return texts[langKey];
+      if (texts[key]) return texts[key];
+    }
     
     return fallback;
   };
@@ -161,13 +173,23 @@ export const useMultiplePageContent = (pageKeys: string[]) => {
 
   const getText = (pageKey: string, textKey: string, fallback: string = ''): string => {
     const page = data?.[pageKey];
-    if (!page?.metadata?.texts) return fallback;
+    if (!page?.metadata) return fallback;
     
-    const texts = page.metadata.texts;
-    const langKey = `${textKey}_${language}`;
+    const metadata = page.metadata as Record<string, unknown>;
     
-    if (texts[langKey]) return texts[langKey];
-    if (texts[textKey]) return texts[textKey];
+    // Check if key exists directly in metadata as { en, ar } object
+    const textObj = metadata[textKey] as LocalizedText | undefined;
+    if (textObj && typeof textObj === 'object' && (textObj.en || textObj.ar)) {
+      return textObj[language] || fallback;
+    }
+    
+    // Fallback to texts sub-object
+    if (metadata.texts) {
+      const texts = metadata.texts as Record<string, string>;
+      const langKey = `${textKey}_${language}`;
+      if (texts[langKey]) return texts[langKey];
+      if (texts[textKey]) return texts[textKey];
+    }
     
     return fallback;
   };

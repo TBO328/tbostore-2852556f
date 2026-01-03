@@ -16,17 +16,17 @@ import PartnersStrip from '@/components/PartnersStrip';
 
 const features = [{
   icon: Shield,
-  titleKey: 'feature_secure',
+  titleKey: 'securePayments',
   defaultTitle: { en: 'Secure Payments', ar: 'دفع آمن' },
   color: 'cyan'
 }, {
   icon: Truck,
-  titleKey: 'feature_delivery',
+  titleKey: 'fastDelivery',
   defaultTitle: { en: 'Fast Delivery', ar: 'توصيل سريع' },
   color: 'magenta'
 }, {
   icon: Headphones,
-  titleKey: 'feature_support',
+  titleKey: 'support247',
   defaultTitle: { en: '24/7 Support', ar: 'دعم متواصل' },
   color: 'purple'
 }];
@@ -113,7 +113,7 @@ const Index: React.FC = () => {
                     <Sparkles className="w-5 h-5 text-primary" />
                   </motion.div>
                   <span className="text-sm font-medium text-primary">
-                    {getText('hero', `badge_${language}`, language === 'en' ? 'Premium Quality Products' : 'منتجات عالية الجودة')}
+                    {getText('hero', 'premiumBadge', language === 'en' ? 'Premium Quality Products' : 'منتجات عالية الجودة')}
                   </span>
                 </motion.div>
               </AnimatedSection>
@@ -126,7 +126,7 @@ const Index: React.FC = () => {
                     transition={{ delay: 0.3, duration: 0.6 }}
                     className="text-foreground block"
                   >
-                    {getText('hero', `title_line1_${language}`, t('heroTitle').split('\n')[0])}
+                    {getText('hero', 'heroTitle', t('heroTitle')).split('\n')[0]}
                   </motion.span>
                   <motion.span 
                     initial={{ opacity: 0, y: 30 }}
@@ -134,7 +134,7 @@ const Index: React.FC = () => {
                     transition={{ delay: 0.5, duration: 0.6 }}
                     className="text-gradient-neon glow-text-cyan block mt-2"
                   >
-                    {getText('hero', `title_line2_${language}`, t('heroTitle').split('\n')[1])}
+                    {getText('hero', 'heroTitle', t('heroTitle')).split('\n')[1] || 'TBO STORE'}
                   </motion.span>
                 </h1>
               </AnimatedSection>
@@ -146,7 +146,7 @@ const Index: React.FC = () => {
                   transition={{ delay: 0.7, duration: 0.6 }}
                   className="text-lg md:text-xl text-muted-foreground mb-4"
                 >
-                  {getText('hero', `subtitle_${language}`, t('heroSubtitle'))}
+                  {getText('hero', 'heroSubtitle', t('heroSubtitle'))}
                 </motion.p>
               </AnimatedSection>
 
@@ -157,7 +157,7 @@ const Index: React.FC = () => {
                   transition={{ delay: 0.9, duration: 0.6 }}
                   className="text-base text-muted-foreground/80 max-w-2xl mx-auto mb-10"
                 >
-                  {getText('hero', `description_${language}`, t('heroDescription'))}
+                  {getText('hero', 'heroDescription', t('heroDescription'))}
                 </motion.p>
               </AnimatedSection>
 
@@ -205,27 +205,33 @@ const Index: React.FC = () => {
                     whileHover={{ y: -5, scale: 1.02 }} 
                     className="text-center p-3 rounded-xl bg-primary/5 backdrop-blur-sm border border-primary/10"
                   >
-                    <div className="font-display text-3xl md:text-4xl font-bold text-primary glow-text-cyan">500+</div>
+                    <div className="font-display text-3xl md:text-4xl font-bold text-primary glow-text-cyan">
+                      {getText('hero', 'productsCount', '500+')}
+                    </div>
                     <div className="text-sm text-muted-foreground mt-1">
-                      {getText('hero', `stat_products_${language}`, language === 'en' ? 'Products' : 'منتج')}
+                      {language === 'en' ? 'Products' : 'منتج'}
                     </div>
                   </motion.div>
                   <motion.div 
                     whileHover={{ y: -5, scale: 1.02 }} 
                     className="text-center p-3 rounded-xl bg-secondary/5 backdrop-blur-sm border border-secondary/10"
                   >
-                    <div className="font-display text-3xl md:text-4xl font-bold text-secondary glow-text-magenta">10K+</div>
+                    <div className="font-display text-3xl md:text-4xl font-bold text-secondary glow-text-magenta">
+                      {getText('hero', 'customersCount', '10K+')}
+                    </div>
                     <div className="text-sm text-muted-foreground mt-1">
-                      {getText('hero', `stat_customers_${language}`, language === 'en' ? 'Customers' : 'عميل')}
+                      {language === 'en' ? 'Customers' : 'عميل'}
                     </div>
                   </motion.div>
                   <motion.div 
                     whileHover={{ y: -5, scale: 1.02 }} 
                     className="text-center p-3 rounded-xl bg-accent/5 backdrop-blur-sm border border-accent/10"
                   >
-                    <div className="font-display text-3xl md:text-4xl font-bold text-accent">4.9★</div>
+                    <div className="font-display text-3xl md:text-4xl font-bold text-accent">
+                      {getText('hero', 'ratingValue', '4.9★')}
+                    </div>
                     <div className="text-sm text-muted-foreground mt-1">
-                      {getText('hero', `stat_rating_${language}`, language === 'en' ? 'Rating' : 'تقييم')}
+                      {language === 'en' ? 'Rating' : 'تقييم'}
                     </div>
                   </motion.div>
                 </motion.div>
@@ -270,7 +276,7 @@ const Index: React.FC = () => {
                       <feature.icon className="w-7 h-7" />
                     </motion.div>
                     <span className="font-semibold text-lg text-foreground">
-                      {getText('features', `${feature.titleKey}_${language}`, feature.defaultTitle[language])}
+                      {getText('features', feature.titleKey, feature.defaultTitle[language])}
                     </span>
                   </motion.div>
                 </AnimatedSection>
@@ -288,10 +294,10 @@ const Index: React.FC = () => {
             <AnimatedSection>
               <div className="text-center mb-12">
                 <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
-                  {getText('products_section', `title_${language}`, t('featuredProducts'))}
+                  {getText('products_section', 'featuredProducts', t('featuredProducts'))}
                 </h2>
                 <p className="text-muted-foreground max-w-2xl mx-auto">
-                  {getText('products_section', `subtitle_${language}`, language === 'en' ? 'Discover our handpicked selection of premium products.' : 'اكتشف مجموعتنا المختارة من المنتجات الفاخرة.')}
+                  {getText('products_section', 'featuredDescription', language === 'en' ? 'Discover our handpicked selection of premium products.' : 'اكتشف مجموعتنا المختارة من المنتجات الفاخرة.')}
                 </p>
               </div>
             </AnimatedSection>
@@ -318,7 +324,7 @@ const Index: React.FC = () => {
             }}>
                 <Link to="/products">
                   <Button variant="neon" size="lg" className="group">
-                    {getText('products_section', `button_${language}`, language === 'en' ? 'View All Products' : 'عرض جميع المنتجات')}
+                    {getText('products_section', 'viewAllProducts', language === 'en' ? 'View All Products' : 'عرض جميع المنتجات')}
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
@@ -338,12 +344,12 @@ const Index: React.FC = () => {
             <div className="max-w-3xl mx-auto text-center">
               <AnimatedSection>
                 <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-6">
-                  {getText('about', `title_${language}`, t('aboutTitle'))}
+                  {getText('about', 'aboutTitle', t('aboutTitle'))}
                 </h2>
               </AnimatedSection>
               <AnimatedSection delay={0.1}>
                 <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                  {getText('about', `description_${language}`, t('aboutDescription'))}
+                  {getText('about', 'aboutDescription', t('aboutDescription'))}
                 </p>
               </AnimatedSection>
               <AnimatedSection delay={0.2}>
@@ -354,7 +360,7 @@ const Index: React.FC = () => {
               }}>
                   <Link to="/about">
                     <Button variant="neon" size="lg" className="group">
-                      {getText('about', `button_${language}`, language === 'en' ? 'Learn More' : 'اعرف المزيد')}
+                      {getText('about', 'learnMore', language === 'en' ? 'Learn More' : 'اعرف المزيد')}
                       <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </Link>
@@ -375,10 +381,10 @@ const Index: React.FC = () => {
             <AnimatedSection>
               <div className="text-center mb-12">
                 <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
-                  {getText('reviews_section', `title_${language}`, t('customerReviews'))}
+                  {getText('reviews_section', 'customerReviews', t('customerReviews'))}
                 </h2>
                 <p className="text-muted-foreground">
-                  {getText('reviews_section', `subtitle_${language}`, language === 'en' ? 'What our customers say about us.' : 'ماذا يقول عملاؤنا عنا.')}
+                  {getText('reviews_section', 'reviewsDescription', language === 'en' ? 'What our customers say about us.' : 'ماذا يقول عملاؤنا عنا.')}
                 </p>
               </div>
             </AnimatedSection>
