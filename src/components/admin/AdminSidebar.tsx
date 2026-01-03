@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   ShoppingBag, Package, Star, Users, Handshake, 
-  Ticket, Settings, FileText, Home, LogOut, Palette
+  Ticket, Settings, FileText, Home, LogOut, Palette, Sparkles
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ interface AdminSidebarProps {
 }
 
 const menuItems = [
+  { id: 'ai-assistant', icon: Sparkles, labelEn: 'AI Assistant', labelAr: 'المساعد الذكي' },
   { id: 'orders', icon: ShoppingBag, labelEn: 'Orders', labelAr: 'الطلبات' },
   { id: 'products', icon: Package, labelEn: 'Products', labelAr: 'المنتجات' },
   { id: 'reviews', icon: Star, labelEn: 'Reviews', labelAr: 'التقييمات' },
