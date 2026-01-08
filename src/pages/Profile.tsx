@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Camera, Loader2, LogOut, Key, Save } from 'lucide-react';
+import { User, Camera, Loader2, LogOut, Key, Save, Snowflake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -17,6 +19,7 @@ const Profile: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language, t } = useLanguage();
+  const { winterMode, setWinterMode } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(true);
@@ -311,6 +314,37 @@ const Profile: React.FC = () => {
                 )}
                 {language === 'en' ? 'Save Changes' : 'حفظ التغييرات'}
               </Button>
+            </div>
+
+            {/* Divider */}
+            <div className="my-8 border-t border-border" />
+
+            {/* Experience Customization */}
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-foreground mb-4">
+                {language === 'en' ? 'Customize Experience' : 'تخصيص التجربة'}
+              </h2>
+
+              {/* Winter Mode Toggle */}
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Snowflake className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">
+                      {language === 'en' ? 'Winter Mode' : 'المود الشتوي'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {language === 'en' ? 'Show falling snowflakes effect' : 'عرض تأثير الثلج المتساقط'}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={winterMode}
+                  onCheckedChange={setWinterMode}
+                />
+              </div>
             </div>
 
             {/* Divider */}

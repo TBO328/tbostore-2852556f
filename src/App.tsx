@@ -24,6 +24,7 @@ import Profile from "./pages/Profile";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
+import MyOrders from "./pages/MyOrders";
 import PageTransition from "./components/PageTransition";
 import AISupportButton from "./components/AISupportButton";
 import VisualEditorOverlay from "./components/admin/VisualEditorOverlay";
@@ -51,6 +52,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
         <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
         <Route path="/favorites" element={<PageTransition><Favorites /></PageTransition>} />
+        <Route path="/my-orders" element={<PageTransition><MyOrders /></PageTransition>} />
         <Route path="/checkout/success" element={<PageTransition><CheckoutSuccess /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
