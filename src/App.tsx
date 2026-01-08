@@ -27,6 +27,8 @@ import NotFound from "./pages/NotFound";
 import PageTransition from "./components/PageTransition";
 import AISupportButton from "./components/AISupportButton";
 import VisualEditorOverlay from "./components/admin/VisualEditorOverlay";
+import Snowflakes from "./components/Snowflakes";
+import GlobalCursor from "./components/GlobalCursor";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +69,8 @@ const App = () => (
             <LanguageProvider>
               <CartProvider>
                 <VisualEditorProvider>
+                  <Snowflakes />
+                  <GlobalCursor />
                   <AnimatedRoutes />
                   <VisualEditorOverlay />
                   <AISupportButton />

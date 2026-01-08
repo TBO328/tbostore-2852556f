@@ -519,7 +519,10 @@ const Admin: React.FC = () => {
                         className="w-full"
                         onClick={() => {
                           if (newCategory.value && newCategory.labelEn && newCategory.labelAr) {
-                            setAvailableCategories(prev => [...prev, newCategory]);
+                            const updatedCategories = [...availableCategories, newCategory];
+                            setAvailableCategories(updatedCategories);
+                            // Save to localStorage for syncing with products page
+                            localStorage.setItem('tbo_categories', JSON.stringify(updatedCategories));
                             setNewCategory({ value: '', labelEn: '', labelAr: '' });
                             setCategoryDialogOpen(false);
                             toast({ title: language === 'en' ? 'Category added!' : 'تمت إضافة الفئة!' });

@@ -506,7 +506,7 @@ const PagesManagement: React.FC = () => {
 
       {/* Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="max-w-4xl h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="text-xl">
               {editingPage && (language === 'en' ? editingPage.label_en : editingPage.label_ar)}
@@ -524,7 +524,7 @@ const PagesManagement: React.FC = () => {
                 </TabsTrigger>
               </TabsList>
 
-              <ScrollArea className="flex-1 mt-4">
+              <ScrollArea className="flex-1 h-[calc(85vh-200px)] mt-4">
                 <TabsContent value="texts" className="m-0 space-y-4 pr-4">
                   {editingPage.texts.map((text) => (
                     <div key={text.key} className="bg-muted/30 rounded-xl p-4 border border-border">
