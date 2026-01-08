@@ -6,6 +6,8 @@ interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
+  winterMode: boolean;
+  setWinterMode: (enabled: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -16,18 +18,27 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return (saved as Theme) || 'dark';
   });
 
+  const [winterMode, setWinterMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('winterMode');
+    return saved ? saved === 'true' : true; // Default to enabled
+  });
+
   useEffect(() => {
     localStorage.setItem('theme', theme);
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(theme);
   }, [theme]);
 
+  useEffect(() => {
+    localStorage.setItem('winterMode', String(winterMode));
+  }, [winterMode]);
+
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, winterMode, setWinterMode }}>
       {children}
     </ThemeContext.Provider>
   );

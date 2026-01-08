@@ -49,7 +49,7 @@ const UserMenu: React.FC = () => {
     {
       icon: ShoppingBag,
       label: language === 'en' ? 'My Orders' : 'طلباتي',
-      href: '/profile',
+      href: '/my-orders',
     },
   ];
 
