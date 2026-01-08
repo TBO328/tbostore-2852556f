@@ -6,7 +6,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
 import { supabase } from '@/integrations/supabase/client';
-import { products as localProducts, categories } from '@/data/products';
+import { products as localProducts } from '@/data/products';
 import { Loader2 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -27,15 +27,50 @@ interface DisplayProduct {
   descriptionAr: string;
 }
 
+interface DynamicCategory {
+  value: string;
+  labelEn: string;
+  labelAr: string;
+}
+
 const Products: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState('All');
   const { language } = useLanguage();
   const [products, setProducts] = useState<DisplayProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dynamicCategories, setDynamicCategories] = useState<DynamicCategory[]>([]);
 
   useEffect(() => {
     fetchProducts();
+    loadCategories();
   }, []);
+
+  const loadCategories = () => {
+    // Load categories from localStorage (synced with admin)
+    const savedCategories = localStorage.getItem('tbo_categories');
+    if (savedCategories) {
+      try {
+        const parsed = JSON.parse(savedCategories);
+        setDynamicCategories(parsed);
+      } catch (e) {
+        console.error('Error loading categories:', e);
+        setDynamicCategories([
+          { value: 'Subscriptions', labelEn: 'Subscriptions', labelAr: 'اشتراكات' },
+          { value: 'Designs', labelEn: 'Designs', labelAr: 'تصاميم' },
+          { value: 'Engagement', labelEn: 'Engagement', labelAr: 'تفاعل' },
+          { value: 'Discord', labelEn: 'Discord', labelAr: 'ديسكورد' },
+        ]);
+      }
+    } else {
+      // Default categories
+      setDynamicCategories([
+        { value: 'Subscriptions', labelEn: 'Subscriptions', labelAr: 'اشتراكات' },
+        { value: 'Designs', labelEn: 'Designs', labelAr: 'تصاميم' },
+        { value: 'Engagement', labelEn: 'Engagement', labelAr: 'تفاعل' },
+        { value: 'Discord', labelEn: 'Discord', labelAr: 'ديسكورد' },
+      ]);
+    }
+  };
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -79,6 +114,10 @@ const Products: React.FC = () => {
   };
 
   const getCategoryAr = (category: string): string => {
+    // Check dynamic categories first
+    const dynamicCat = dynamicCategories.find(c => c.value === category);
+    if (dynamicCat) return dynamicCat.labelAr;
+    
     const categoryMap: { [key: string]: string } = {
       'Subscriptions': 'اشتراكات',
       'Designs': 'تصاميم',
@@ -95,19 +134,22 @@ const Products: React.FC = () => {
     return diffDays < 7; // Consider new if created within last 7 days
   };
 
+  // Build categories array dynamically
+  const allCategories = ['All', ...dynamicCategories.map(c => c.value)];
+
   const filteredProducts = activeCategory === 'All'
     ? products
     : products.filter(p => p.category === activeCategory);
 
   const getCategoryLabel = (cat: string) => {
-    const labels: { [key: string]: { en: string; ar: string } } = {
-      'All': { en: 'All', ar: 'الكل' },
-      'Subscriptions': { en: 'Subscriptions', ar: 'اشتراكات' },
-      'Designs': { en: 'Designs', ar: 'تصاميم' },
-      'Engagement': { en: 'Engagement', ar: 'تفاعل' },
-      'Discord': { en: 'Discord', ar: 'ديسكورد' },
-    };
-    return labels[cat]?.[language] || cat;
+    if (cat === 'All') {
+      return language === 'en' ? 'All' : 'الكل';
+    }
+    const dynamicCat = dynamicCategories.find(c => c.value === cat);
+    if (dynamicCat) {
+      return language === 'en' ? dynamicCat.labelEn : dynamicCat.labelAr;
+    }
+    return cat;
   };
 
   return (
@@ -149,7 +191,7 @@ const Products: React.FC = () => {
             {/* Category Filter */}
             <AnimatedSection delay={0.1}>
               <div className="flex flex-wrap justify-center gap-3 mb-12">
-                {categories.map((category) => (
+                {allCategories.map((category) => (
                   <motion.button
                     key={category}
                     onClick={() => setActiveCategory(category)}
