@@ -22,6 +22,7 @@ import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
+import CustomizeExperience from "./pages/CustomizeExperience";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
@@ -52,6 +53,7 @@ const AnimatedRoutes = () => {
         <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
         <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
         <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+        <Route path="/customize" element={<PageTransition><CustomizeExperience /></PageTransition>} />
         <Route path="/favorites" element={<PageTransition><Favorites /></PageTransition>} />
         <Route path="/my-orders" element={<PageTransition><MyOrders /></PageTransition>} />
         <Route path="/checkout/success" element={<PageTransition><CheckoutSuccess /></PageTransition>} />

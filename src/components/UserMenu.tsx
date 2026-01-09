@@ -35,12 +35,12 @@ const UserMenu: React.FC = () => {
       icon: Settings,
       label: language === 'en' ? 'Account Settings' : 'إعدادات الحساب',
       href: '/profile',
-      hash: '#settings',
+      hash: '',
     },
     {
       icon: Sparkles,
       label: language === 'en' ? 'Customize Experience' : 'تخصيص تجربتي',
-      href: '/profile',
+      href: '/customize',
       hash: '#customize',
     },
     {

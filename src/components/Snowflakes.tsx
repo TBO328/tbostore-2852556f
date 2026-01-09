@@ -26,7 +26,7 @@ const Snowflakes: React.FC = () => {
     }
 
     const flakes: Snowflake[] = [];
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 15; i++) {
       flakes.push({
         id: i,
         x: Math.random() * 100,

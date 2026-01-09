@@ -1,28 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Camera, Loader2, LogOut, Key, Save, Snowflake, MousePointer, Sun, Moon } from 'lucide-react';
+import { User, Camera, Loader2, LogOut, Key, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useTheme } from '@/contexts/ThemeContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 const Profile: React.FC = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
-  const { language, t } = useLanguage();
-  const { winterMode, setWinterMode, customCursor, setCustomCursor, theme, toggleTheme } = useTheme();
+  const { language } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const customizeRef = useRef<HTMLDivElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -39,15 +34,6 @@ const Profile: React.FC = () => {
       fetchProfile();
     }
   }, [user, authLoading, navigate]);
-
-  // Scroll to customize section if hash is present
-  useEffect(() => {
-    if (location.hash === '#customize' && customizeRef.current) {
-      setTimeout(() => {
-        customizeRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 300);
-    }
-  }, [location.hash, loading]);
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -112,7 +98,6 @@ const Profile: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
         title: language === 'en' ? 'Invalid File' : 'ملف غير صالح',
@@ -122,7 +107,6 @@ const Profile: React.FC = () => {
       return;
     }
 
-    // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       toast({
         title: language === 'en' ? 'File Too Large' : 'الملف كبير جداً',
@@ -137,23 +121,19 @@ const Profile: React.FC = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/avatar.${fileExt}`;
 
-      // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
 
-      // Add timestamp to bust cache
       const urlWithTimestamp = `${publicUrl}?t=${Date.now()}`;
       setAvatarUrl(urlWithTimestamp);
 
-      // Update profile
       const { error: updateError } = await supabase
         .from('profiles')
         .upsert({
@@ -236,16 +216,16 @@ const Profile: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="bg-card border border-border rounded-2xl p-6 md:p-8 shadow-xl"
+            className="bg-card border border-border rounded-2xl p-5 md:p-8 shadow-xl"
           >
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-8 text-center">
-              {language === 'en' ? 'My Profile' : 'ملفي الشخصي'}
+            <h1 className="text-xl md:text-2xl font-bold text-foreground mb-6 text-center">
+              {language === 'en' ? 'Account Settings' : 'إعدادات الحساب'}
             </h1>
 
             {/* Avatar Section */}
-            <div className="flex flex-col items-center mb-8">
+            <div className="flex flex-col items-center mb-6">
               <div className="relative">
-                <div className="w-28 h-28 rounded-full bg-muted border-4 border-primary/20 overflow-hidden">
+                <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-muted border-4 border-primary/20 overflow-hidden">
                   {avatarUrl ? (
                     <img 
                       src={avatarUrl} 
@@ -254,19 +234,19 @@ const Profile: React.FC = () => {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <User className="w-12 h-12 text-muted-foreground" />
+                      <User className="w-10 h-10 md:w-12 md:h-12 text-muted-foreground" />
                     </div>
                   )}
                 </div>
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadingAvatar}
-                  className="absolute bottom-0 right-0 w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  className="absolute bottom-0 right-0 w-9 h-9 md:w-10 md:h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
                   {uploadingAvatar ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
                   ) : (
-                    <Camera className="w-5 h-5" />
+                    <Camera className="w-4 h-4 md:w-5 md:h-5" />
                   )}
                 </button>
                 <input
@@ -277,16 +257,16 @@ const Profile: React.FC = () => {
                   className="hidden"
                 />
               </div>
-              <p className="text-sm text-muted-foreground mt-3">
+              <p className="text-xs md:text-sm text-muted-foreground mt-3 text-center">
                 {language === 'en' ? 'Click the camera to change your photo' : 'اضغط على الكاميرا لتغيير صورتك'}
               </p>
             </div>
 
             {/* Profile Form */}
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {/* Email (Read-only) */}
               <div className="space-y-2">
-                <Label htmlFor="email">
+                <Label htmlFor="email" className="text-sm">
                   {language === 'en' ? 'Email' : 'البريد الإلكتروني'}
                 </Label>
                 <Input
@@ -294,13 +274,13 @@ const Profile: React.FC = () => {
                   type="email"
                   value={user?.email || ''}
                   disabled
-                  className="bg-muted"
+                  className="bg-muted text-sm"
                 />
               </div>
 
               {/* Full Name */}
               <div className="space-y-2">
-                <Label htmlFor="fullName">
+                <Label htmlFor="fullName" className="text-sm">
                   {language === 'en' ? 'Full Name' : 'الاسم الكامل'}
                 </Label>
                 <Input
@@ -309,6 +289,7 @@ const Profile: React.FC = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder={language === 'en' ? 'Enter your name' : 'أدخل اسمك'}
+                  className="text-sm"
                 />
               </div>
 
@@ -317,6 +298,7 @@ const Profile: React.FC = () => {
                 onClick={handleSaveProfile}
                 disabled={saving}
                 className="w-full"
+                size="default"
               >
                 {saving ? (
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -328,97 +310,17 @@ const Profile: React.FC = () => {
             </div>
 
             {/* Divider */}
-            <div className="my-8 border-t border-border" />
-
-            {/* Experience Customization */}
-            <div className="space-y-4" ref={customizeRef} id="customize">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
-                {language === 'en' ? 'Customize Experience' : 'تخصيص التجربة'}
-              </h2>
-
-              {/* Winter Mode Toggle */}
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Snowflake className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {language === 'en' ? 'Winter Mode' : 'المود الشتوي'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {language === 'en' ? 'Show falling snowflakes effect' : 'عرض تأثير الثلج المتساقط'}
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={winterMode}
-                  onCheckedChange={setWinterMode}
-                />
-              </div>
-
-              {/* Custom Cursor Toggle */}
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <MousePointer className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {language === 'en' ? 'Custom Cursor' : 'المؤشر المخصص'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {language === 'en' ? 'Use custom styled cursor' : 'استخدام المؤشر المخصص'}
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={customCursor}
-                  onCheckedChange={setCustomCursor}
-                />
-              </div>
-
-              {/* Theme Mode Toggle */}
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    {theme === 'dark' ? (
-                      <Moon className="w-5 h-5 text-primary" />
-                    ) : (
-                      <Sun className="w-5 h-5 text-primary" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {language === 'en' ? 'Dark Mode' : 'الوضع الداكن'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {language === 'en' ? 'Switch between light and dark theme' : 'التبديل بين الوضع الفاتح والداكن'}
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={theme === 'dark'}
-                  onCheckedChange={toggleTheme}
-                />
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="my-8 border-t border-border" />
+            <div className="my-6 border-t border-border" />
 
             {/* Account Actions */}
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
-                {language === 'en' ? 'Account Settings' : 'إعدادات الحساب'}
-              </h2>
-
+            <div className="space-y-3">
               {/* Reset Password */}
               <Button
                 variant="outline"
                 onClick={handleResetPassword}
                 disabled={resettingPassword}
-                className="w-full justify-start"
+                className="w-full justify-start text-sm"
+                size="default"
               >
                 {resettingPassword ? (
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -432,7 +334,8 @@ const Profile: React.FC = () => {
               <Button
                 variant="destructive"
                 onClick={handleSignOut}
-                className="w-full justify-start"
+                className="w-full justify-start text-sm"
+                size="default"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 {language === 'en' ? 'Sign Out' : 'تسجيل الخروج'}
