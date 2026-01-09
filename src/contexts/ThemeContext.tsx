@@ -8,6 +8,8 @@ interface ThemeContextType {
   toggleTheme: () => void;
   winterMode: boolean;
   setWinterMode: (enabled: boolean) => void;
+  customCursor: boolean;
+  setCustomCursor: (enabled: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -23,6 +25,11 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return saved ? saved === 'true' : true; // Default to enabled
   });
 
+  const [customCursor, setCustomCursor] = useState<boolean>(() => {
+    const saved = localStorage.getItem('customCursor');
+    return saved ? saved === 'true' : true; // Default to enabled
+  });
+
   useEffect(() => {
     localStorage.setItem('theme', theme);
     document.documentElement.classList.remove('light', 'dark');
@@ -33,12 +40,16 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem('winterMode', String(winterMode));
   }, [winterMode]);
 
+  useEffect(() => {
+    localStorage.setItem('customCursor', String(customCursor));
+  }, [customCursor]);
+
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, winterMode, setWinterMode }}>
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, winterMode, setWinterMode, customCursor, setCustomCursor }}>
       {children}
     </ThemeContext.Provider>
   );

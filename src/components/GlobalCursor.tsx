@@ -1,10 +1,22 @@
 import React, { useEffect, useState } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const GlobalCursor: React.FC = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
+  const { customCursor } = useTheme();
 
   useEffect(() => {
+    if (!customCursor) {
+      // Remove custom cursor styles if disabled
+      document.body.style.cursor = '';
+      const existingStyle = document.getElementById('global-cursor-style');
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+      return;
+    }
+
     const handleMouseMove = (e: MouseEvent) => {
       setPosition({ x: e.clientX, y: e.clientY });
       setIsVisible(true);
@@ -41,9 +53,9 @@ const GlobalCursor: React.FC = () => {
         existingStyle.remove();
       }
     };
-  }, []);
+  }, [customCursor]);
 
-  if (!isVisible) return null;
+  if (!customCursor || !isVisible) return null;
 
   return (
     <div
