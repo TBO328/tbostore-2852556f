@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Package, Ticket, Plus, Pencil, Trash2, Loader2, ShoppingBag, TrendingUp, DollarSign, Upload, Image } from 'lucide-react';
+import { Package, Ticket, Plus, Pencil, Trash2, Loader2, ShoppingBag, TrendingUp, DollarSign, Upload, Image, Menu, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -82,6 +83,8 @@ const Admin: React.FC = () => {
   };
 
   const [activeTab, setActiveTab] = useState('orders');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
   const [products, setProducts] = useState<Product[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -880,76 +883,95 @@ const Admin: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      {/* Mobile Header with Back Button */}
+      {isMobile && !sidebarOpen && (
+        <div className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} z-30 p-3`}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setSidebarOpen(true)}
+            className="bg-card/90 backdrop-blur-sm shadow-lg"
+          >
+            <Menu className="w-5 h-5" />
+          </Button>
+        </div>
+      )}
+
       {/* Sidebar */}
-      <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <AdminSidebar 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab} 
+        isOpen={isMobile ? sidebarOpen : true}
+        onClose={() => setSidebarOpen(false)}
+      />
 
       {/* Main Content */}
-      <main className={`min-h-screen transition-all ${isRTL ? 'mr-64' : 'ml-64'}`}>
-        <div className="p-8">
+      <main className={`min-h-screen transition-all ${isMobile ? '' : (isRTL ? 'mr-64' : 'ml-64')}`}>
+        <div className={`p-4 md:p-8 ${isMobile ? 'pt-16' : ''}`}>
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0 }}
-              className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl p-4 border border-primary/20"
+              className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl md:rounded-2xl p-3 md:p-4 border border-primary/20"
             >
-              <div className="flex items-center justify-between mb-2">
-                <ShoppingBag className="w-5 h-5 text-primary" />
-                <span className="text-xs text-primary bg-primary/20 px-2 py-0.5 rounded-full">
+              <div className="flex items-center justify-between mb-1 md:mb-2">
+                <ShoppingBag className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+                <span className="text-[10px] md:text-xs text-primary bg-primary/20 px-1.5 md:px-2 py-0.5 rounded-full">
                   {language === 'en' ? 'Total' : 'الكل'}
                 </span>
               </div>
-              <p className="text-2xl font-bold text-foreground">{orders.length}</p>
-              <p className="text-xs text-muted-foreground">{language === 'en' ? 'Orders' : 'طلب'}</p>
+              <p className="text-lg md:text-2xl font-bold text-foreground">{orders.length}</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground">{language === 'en' ? 'Orders' : 'طلب'}</p>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 rounded-2xl p-4 border border-yellow-500/20"
+              className="bg-gradient-to-br from-yellow-500/20 to-yellow-500/5 rounded-xl md:rounded-2xl p-3 md:p-4 border border-yellow-500/20"
             >
-              <div className="flex items-center justify-between mb-2">
-                <TrendingUp className="w-5 h-5 text-yellow-500" />
-                <span className="text-xs text-yellow-500 bg-yellow-500/20 px-2 py-0.5 rounded-full">
+              <div className="flex items-center justify-between mb-1 md:mb-2">
+                <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
+                <span className="text-[10px] md:text-xs text-yellow-500 bg-yellow-500/20 px-1.5 md:px-2 py-0.5 rounded-full">
                   {language === 'en' ? 'Pending' : 'معلق'}
                 </span>
               </div>
-              <p className="text-2xl font-bold text-foreground">{pendingOrders}</p>
-              <p className="text-xs text-muted-foreground">{language === 'en' ? 'Awaiting' : 'بانتظار'}</p>
+              <p className="text-lg md:text-2xl font-bold text-foreground">{pendingOrders}</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground">{language === 'en' ? 'Awaiting' : 'بانتظار'}</p>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-gradient-to-br from-green-500/20 to-green-500/5 rounded-2xl p-4 border border-green-500/20"
+              className="bg-gradient-to-br from-green-500/20 to-green-500/5 rounded-xl md:rounded-2xl p-3 md:p-4 border border-green-500/20"
             >
-              <div className="flex items-center justify-between mb-2">
-                <Package className="w-5 h-5 text-green-500" />
-                <span className="text-xs text-green-500 bg-green-500/20 px-2 py-0.5 rounded-full">
+              <div className="flex items-center justify-between mb-1 md:mb-2">
+                <Package className="w-4 h-4 md:w-5 md:h-5 text-green-500" />
+                <span className="text-[10px] md:text-xs text-green-500 bg-green-500/20 px-1.5 md:px-2 py-0.5 rounded-full">
                   {language === 'en' ? 'Done' : 'مكتمل'}
                 </span>
               </div>
-              <p className="text-2xl font-bold text-foreground">{deliveredOrders}</p>
-              <p className="text-xs text-muted-foreground">{language === 'en' ? 'Delivered' : 'تم التسليم'}</p>
+              <p className="text-lg md:text-2xl font-bold text-foreground">{deliveredOrders}</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground">{language === 'en' ? 'Delivered' : 'تم التسليم'}</p>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-gradient-to-br from-secondary/20 to-secondary/5 rounded-2xl p-4 border border-secondary/20"
+              className="bg-gradient-to-br from-secondary/20 to-secondary/5 rounded-xl md:rounded-2xl p-3 md:p-4 border border-secondary/20"
             >
-              <div className="flex items-center justify-between mb-2">
-                <DollarSign className="w-5 h-5 text-secondary" />
-                <span className="text-xs text-secondary bg-secondary/20 px-2 py-0.5 rounded-full">
+              <div className="flex items-center justify-between mb-1 md:mb-2">
+                <DollarSign className="w-4 h-4 md:w-5 md:h-5 text-secondary" />
+                <span className="text-[10px] md:text-xs text-secondary bg-secondary/20 px-1.5 md:px-2 py-0.5 rounded-full">
                   {language === 'en' ? 'Revenue' : 'الإيرادات'}
                 </span>
               </div>
-              <p className="text-2xl font-bold text-foreground">{formatPriceWithSymbol(totalRevenue)}</p>
-              <p className="text-xs text-muted-foreground">{language === 'en' ? 'Total Sales' : 'إجمالي المبيعات'}</p>
+              <p className="text-lg md:text-2xl font-bold text-foreground">{formatPriceWithSymbol(totalRevenue)}</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground">{language === 'en' ? 'Total Sales' : 'إجمالي المبيعات'}</p>
             </motion.div>
           </div>
 
