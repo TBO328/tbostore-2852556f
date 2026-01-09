@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Camera, Loader2, LogOut, Key, Save, Snowflake } from 'lucide-react';
+import { User, Camera, Loader2, LogOut, Key, Save, Snowflake, MousePointer, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,10 +17,12 @@ import Footer from '@/components/Footer';
 const Profile: React.FC = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { language, t } = useLanguage();
-  const { winterMode, setWinterMode } = useTheme();
+  const { winterMode, setWinterMode, customCursor, setCustomCursor, theme, toggleTheme } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const customizeRef = useRef<HTMLDivElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -37,6 +39,15 @@ const Profile: React.FC = () => {
       fetchProfile();
     }
   }, [user, authLoading, navigate]);
+
+  // Scroll to customize section if hash is present
+  useEffect(() => {
+    if (location.hash === '#customize' && customizeRef.current) {
+      setTimeout(() => {
+        customizeRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    }
+  }, [location.hash, loading]);
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -320,7 +331,7 @@ const Profile: React.FC = () => {
             <div className="my-8 border-t border-border" />
 
             {/* Experience Customization */}
-            <div className="space-y-4">
+            <div className="space-y-4" ref={customizeRef} id="customize">
               <h2 className="text-lg font-semibold text-foreground mb-4">
                 {language === 'en' ? 'Customize Experience' : 'تخصيص التجربة'}
               </h2>
@@ -343,6 +354,52 @@ const Profile: React.FC = () => {
                 <Switch
                   checked={winterMode}
                   onCheckedChange={setWinterMode}
+                />
+              </div>
+
+              {/* Custom Cursor Toggle */}
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <MousePointer className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">
+                      {language === 'en' ? 'Custom Cursor' : 'المؤشر المخصص'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {language === 'en' ? 'Use custom styled cursor' : 'استخدام المؤشر المخصص'}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={customCursor}
+                  onCheckedChange={setCustomCursor}
+                />
+              </div>
+
+              {/* Theme Mode Toggle */}
+              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    {theme === 'dark' ? (
+                      <Moon className="w-5 h-5 text-primary" />
+                    ) : (
+                      <Sun className="w-5 h-5 text-primary" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">
+                      {language === 'en' ? 'Dark Mode' : 'الوضع الداكن'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {language === 'en' ? 'Switch between light and dark theme' : 'التبديل بين الوضع الفاتح والداكن'}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={theme === 'dark'}
+                  onCheckedChange={toggleTheme}
                 />
               </div>
             </div>

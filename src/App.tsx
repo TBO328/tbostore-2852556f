@@ -9,6 +9,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { VisualEditorProvider } from "@/contexts/VisualEditorContext";
+import { SeasonalThemeProvider } from "@/contexts/SeasonalThemeContext";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
@@ -63,25 +64,27 @@ const AnimatedRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
-      <CurrencyProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <LanguageProvider>
-              <CartProvider>
-                <VisualEditorProvider>
-                  <Snowflakes />
-                  <GlobalCursor />
-                  <AnimatedRoutes />
-                  <VisualEditorOverlay />
-                  <AISupportButton />
-                </VisualEditorProvider>
-              </CartProvider>
-            </LanguageProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </CurrencyProvider>
+      <SeasonalThemeProvider>
+        <CurrencyProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <LanguageProvider>
+                <CartProvider>
+                  <VisualEditorProvider>
+                    <Snowflakes />
+                    <GlobalCursor />
+                    <AnimatedRoutes />
+                    <VisualEditorOverlay />
+                    <AISupportButton />
+                  </VisualEditorProvider>
+                </CartProvider>
+              </LanguageProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        </CurrencyProvider>
+      </SeasonalThemeProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

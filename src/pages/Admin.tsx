@@ -24,6 +24,7 @@ import OrdersManagement from '@/components/admin/OrdersManagement';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import IconsManagement from '@/components/admin/IconsManagement';
 import AIAssistant from '@/components/admin/AIAssistant';
+import SeasonalThemesManagement from '@/components/admin/SeasonalThemesManagement';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -710,6 +711,9 @@ const Admin: React.FC = () => {
 
       case 'icons':
         return <IconsManagement />;
+
+      case 'seasonal-themes':
+        return <SeasonalThemesManagement />;
 
       case 'coupons':
         return (
