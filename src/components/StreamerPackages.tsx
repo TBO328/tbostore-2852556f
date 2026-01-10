@@ -1,69 +1,75 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCart } from '@/contexts/CartContext';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
-interface PackageFeature {
-  text: string;
-}
+import packageCustom from '@/assets/package-custom.png';
+import packageTboPlus from '@/assets/package-tbo-plus.png';
+import packageStandard from '@/assets/package-standard.png';
 
 interface StreamerPackage {
   id: string;
-  title: string;
-  subtitle: string;
-  price?: string;
-  badge?: string;
-  features?: PackageFeature[];
-  description?: string;
-  isPrimary?: boolean;
-  isCustom?: boolean;
+  name: string;
+  nameAr: string;
+  nameEn: string;
+  price: number;
+  image: string;
 }
 
 const StreamerPackages: React.FC = () => {
   const { language } = useLanguage();
+  const { addToCart, triggerFlyAnimation } = useCart();
 
+  // Order: Custom (left), TBO+ (center), Standard (right)
   const packages: StreamerPackage[] = [
     {
-      id: 'custom',
-      title: 'الباقة',
-      subtitle: 'المخصصة',
-      isCustom: true,
-      description: 'ميزة الباقة المخصصة لك تصميم عرض يناسب احتياجاتك تماماً، من خلال اختيار المحتويات اللي تهمك فقط. هذا الخيار الذكي يقلل من التكاليف الزائدة ويوفر لك قيمة أعلى مقابل سعر أقل. الباقة مصممة إلى ميزانيتك وتمنحك حرية اختيار الأدوات اللي تحتاجها بجودة عالية وتكلفة مدروسة',
+      id: 'package-custom',
+      name: 'Custom Package',
+      nameAr: 'الباقة المخصصة',
+      nameEn: 'Custom Package',
+      price: 0,
+      image: packageCustom,
     },
     {
-      id: 'tbo-plus',
-      title: 'باقة',
-      subtitle: 'TBO +',
-      price: '44.99 $',
-      badge: 'الأكثر طلباً',
-      isPrimary: true,
-      features: [
-        { text: 'بداية بث متحركة' },
-        { text: 'نهاية بث متحركة' },
-        { text: 'جست تشاتينق متحرك' },
-        { text: 'بادجات السبسكرايب' },
-        { text: 'بنر تويتش او كيك' },
-        { text: 'شعار احترف او رمزي متحرك' },
-        { text: 'صورة اوفلاين ستريم' },
-        { text: 'انتقاليات بين المشاهد متحركة' },
-      ],
+      id: 'package-tbo-plus',
+      name: 'TBO+ Package',
+      nameAr: 'باقة TBO+',
+      nameEn: 'TBO+ Package',
+      price: 44.99,
+      image: packageTboPlus,
     },
     {
-      id: 'standard',
-      title: 'الباقة',
-      subtitle: 'العادية',
-      price: '14.99 $',
-      badge: 'إقتصادية',
-      features: [
-        { text: 'شعار احترف او رمزي ثابت' },
-        { text: 'بنر تويتش او كيك' },
-        { text: 'بادجات السبسكرايب' },
-        { text: 'انتقاليات بين المشاهد متحركة' },
-        { text: 'جست تشاتينق ثابت' },
-        { text: 'صورة اوفلاين ستريم' },
-      ],
+      id: 'package-standard',
+      name: 'Standard Package',
+      nameAr: 'الباقة العادية',
+      nameEn: 'Standard Package',
+      price: 14.99,
+      image: packageStandard,
     },
   ];
+
+  const handleAddToCart = (pkg: StreamerPackage, event: React.MouseEvent<HTMLButtonElement>) => {
+    if (pkg.price === 0) {
+      toast.info(language === 'en' ? 'Contact us for custom package pricing' : 'تواصل معنا لتسعير الباقة المخصصة');
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    triggerFlyAnimation({ x: rect.left + rect.width / 2, y: rect.top }, pkg.image);
+
+    addToCart({
+      id: pkg.id,
+      name: pkg.nameEn,
+      nameAr: pkg.nameAr,
+      price: pkg.price,
+      image: pkg.image,
+    });
+
+    toast.success(language === 'en' ? 'Added to cart!' : 'تمت الإضافة للسلة!');
+  };
 
   return (
     <div className="py-12">
@@ -86,91 +92,35 @@ const StreamerPackages: React.FC = () => {
       </motion.div>
 
       {/* Packages Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto px-4" dir="rtl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto px-4" dir="rtl">
         {packages.map((pkg, index) => (
           <motion.div
             key={pkg.id}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className={`relative rounded-xl overflow-hidden ${
-              pkg.isCustom 
-                ? 'bg-gradient-to-b from-[#3d9a9a] to-[#2a7a7a]' 
-                : 'bg-[#e8e8e8]'
-            }`}
-            style={{
-              minHeight: pkg.isCustom ? '380px' : '420px'
-            }}
+            className="flex flex-col items-center"
           >
-            <div className="p-5 h-full flex flex-col">
-              {/* Badge & Price Row */}
-              <div className="flex justify-between items-start mb-2">
-                {pkg.badge && (
-                  <span className={`text-xs px-3 py-1 rounded-full font-medium ${
-                    pkg.isPrimary 
-                      ? 'bg-[#3d9a9a] text-white' 
-                      : 'bg-[#d0d0d0] text-[#555]'
-                  }`}>
-                    {pkg.badge}
-                  </span>
-                )}
-                {!pkg.badge && <div />}
-                {pkg.price && (
-                  <span className="text-base font-bold text-[#2d8a8a]">{pkg.price}</span>
-                )}
-              </div>
-
-              {/* Title Section */}
-              <div className="text-center mt-2 mb-4">
-                <p className={`text-sm mb-0.5 ${pkg.isCustom ? 'text-white/90' : 'text-[#555]'}`}>
-                  {pkg.title}
-                </p>
-                <h3 className={`text-3xl font-bold ${
-                  pkg.isCustom 
-                    ? 'text-[#7dd3d3] italic' 
-                    : pkg.isPrimary 
-                      ? 'text-[#2d8a8a]' 
-                      : 'text-[#2d8a8a]'
-                }`} style={{ fontFamily: pkg.isCustom ? 'serif' : 'inherit' }}>
-                  {pkg.subtitle}
-                </h3>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1">
-                {pkg.isCustom ? (
-                  <p className="text-sm leading-relaxed text-white/90 text-center px-2">
-                    {pkg.description}
-                  </p>
-                ) : (
-                  <div>
-                    <p className="text-sm font-medium mb-3 text-center text-[#333]">الباقة تشمل :</p>
-                    <ul className="space-y-2">
-                      {pkg.features?.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-2 text-sm text-[#444]">
-                          <div className="w-5 h-5 rounded-full bg-[#2d8a8a] flex items-center justify-center flex-shrink-0">
-                            <Check className="w-3 h-3 text-white" strokeWidth={3} />
-                          </div>
-                          <span>{feature.text}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-
-              {/* Logo at bottom */}
-              <div className="flex justify-center mt-4 pt-2">
-                <div className={`text-2xl font-bold ${pkg.isCustom ? 'text-white' : 'text-[#2d8a8a]'}`}>
-                  <svg width="30" height="35" viewBox="0 0 30 35" fill="none">
-                    <path 
-                      d="M15 0L30 8V12H0V8L15 0ZM3 15H12V35H3V15ZM18 15H27V35H18V15Z" 
-                      fill={pkg.isCustom ? 'white' : '#2d8a8a'}
-                    />
-                  </svg>
-                </div>
-              </div>
+            {/* Package Image */}
+            <div className="relative w-full max-w-[320px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <img 
+                src={pkg.image} 
+                alt={language === 'en' ? pkg.nameEn : pkg.nameAr}
+                className="w-full h-auto object-contain"
+              />
             </div>
+
+            {/* Add to Cart Button */}
+            <Button
+              onClick={(e) => handleAddToCart(pkg, e)}
+              className="mt-4 bg-[#2d8a8a] hover:bg-[#247070] text-white px-6 py-2 rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105"
+            >
+              <ShoppingCart className="w-4 h-4" />
+              {pkg.price === 0 
+                ? (language === 'en' ? 'Contact Us' : 'تواصل معنا')
+                : (language === 'en' ? 'Add to Cart' : 'أضف للسلة')
+              }
+            </Button>
           </motion.div>
         ))}
       </div>
