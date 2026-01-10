@@ -92,7 +92,7 @@ const StreamerPackages: React.FC = () => {
       </motion.div>
 
       {/* Packages Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto px-4" dir="rtl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4" dir="rtl">
         {packages.map((pkg, index) => (
           <motion.div
             key={pkg.id}
@@ -102,7 +102,7 @@ const StreamerPackages: React.FC = () => {
             className="flex flex-col items-center"
           >
             {/* Package Image */}
-            <div className="relative w-full max-w-[320px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="relative w-full max-w-[400px]">
               <img 
                 src={pkg.image} 
                 alt={language === 'en' ? pkg.nameEn : pkg.nameAr}
