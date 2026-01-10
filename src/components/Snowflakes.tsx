@@ -1,23 +1,19 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState, useRef } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface Snowflake {
   id: number;
   x: number;
-  y: number;
   delay: number;
   duration: number;
   size: number;
   opacity: number;
-  velocityX: number;
-  velocityY: number;
 }
 
 const Snowflakes: React.FC = () => {
   const { winterMode } = useTheme();
   const [snowflakes, setSnowflakes] = useState<Snowflake[]>([]);
-  const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!winterMode) {
@@ -26,83 +22,104 @@ const Snowflakes: React.FC = () => {
     }
 
     const flakes: Snowflake[] = [];
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 12; i++) {
       flakes.push({
         id: i,
         x: Math.random() * 100,
-        y: Math.random() * -100,
-        delay: Math.random() * 5,
-        duration: 10 + Math.random() * 10,
-        size: 10 + Math.random() * 14,
-        opacity: 0.4 + Math.random() * 0.4,
-        velocityX: 0,
-        velocityY: 0,
+        delay: Math.random() * 8,
+        duration: 12 + Math.random() * 8,
+        size: 12 + Math.random() * 10,
+        opacity: 0.3 + Math.random() * 0.4,
       });
     }
     setSnowflakes(flakes);
   }, [winterMode]);
 
-  // Track mouse position
+  // Handle mouse interaction with CSS transforms only
   useEffect(() => {
-    if (!winterMode) return;
+    if (!winterMode || !containerRef.current) return;
+
+    let mouseX = -1000;
+    let mouseY = -1000;
+    let rafId: number;
 
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
+      mouseX = e.clientX;
+      mouseY = e.clientY;
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [winterMode]);
+    const updateSnowflakes = () => {
+      if (!containerRef.current) return;
+      
+      const flakeElements = containerRef.current.querySelectorAll('.snowflake');
+      flakeElements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        const flakeCenterX = rect.left + rect.width / 2;
+        const flakeCenterY = rect.top + rect.height / 2;
 
-  // Handle cursor interaction with snowflakes
-  const handleSnowflakeInteraction = useCallback((flakeId: number, flakeRef: HTMLDivElement | null) => {
-    if (!flakeRef || mousePos.x === -1000) return;
+        const dx = flakeCenterX - mouseX;
+        const dy = flakeCenterY - mouseY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
 
-    const rect = flakeRef.getBoundingClientRect();
-    const flakeCenterX = rect.left + rect.width / 2;
-    const flakeCenterY = rect.top + rect.height / 2;
+        if (distance < 60) {
+          const force = (60 - distance) / 60;
+          const angle = Math.atan2(dy, dx);
+          const pushX = Math.cos(angle) * force * 25;
+          const pushY = Math.sin(angle) * force * 25;
+          (el as HTMLElement).style.setProperty('--push-x', `${pushX}px`);
+          (el as HTMLElement).style.setProperty('--push-y', `${pushY}px`);
+        } else {
+          (el as HTMLElement).style.setProperty('--push-x', '0px');
+          (el as HTMLElement).style.setProperty('--push-y', '0px');
+        }
+      });
 
-    const dx = flakeCenterX - mousePos.x;
-    const dy = flakeCenterY - mousePos.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+      rafId = requestAnimationFrame(updateSnowflakes);
+    };
 
-    // If cursor is close to the snowflake, push it away
-    if (distance < 80) {
-      const force = (80 - distance) / 80;
-      const angle = Math.atan2(dy, dx);
-      const pushX = Math.cos(angle) * force * 30;
-      const pushY = Math.sin(angle) * force * 30;
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    rafId = requestAnimationFrame(updateSnowflakes);
 
-      flakeRef.style.transform = `translate(${pushX}px, ${pushY}px)`;
-      flakeRef.style.transition = 'transform 0.2s ease-out';
-    } else {
-      flakeRef.style.transform = '';
-      flakeRef.style.transition = 'transform 0.5s ease-out';
-    }
-  }, [mousePos]);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(rafId);
+    };
+  }, [winterMode, snowflakes.length]);
 
   if (!winterMode || snowflakes.length === 0) return null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
+    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
+      <style>{`
+        @keyframes snowfall {
+          0% {
+            transform: translateY(-30px) translateX(var(--push-x, 0px)) rotate(0deg);
+          }
+          25% {
+            transform: translateY(27.5vh) translateX(calc(20px + var(--push-x, 0px))) rotate(90deg);
+          }
+          50% {
+            transform: translateY(55vh) translateX(calc(-20px + var(--push-x, 0px))) rotate(180deg);
+          }
+          75% {
+            transform: translateY(82.5vh) translateX(calc(10px + var(--push-x, 0px))) rotate(270deg);
+          }
+          100% {
+            transform: translateY(110vh) translateX(var(--push-x, 0px)) rotate(360deg);
+          }
+        }
+        .snowflake {
+          --push-x: 0px;
+          --push-y: 0px;
+          will-change: transform;
+          animation: snowfall var(--duration) linear infinite;
+          animation-delay: var(--delay);
+        }
+      `}</style>
       {snowflakes.map((flake) => (
-        <motion.div
+        <div
           key={flake.id}
-          ref={(ref) => {
-            if (ref) {
-              // Check interaction on each frame
-              const checkInteraction = () => {
-                handleSnowflakeInteraction(flake.id, ref);
-                requestAnimationFrame(checkInteraction);
-              };
-              // Only start if not already running
-              if (!ref.dataset.animating) {
-                ref.dataset.animating = 'true';
-                checkInteraction();
-              }
-            }
-          }}
-          className="absolute select-none"
+          className="snowflake absolute select-none"
           style={{
             left: `${flake.x}%`,
             top: -30,
@@ -110,26 +127,12 @@ const Snowflakes: React.FC = () => {
             opacity: flake.opacity,
             color: 'white',
             textShadow: '0 0 5px rgba(255,255,255,0.5)',
-          }}
-          animate={{
-            y: ['0vh', '110vh'],
-            x: [0, Math.sin(flake.id * 0.5) * 40, Math.sin(flake.id * 0.5 + 2) * -40, 0],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: flake.duration,
-            delay: flake.delay,
-            repeat: Infinity,
-            ease: 'linear',
-            x: {
-              duration: flake.duration / 2,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }
+            ['--duration' as string]: `${flake.duration}s`,
+            ['--delay' as string]: `${flake.delay}s`,
           }}
         >
           ❄
-        </motion.div>
+        </div>
       ))}
     </div>
   );
