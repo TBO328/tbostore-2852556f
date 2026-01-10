@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { products as localProducts } from '@/data/products';
 import { Loader2 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
+import StreamerPackages from '@/components/StreamerPackages';
 
 type DBProduct = Tables<'products'>;
 
@@ -215,24 +216,33 @@ const Products: React.FC = () => {
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
             ) : (
-              /* Products Grid */
-              <motion.div 
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                layout
-              >
-                {filteredProducts.map((product, index) => (
-                  <motion.div
-                    key={product.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{ delay: index * 0.05, duration: 0.4 }}
-                    layout
-                  >
-                    <ProductCard product={product} />
-                  </motion.div>
-                ))}
-              </motion.div>
+              <>
+                {/* Streamer Packages - Show only for Designs category */}
+                {activeCategory === 'Designs' && (
+                  <AnimatedSection delay={0.2}>
+                    <StreamerPackages />
+                  </AnimatedSection>
+                )}
+
+                {/* Products Grid */}
+                <motion.div 
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                  layout
+                >
+                  {filteredProducts.map((product, index) => (
+                    <motion.div
+                      key={product.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      transition={{ delay: index * 0.05, duration: 0.4 }}
+                      layout
+                    >
+                      <ProductCard product={product} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </>
             )}
 
             {/* Empty State */}
