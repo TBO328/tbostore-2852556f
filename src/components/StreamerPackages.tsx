@@ -1,10 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingCart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useCart } from '@/contexts/CartContext';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 
 import packageCustom from '@/assets/package-custom.png';
 import packageTboPlus from '@/assets/package-tbo-plus.png';
@@ -21,7 +18,7 @@ interface StreamerPackage {
 
 const StreamerPackages: React.FC = () => {
   const { language } = useLanguage();
-  const { addToCart, triggerFlyAnimation } = useCart();
+  const navigate = useNavigate();
 
   // Order: Custom (left), TBO+ (center), Standard (right) - Prices in USD
   const packages: StreamerPackage[] = [
@@ -51,24 +48,8 @@ const StreamerPackages: React.FC = () => {
     },
   ];
 
-  const handleAddToCart = (pkg: StreamerPackage, event: React.MouseEvent<HTMLButtonElement>) => {
-    if (pkg.price === 0) {
-      toast.info(language === 'en' ? 'Contact us for custom package pricing' : 'تواصل معنا لتسعير الباقة المخصصة');
-      return;
-    }
-
-    const rect = event.currentTarget.getBoundingClientRect();
-    triggerFlyAnimation({ x: rect.left + rect.width / 2, y: rect.top }, pkg.image);
-
-    addToCart({
-      id: pkg.id,
-      name: pkg.nameEn,
-      nameAr: pkg.nameAr,
-      price: pkg.price,
-      image: pkg.image,
-    });
-
-    toast.success(language === 'en' ? 'Added to cart!' : 'تمت الإضافة للسلة!');
+  const handlePackageClick = (pkg: StreamerPackage) => {
+    navigate(`/streamer-package/${pkg.id}`);
   };
 
   return (
@@ -104,7 +85,8 @@ const StreamerPackages: React.FC = () => {
               transition: { duration: 0.3 } 
             }}
             whileTap={{ scale: 0.98 }}
-            className="flex flex-col items-center cursor-pointer"
+            onClick={() => handlePackageClick(pkg)}
+            className="flex flex-col items-center cursor-pointer group"
           >
             {/* Package Image */}
             <motion.div 
@@ -117,25 +99,22 @@ const StreamerPackages: React.FC = () => {
               <img 
                 src={pkg.image} 
                 alt={language === 'en' ? pkg.nameEn : pkg.nameAr}
-                className="w-full h-auto object-contain drop-shadow-2xl"
+                className="w-full h-auto object-contain drop-shadow-2xl transition-transform duration-300 group-hover:drop-shadow-[0_20px_50px_rgba(0,212,170,0.3)]"
               />
             </motion.div>
 
-            {/* Add to Cart Button */}
+            {/* Price Tag */}
             <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-4 px-6 py-2 bg-primary/10 border border-primary/30 rounded-full"
             >
-              <Button
-                onClick={(e) => handleAddToCart(pkg, e)}
-                className="mt-6 bg-[#2d8a8a] hover:bg-[#247070] text-white px-8 py-3 rounded-full flex items-center gap-2 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <ShoppingCart className="w-5 h-5" />
+              <span className="text-primary font-bold text-lg">
                 {pkg.price === 0 
                   ? (language === 'en' ? 'Contact Us' : 'تواصل معنا')
-                  : (language === 'en' ? `Add to Cart - $${pkg.price.toFixed(2)}` : `أضف للسلة - $${pkg.price.toFixed(2)}`)
+                  : `$${pkg.price.toFixed(2)}`
                 }
-              </Button>
+              </span>
             </motion.div>
           </motion.div>
         ))}

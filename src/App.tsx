@@ -13,6 +13,7 @@ import { SeasonalThemeProvider } from "@/contexts/SeasonalThemeContext";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
+import StreamerPackageDetail from "./pages/StreamerPackageDetail";
 import About from "./pages/About";
 import Reviews from "./pages/Reviews";
 import Contact from "./pages/Contact";
@@ -44,6 +45,7 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<PageTransition><Index /></PageTransition>} />
         <Route path="/products" element={<PageTransition><Products /></PageTransition>} />
         <Route path="/product/:id" element={<PageTransition><ProductDetail /></PageTransition>} />
+        <Route path="/streamer-package/:id" element={<PageTransition><StreamerPackageDetail /></PageTransition>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
         <Route path="/reviews" element={<PageTransition><Reviews /></PageTransition>} />
         <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
