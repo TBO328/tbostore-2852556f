@@ -85,9 +85,36 @@ const StreamerPackageDetail: React.FC = () => {
   const [logoPreview, setLogoPreview] = useState<string>('');
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [customHex, setCustomHex] = useState<string>('');
+  const [hexError, setHexError] = useState<string>('');
   const [showCustomHex, setShowCustomHex] = useState(false);
   const [installLocation, setInstallLocation] = useState<string>('');
   const [contactMethod, setContactMethod] = useState<string>('');
+
+  // Validate HEX color format
+  const isValidHex = (hex: string): boolean => {
+    const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+    return hexRegex.test(hex);
+  };
+
+  const handleHexChange = (value: string) => {
+    // Auto-add # if user doesn't include it
+    let formattedValue = value;
+    if (value && !value.startsWith('#')) {
+      formattedValue = '#' + value;
+    }
+    setCustomHex(formattedValue);
+    
+    // Validate and show error
+    if (formattedValue && formattedValue !== '#') {
+      if (!isValidHex(formattedValue)) {
+        setHexError(language === 'ar' ? 'صيغة HEX غير صحيحة (مثال: #FF0000)' : 'Invalid HEX format (e.g., #FF0000)');
+      } else {
+        setHexError('');
+      }
+    } else {
+      setHexError('');
+    }
+  };
 
   const pkg = id ? packages[id] : null;
 
@@ -146,6 +173,10 @@ const StreamerPackageDetail: React.FC = () => {
     }
     if (!selectedColor && !customHex) {
       toast.error(language === 'ar' ? 'يرجى اختيار اللون' : 'Please select a color');
+      return;
+    }
+    if (selectedColor === 'custom' && customHex && !isValidHex(customHex)) {
+      toast.error(language === 'ar' ? 'صيغة HEX غير صحيحة' : 'Invalid HEX color format');
       return;
     }
     if (!installLocation) {
@@ -347,21 +378,32 @@ const StreamerPackageDetail: React.FC = () => {
                           exit={{ opacity: 0, height: 0 }}
                           className="overflow-hidden"
                         >
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className="text-muted-foreground font-mono">HEX:</span>
-                            <Input
-                              type="text"
-                              placeholder="#000000"
-                              value={customHex}
-                              onChange={(e) => setCustomHex(e.target.value)}
-                              className="w-32 font-mono"
-                              maxLength={7}
-                            />
-                            {customHex && (
-                              <div 
-                                className="w-8 h-8 rounded border border-border"
-                                style={{ backgroundColor: customHex }}
+                          <div className="flex flex-col gap-2 mt-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted-foreground font-mono">HEX:</span>
+                              <Input
+                                type="text"
+                                placeholder="#000000"
+                                value={customHex}
+                                onChange={(e) => handleHexChange(e.target.value)}
+                                className={`w-32 font-mono ${hexError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                                maxLength={7}
                               />
+                              {customHex && isValidHex(customHex) && (
+                                <div 
+                                  className="w-8 h-8 rounded border border-border"
+                                  style={{ backgroundColor: customHex }}
+                                />
+                              )}
+                            </div>
+                            {hexError && (
+                              <motion.p
+                                initial={{ opacity: 0, y: -5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="text-sm text-destructive"
+                              >
+                                {hexError}
+                              </motion.p>
                             )}
                           </div>
                         </motion.div>
