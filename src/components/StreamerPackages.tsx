@@ -23,7 +23,7 @@ const StreamerPackages: React.FC = () => {
   const { language } = useLanguage();
   const { addToCart, triggerFlyAnimation } = useCart();
 
-  // Order: Custom (left), TBO+ (center), Standard (right)
+  // Order: Custom (left), TBO+ (center), Standard (right) - Prices in USD
   const packages: StreamerPackage[] = [
     {
       id: 'package-custom',
@@ -38,7 +38,7 @@ const StreamerPackages: React.FC = () => {
       name: 'TBO+ Package',
       nameAr: 'باقة TBO+',
       nameEn: 'TBO+ Package',
-      price: 44.99,
+      price: 12.00,
       image: packageTboPlus,
     },
     {
@@ -46,7 +46,7 @@ const StreamerPackages: React.FC = () => {
       name: 'Standard Package',
       nameAr: 'الباقة العادية',
       nameEn: 'Standard Package',
-      price: 14.99,
+      price: 4.00,
       image: packageStandard,
     },
   ];
@@ -92,35 +92,51 @@ const StreamerPackages: React.FC = () => {
       </motion.div>
 
       {/* Packages Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4" dir="rtl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-7xl mx-auto px-4" dir="rtl">
         {packages.map((pkg, index) => (
           <motion.div
             key={pkg.id}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="flex flex-col items-center"
+            whileHover={{ 
+              scale: 1.05, 
+              transition: { duration: 0.3 } 
+            }}
+            whileTap={{ scale: 0.98 }}
+            className="flex flex-col items-center cursor-pointer"
           >
             {/* Package Image */}
-            <div className="relative w-full max-w-[400px]">
+            <motion.div 
+              className="relative w-full max-w-[500px]"
+              whileHover={{
+                filter: "brightness(1.1)",
+                transition: { duration: 0.3 }
+              }}
+            >
               <img 
                 src={pkg.image} 
                 alt={language === 'en' ? pkg.nameEn : pkg.nameAr}
-                className="w-full h-auto object-contain"
+                className="w-full h-auto object-contain drop-shadow-2xl"
               />
-            </div>
+            </motion.div>
 
             {/* Add to Cart Button */}
-            <Button
-              onClick={(e) => handleAddToCart(pkg, e)}
-              className="mt-4 bg-[#2d8a8a] hover:bg-[#247070] text-white px-6 py-2 rounded-full flex items-center gap-2 transition-all duration-300 hover:scale-105"
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <ShoppingCart className="w-4 h-4" />
-              {pkg.price === 0 
-                ? (language === 'en' ? 'Contact Us' : 'تواصل معنا')
-                : (language === 'en' ? 'Add to Cart' : 'أضف للسلة')
-              }
-            </Button>
+              <Button
+                onClick={(e) => handleAddToCart(pkg, e)}
+                className="mt-6 bg-[#2d8a8a] hover:bg-[#247070] text-white px-8 py-3 rounded-full flex items-center gap-2 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {pkg.price === 0 
+                  ? (language === 'en' ? 'Contact Us' : 'تواصل معنا')
+                  : (language === 'en' ? `Add to Cart - $${pkg.price.toFixed(2)}` : `أضف للسلة - $${pkg.price.toFixed(2)}`)
+                }
+              </Button>
+            </motion.div>
           </motion.div>
         ))}
       </div>
