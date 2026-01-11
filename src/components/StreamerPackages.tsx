@@ -92,7 +92,7 @@ const StreamerPackages: React.FC = () => {
       </motion.div>
 
       {/* Packages Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-7xl mx-auto px-4" dir="rtl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-[1600px] mx-auto px-4" dir="rtl">
         {packages.map((pkg, index) => (
           <motion.div
             key={pkg.id}
@@ -108,7 +108,7 @@ const StreamerPackages: React.FC = () => {
           >
             {/* Package Image */}
             <motion.div 
-              className="relative w-full max-w-[500px]"
+              className="relative w-full"
               whileHover={{
                 filter: "brightness(1.1)",
                 transition: { duration: 0.3 }
