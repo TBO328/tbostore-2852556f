@@ -26,6 +26,7 @@ import AdminSidebar from '@/components/admin/AdminSidebar';
 import IconsManagement from '@/components/admin/IconsManagement';
 import AIAssistant from '@/components/admin/AIAssistant';
 import SeasonalThemesManagement from '@/components/admin/SeasonalThemesManagement';
+import PackagesManagement from '@/components/admin/PackagesManagement';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -702,6 +703,9 @@ const Admin: React.FC = () => {
 
       case 'reviews':
         return <ReviewsManagement language={language} toast={toast} />;
+
+      case 'packages':
+        return <PackagesManagement />;
 
       case 'users':
         return <UsersManagement language={language} toast={toast} currentUserId={user?.id} />;

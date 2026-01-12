@@ -24,6 +24,7 @@ const menuItems = [
   { id: 'visual-editor', icon: MousePointer, labelEn: 'Visual Edits', labelAr: 'التحرير المرئي', isSpecial: true },
   { id: 'orders', icon: ShoppingBag, labelEn: 'Orders', labelAr: 'الطلبات' },
   { id: 'products', icon: Package, labelEn: 'Products', labelAr: 'المنتجات' },
+  { id: 'packages', icon: Package, labelEn: 'Packages', labelAr: 'الباقات' },
   { id: 'reviews', icon: Star, labelEn: 'Reviews', labelAr: 'التقييمات' },
   { id: 'users', icon: Users, labelEn: 'Users', labelAr: 'المستخدمين' },
   { id: 'partners', icon: Handshake, labelEn: 'Partners', labelAr: 'الشركاء' },
