@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -49,6 +50,16 @@ const defaultColors = [
   { name: 'Yellow', nameAr: 'أصفر', hex: '#FFCC00' },
 ];
 
+// TBO+ features that can be selected as optional add-ons
+const tboPlusFeatures = [
+  { id: 'overlay', labelEn: 'Stream Overlay', labelAr: 'أوفرلاي البث' },
+  { id: 'alerts', labelEn: 'Custom Alerts', labelAr: 'تنبيهات مخصصة' },
+  { id: 'panels', labelEn: 'Twitch Panels', labelAr: 'بانلات تويتش' },
+  { id: 'banner', labelEn: 'Offline Banner', labelAr: 'بانر أوفلاين' },
+  { id: 'emotes', labelEn: 'Custom Emotes', labelAr: 'إيموتات مخصصة' },
+  { id: 'stinger', labelEn: 'Stinger Transition', labelAr: 'انتقال ستنجر' },
+];
+
 const StreamerPackageDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -63,6 +74,8 @@ const StreamerPackageDetail: React.FC = () => {
   const [pkg, setPkg] = useState<StreamerPackage | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdded, setIsAdded] = useState(false);
+  
+  // Form state
   const [hasLogo, setHasLogo] = useState<string>('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
@@ -72,6 +85,13 @@ const StreamerPackageDetail: React.FC = () => {
   const [showCustomHex, setShowCustomHex] = useState(false);
   const [installLocation, setInstallLocation] = useState<string>('');
   const [contactMethod, setContactMethod] = useState<string>('');
+  
+  // Optional TBO+ features (for Custom package)
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  
+  // Check if this is the Custom package
+  const isCustomPackage = pkg?.name_en?.toLowerCase().includes('custom') || 
+                          pkg?.name_ar?.includes('مخصصة');
 
   useEffect(() => {
     const fetchPackage = async () => {
@@ -134,6 +154,14 @@ const StreamerPackageDetail: React.FC = () => {
     }
   };
 
+  const handleFeatureToggle = (featureId: string) => {
+    setSelectedFeatures(prev => 
+      prev.includes(featureId) 
+        ? prev.filter(id => id !== featureId)
+        : [...prev, featureId]
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -187,29 +215,40 @@ const StreamerPackageDetail: React.FC = () => {
   };
 
   const handleAddToCart = () => {
-    if (!hasLogo) {
-      toast.error(language === 'ar' ? 'يرجى اختيار هل لديك شعار' : 'Please select if you have a logo');
-      return;
-    }
-    if (hasLogo === 'yes' && !logoFile) {
-      toast.error(language === 'ar' ? 'يرجى رفع الشعار' : 'Please upload your logo');
-      return;
-    }
-    if (!selectedColor && !customHex) {
-      toast.error(language === 'ar' ? 'يرجى اختيار اللون' : 'Please select a color');
-      return;
-    }
-    if (selectedColor === 'custom' && customHex && !isValidHex(customHex)) {
-      toast.error(language === 'ar' ? 'صيغة HEX غير صحيحة' : 'Invalid HEX color format');
-      return;
-    }
-    if (!installLocation) {
-      toast.error(language === 'ar' ? 'يرجى اختيار موقع التركيب' : 'Please select installation location');
-      return;
-    }
+    // Basic validations that apply to all packages
     if (!contactMethod) {
       toast.error(language === 'ar' ? 'يرجى إدخال وسيلة التواصل' : 'Please enter contact method');
       return;
+    }
+
+    // For custom package, at least one feature must be selected
+    if (isCustomPackage && selectedFeatures.length === 0) {
+      toast.error(language === 'ar' ? 'يرجى اختيار خيار واحد على الأقل' : 'Please select at least one feature');
+      return;
+    }
+
+    // For non-custom packages, validate all required fields
+    if (!isCustomPackage) {
+      if (!hasLogo) {
+        toast.error(language === 'ar' ? 'يرجى اختيار هل لديك شعار' : 'Please select if you have a logo');
+        return;
+      }
+      if (hasLogo === 'yes' && !logoFile) {
+        toast.error(language === 'ar' ? 'يرجى رفع الشعار' : 'Please upload your logo');
+        return;
+      }
+      if (!selectedColor && !customHex) {
+        toast.error(language === 'ar' ? 'يرجى اختيار اللون' : 'Please select a color');
+        return;
+      }
+      if (selectedColor === 'custom' && customHex && !isValidHex(customHex)) {
+        toast.error(language === 'ar' ? 'صيغة HEX غير صحيحة' : 'Invalid HEX color format');
+        return;
+      }
+      if (!installLocation) {
+        toast.error(language === 'ar' ? 'يرجى اختيار موقع التركيب' : 'Please select installation location');
+        return;
+      }
     }
 
     if (pkg.price === 0) {
@@ -287,171 +326,206 @@ const StreamerPackageDetail: React.FC = () => {
                     {language === 'ar' ? 'خيارات التصميم' : 'Design Options'}
                   </h3>
 
-                  {/* 1. Has Logo */}
-                  <div className="space-y-3">
-                    <Label className="text-foreground font-medium">
-                      {language === 'ar' ? 'هل لديك شعار؟' : 'Do you have a logo?'}
-                    </Label>
-                    <RadioGroup value={hasLogo} onValueChange={setHasLogo} className="flex gap-4">
-                      <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                        <RadioGroupItem value="yes" id="logo-yes" />
-                        <Label htmlFor="logo-yes" className="cursor-pointer">
-                          {language === 'ar' ? 'نعم' : 'Yes'}
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                        <RadioGroupItem value="no" id="logo-no" />
-                        <Label htmlFor="logo-no" className="cursor-pointer">
-                          {language === 'ar' ? 'لا' : 'No'}
-                        </Label>
-                      </div>
-                    </RadioGroup>
-
-                    {/* Logo Upload - Shows when "Yes" is selected */}
-                    <AnimatePresence>
-                      {hasLogo === 'yes' && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="space-y-3 overflow-hidden"
-                        >
-                          <Label className="text-muted-foreground text-sm">
-                            {language === 'ar' ? 'ارفق شعارك' : 'Upload your logo'}
-                          </Label>
-                          
-                          {logoPreview ? (
-                            <div className="relative inline-block">
-                              <img 
-                                src={logoPreview} 
-                                alt="Logo preview" 
-                                className="w-24 h-24 object-contain rounded-lg border border-border bg-background"
-                              />
-                              <button
-                                onClick={removeLogo}
-                                className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ) : (
-                            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors bg-background/50">
-                              <Upload className="w-8 h-8 text-muted-foreground mb-2" />
-                              <span className="text-sm text-muted-foreground">
-                                {language === 'ar' ? 'اضغط لرفع الشعار' : 'Click to upload logo'}
-                              </span>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleLogoUpload}
-                                className="hidden"
-                              />
-                            </label>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  {/* 2. Color Selection */}
-                  <div className="space-y-3">
-                    <Label className="text-foreground font-medium">
-                      {language === 'ar' ? 'اللون' : 'Color'}
-                    </Label>
-                    <div className="flex flex-wrap gap-3">
-                      {defaultColors.map((color) => (
-                        <button
-                          key={color.hex}
-                          onClick={() => handleColorSelect(color.hex)}
-                          className={`w-10 h-10 rounded-full border-2 transition-all ${
-                            selectedColor === color.hex 
-                              ? 'border-primary scale-110 ring-2 ring-primary ring-offset-2 ring-offset-background' 
-                              : 'border-border hover:scale-105'
-                          }`}
-                          style={{ backgroundColor: color.hex }}
-                          title={language === 'ar' ? color.nameAr : color.name}
-                        />
-                      ))}
-                      <button
-                        onClick={() => handleColorSelect('custom')}
-                        className={`w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center text-xs font-bold ${
-                          selectedColor === 'custom' 
-                            ? 'border-primary scale-110 ring-2 ring-primary ring-offset-2 ring-offset-background' 
-                            : 'border-border hover:scale-105'
-                        }`}
-                        style={{ 
-                          background: customHex || 'linear-gradient(135deg, #ff0000, #00ff00, #0000ff)',
-                        }}
-                        title={language === 'ar' ? 'لون مخصص' : 'Custom color'}
-                      >
-                        {!customHex && <span className="text-white drop-shadow-md">+</span>}
-                      </button>
-                    </div>
-
-                    {/* Custom HEX Input */}
-                    <AnimatePresence>
-                      {showCustomHex && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="flex flex-col gap-2 mt-2">
-                            <div className="flex items-center gap-2">
-                              <span className="text-muted-foreground font-mono">HEX:</span>
-                              <Input
-                                type="text"
-                                placeholder="#000000"
-                                value={customHex}
-                                onChange={(e) => handleHexChange(e.target.value)}
-                                className={`w-32 font-mono ${hexError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
-                                maxLength={7}
-                              />
-                              {customHex && isValidHex(customHex) && (
-                                <div 
-                                  className="w-8 h-8 rounded border border-border"
-                                  style={{ backgroundColor: customHex }}
-                                />
-                              )}
-                            </div>
-                            {hexError && (
-                              <motion.p
-                                initial={{ opacity: 0, y: -5 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="text-sm text-destructive"
-                              >
-                                {hexError}
-                              </motion.p>
-                            )}
+                  {/* Custom Package - Optional Features Selection */}
+                  {isCustomPackage && (
+                    <div className="space-y-4">
+                      <Label className="text-foreground font-medium">
+                        {language === 'ar' ? 'اختر الخيارات التي تحتاجها' : 'Select the features you need'}
+                      </Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {tboPlusFeatures.map((feature) => (
+                          <div
+                            key={feature.id}
+                            className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
+                              selectedFeatures.includes(feature.id)
+                                ? 'border-primary bg-primary/10'
+                                : 'border-border hover:border-primary/50'
+                            }`}
+                            onClick={() => handleFeatureToggle(feature.id)}
+                          >
+                            <Checkbox
+                              checked={selectedFeatures.includes(feature.id)}
+                              onCheckedChange={() => handleFeatureToggle(feature.id)}
+                            />
+                            <span className="text-foreground">
+                              {language === 'ar' ? feature.labelAr : feature.labelEn}
+                            </span>
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  {/* 3. Installation Location */}
-                  <div className="space-y-3">
-                    <Label className="text-foreground font-medium">
-                      {language === 'ar' ? 'موقع التركيب' : 'Installation Location'}
-                    </Label>
-                    <RadioGroup value={installLocation} onValueChange={setInstallLocation} className="flex flex-wrap gap-4">
-                      <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                        <RadioGroupItem value="obs" id="install-obs" />
-                        <Label htmlFor="install-obs" className="cursor-pointer font-medium">
-                          OBS
-                        </Label>
+                        ))}
                       </div>
-                      <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                        <RadioGroupItem value="streamlabs" id="install-streamlabs" />
-                        <Label htmlFor="install-streamlabs" className="cursor-pointer font-medium">
-                          Streamlabs
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
+                    </div>
+                  )}
 
-                  {/* 4. Contact Method */}
+                  {/* Standard fields for non-custom packages OR when features are selected */}
+                  {(!isCustomPackage || selectedFeatures.length > 0) && (
+                    <>
+                      {/* 1. Has Logo */}
+                      <div className="space-y-3">
+                        <Label className="text-foreground font-medium">
+                          {language === 'ar' ? 'هل لديك شعار؟' : 'Do you have a logo?'}
+                        </Label>
+                        <RadioGroup value={hasLogo} onValueChange={setHasLogo} className="flex gap-4">
+                          <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                            <RadioGroupItem value="yes" id="logo-yes" />
+                            <Label htmlFor="logo-yes" className="cursor-pointer">
+                              {language === 'ar' ? 'نعم' : 'Yes'}
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                            <RadioGroupItem value="no" id="logo-no" />
+                            <Label htmlFor="logo-no" className="cursor-pointer">
+                              {language === 'ar' ? 'لا' : 'No'}
+                            </Label>
+                          </div>
+                        </RadioGroup>
+
+                        {/* Logo Upload - Shows when "Yes" is selected */}
+                        <AnimatePresence>
+                          {hasLogo === 'yes' && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="space-y-3 overflow-hidden"
+                            >
+                              <Label className="text-muted-foreground text-sm">
+                                {language === 'ar' ? 'ارفق شعارك' : 'Upload your logo'}
+                              </Label>
+                              
+                              {logoPreview ? (
+                                <div className="relative inline-block">
+                                  <img 
+                                    src={logoPreview} 
+                                    alt="Logo preview" 
+                                    className="w-24 h-24 object-contain rounded-lg border border-border bg-background"
+                                  />
+                                  <button
+                                    onClick={removeLogo}
+                                    className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors bg-background/50">
+                                  <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                                  <span className="text-sm text-muted-foreground">
+                                    {language === 'ar' ? 'اضغط لرفع الشعار' : 'Click to upload logo'}
+                                  </span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleLogoUpload}
+                                    className="hidden"
+                                  />
+                                </label>
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      {/* 2. Color Selection */}
+                      <div className="space-y-3">
+                        <Label className="text-foreground font-medium">
+                          {language === 'ar' ? 'اللون' : 'Color'}
+                        </Label>
+                        <div className="flex flex-wrap gap-3">
+                          {defaultColors.map((color) => (
+                            <button
+                              key={color.hex}
+                              onClick={() => handleColorSelect(color.hex)}
+                              className={`w-10 h-10 rounded-full border-2 transition-all ${
+                                selectedColor === color.hex 
+                                  ? 'border-primary scale-110 ring-2 ring-primary ring-offset-2 ring-offset-background' 
+                                  : 'border-border hover:scale-105'
+                              }`}
+                              style={{ backgroundColor: color.hex }}
+                              title={language === 'ar' ? color.nameAr : color.name}
+                            />
+                          ))}
+                          <button
+                            onClick={() => handleColorSelect('custom')}
+                            className={`w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center text-xs font-bold ${
+                              selectedColor === 'custom' 
+                                ? 'border-primary scale-110 ring-2 ring-primary ring-offset-2 ring-offset-background' 
+                                : 'border-border hover:scale-105'
+                            }`}
+                            style={{ 
+                              background: customHex || 'linear-gradient(135deg, #ff0000, #00ff00, #0000ff)',
+                            }}
+                            title={language === 'ar' ? 'لون مخصص' : 'Custom color'}
+                          >
+                            {!customHex && <span className="text-white drop-shadow-md">+</span>}
+                          </button>
+                        </div>
+
+                        {/* Custom HEX Input */}
+                        <AnimatePresence>
+                          {showCustomHex && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="flex flex-col gap-2 mt-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-muted-foreground font-mono">HEX:</span>
+                                  <Input
+                                    type="text"
+                                    placeholder="#000000"
+                                    value={customHex}
+                                    onChange={(e) => handleHexChange(e.target.value)}
+                                    className={`w-32 font-mono ${hexError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                                    maxLength={7}
+                                  />
+                                  {customHex && isValidHex(customHex) && (
+                                    <div 
+                                      className="w-8 h-8 rounded border border-border"
+                                      style={{ backgroundColor: customHex }}
+                                    />
+                                  )}
+                                </div>
+                                {hexError && (
+                                  <motion.p
+                                    initial={{ opacity: 0, y: -5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="text-sm text-destructive"
+                                  >
+                                    {hexError}
+                                  </motion.p>
+                                )}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      {/* 3. Installation Location */}
+                      <div className="space-y-3">
+                        <Label className="text-foreground font-medium">
+                          {language === 'ar' ? 'موقع التركيب' : 'Installation Location'}
+                        </Label>
+                        <RadioGroup value={installLocation} onValueChange={setInstallLocation} className="flex flex-wrap gap-4">
+                          <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                            <RadioGroupItem value="obs" id="install-obs" />
+                            <Label htmlFor="install-obs" className="cursor-pointer">OBS</Label>
+                          </div>
+                          <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                            <RadioGroupItem value="streamlabs" id="install-streamlabs" />
+                            <Label htmlFor="install-streamlabs" className="cursor-pointer">Streamlabs</Label>
+                          </div>
+                          <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                            <RadioGroupItem value="streamelements" id="install-streamelements" />
+                            <Label htmlFor="install-streamelements" className="cursor-pointer">StreamElements</Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    </>
+                  )}
+
+                  {/* 4. Contact Method - Always shown */}
                   <div className="space-y-3">
                     <Label className="text-foreground font-medium">
                       {language === 'ar' ? 'وسيلة التواصل' : 'Contact Method'}
@@ -461,37 +535,45 @@ const StreamerPackageDetail: React.FC = () => {
                       placeholder={language === 'ar' ? 'مثال: Discord: ja2b' : 'Example: Discord: ja2b'}
                       value={contactMethod}
                       onChange={(e) => setContactMethod(e.target.value)}
-                      className="w-full"
+                      className="bg-background"
                     />
                   </div>
                 </div>
 
                 {/* Add to Cart Button */}
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button
-                    variant="neon"
-                    size="lg"
                     onClick={handleAddToCart}
-                    className="w-full text-lg py-6"
+                    variant="neon-filled"
+                    size="lg"
+                    className="w-full text-lg py-6 group"
                     disabled={isAdded}
                   >
-                    {isAdded ? (
-                      <>
-                        <Check className="w-5 h-5 mr-2" />
-                        {language === 'ar' ? 'تمت الإضافة!' : 'Added!'}
-                      </>
-                    ) : (
-                      <span className="flex items-center gap-2">
-                        <ShoppingCart className="w-5 h-5" />
-                        {pkg.price === 0 
-                          ? (language === 'ar' ? 'أرسل الطلب' : 'Submit Request')
-                          : (language === 'ar' ? `أضف للسلة - $${pkg.price.toFixed(2)}` : `Add to Cart - $${pkg.price.toFixed(2)}`)
-                        }
-                      </span>
-                    )}
+                    <AnimatePresence mode="wait">
+                      {isAdded ? (
+                        <motion.span
+                          key="added"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          className="flex items-center gap-2"
+                        >
+                          <Check className="w-5 h-5" />
+                          {language === 'ar' ? 'تمت الإضافة!' : 'Added!'}
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="add"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          className="flex items-center gap-2"
+                        >
+                          <ShoppingCart className="w-5 h-5 group-hover:animate-bounce" />
+                          {language === 'ar' ? 'إضافة للسلة' : 'Add to Cart'}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
                   </Button>
                 </motion.div>
               </div>

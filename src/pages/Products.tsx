@@ -6,10 +6,10 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
 import { supabase } from '@/integrations/supabase/client';
-import { products as localProducts } from '@/data/products';
 import { Loader2 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import StreamerPackages from '@/components/StreamerPackages';
+import { useCategories } from '@/hooks/useCategories';
 
 type DBProduct = Tables<'products'>;
 
@@ -28,50 +28,16 @@ interface DisplayProduct {
   descriptionAr: string;
 }
 
-interface DynamicCategory {
-  value: string;
-  labelEn: string;
-  labelAr: string;
-}
-
 const Products: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState('All');
   const { language } = useLanguage();
   const [products, setProducts] = useState<DisplayProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dynamicCategories, setDynamicCategories] = useState<DynamicCategory[]>([]);
+  const { categories: dbCategories, loading: categoriesLoading } = useCategories();
 
   useEffect(() => {
     fetchProducts();
-    loadCategories();
   }, []);
-
-  const loadCategories = () => {
-    // Load categories from localStorage (synced with admin)
-    const savedCategories = localStorage.getItem('tbo_categories');
-    if (savedCategories) {
-      try {
-        const parsed = JSON.parse(savedCategories);
-        setDynamicCategories(parsed);
-      } catch (e) {
-        console.error('Error loading categories:', e);
-        setDynamicCategories([
-          { value: 'Subscriptions', labelEn: 'Subscriptions', labelAr: 'اشتراكات' },
-          { value: 'Designs', labelEn: 'Designs', labelAr: 'تصاميم' },
-          { value: 'Engagement', labelEn: 'Engagement', labelAr: 'تفاعل' },
-          { value: 'Discord', labelEn: 'Discord', labelAr: 'ديسكورد' },
-        ]);
-      }
-    } else {
-      // Default categories
-      setDynamicCategories([
-        { value: 'Subscriptions', labelEn: 'Subscriptions', labelAr: 'اشتراكات' },
-        { value: 'Designs', labelEn: 'Designs', labelAr: 'تصاميم' },
-        { value: 'Engagement', labelEn: 'Engagement', labelAr: 'تفاعل' },
-        { value: 'Discord', labelEn: 'Discord', labelAr: 'ديسكورد' },
-      ]);
-    }
-  };
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -83,8 +49,7 @@ const Products: React.FC = () => {
 
       if (error) {
         console.error('Error fetching products:', error);
-        // Fallback to local products
-        setProducts(localProducts);
+        setProducts([]);
       } else if (dbProducts && dbProducts.length > 0) {
         // Map database products to display format
         const mappedProducts: DisplayProduct[] = dbProducts.map((p: DBProduct) => ({
@@ -103,12 +68,11 @@ const Products: React.FC = () => {
         }));
         setProducts(mappedProducts);
       } else {
-        // No products in database, use local
-        setProducts(localProducts);
+        setProducts([]);
       }
     } catch (err) {
       console.error('Error:', err);
-      setProducts(localProducts);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -116,8 +80,8 @@ const Products: React.FC = () => {
 
   const getCategoryAr = (category: string): string => {
     // Check dynamic categories first
-    const dynamicCat = dynamicCategories.find(c => c.value === category);
-    if (dynamicCat) return dynamicCat.labelAr;
+    const dynamicCat = dbCategories.find(c => c.value === category);
+    if (dynamicCat) return dynamicCat.label_ar;
     
     const categoryMap: { [key: string]: string } = {
       'Subscriptions': 'اشتراكات',
@@ -135,8 +99,8 @@ const Products: React.FC = () => {
     return diffDays < 7; // Consider new if created within last 7 days
   };
 
-  // Build categories array dynamically
-  const allCategories = ['All', ...dynamicCategories.map(c => c.value)];
+  // Build categories array dynamically from database
+  const allCategories = ['All', ...dbCategories.map(c => c.value)];
 
   const filteredProducts = activeCategory === 'All'
     ? products
@@ -146,9 +110,9 @@ const Products: React.FC = () => {
     if (cat === 'All') {
       return language === 'en' ? 'All' : 'الكل';
     }
-    const dynamicCat = dynamicCategories.find(c => c.value === cat);
+    const dynamicCat = dbCategories.find(c => c.value === cat);
     if (dynamicCat) {
-      return language === 'en' ? dynamicCat.labelEn : dynamicCat.labelAr;
+      return language === 'en' ? dynamicCat.label_en : dynamicCat.label_ar;
     }
     return cat;
   };
@@ -192,7 +156,7 @@ const Products: React.FC = () => {
             {/* Category Filter */}
             <AnimatedSection delay={0.1}>
               <div className="flex flex-wrap justify-center gap-3 mb-12">
-                {allCategories.map((category) => (
+                {!categoriesLoading && allCategories.map((category) => (
                   <motion.button
                     key={category}
                     onClick={() => setActiveCategory(category)}
@@ -246,7 +210,7 @@ const Products: React.FC = () => {
             )}
 
             {/* Empty State */}
-            {!loading && filteredProducts.length === 0 && (
+            {!loading && filteredProducts.length === 0 && activeCategory !== 'Designs' && (
               <div className="text-center py-20">
                 <p className="text-muted-foreground text-lg">
                   {language === 'en' ? 'No products found in this category.' : 'لا توجد منتجات في هذه الفئة.'}

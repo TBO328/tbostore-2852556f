@@ -22,7 +22,7 @@ const Contact: React.FC = () => {
     {
       icon: Phone,
       label: { en: 'Phone / WhatsApp', ar: 'الهاتف / واتساب' },
-      value: '+90 551 007 0277',
+      value: '+90 551 007 02 77',
       color: 'magenta',
     },
     {
