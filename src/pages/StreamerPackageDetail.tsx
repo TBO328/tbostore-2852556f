@@ -1,17 +1,21 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, ArrowLeft, Check, Upload, X } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Check, Upload, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useCart } from '@/contexts/CartContext';
+import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
 import { toast } from 'sonner';
+import sarSymbol from '@/assets/sar-symbol.png';
 
 import packageCustom from '@/assets/package-custom.png';
 import packageTboPlus from '@/assets/package-tbo-plus.png';
@@ -19,46 +23,19 @@ import packageStandard from '@/assets/package-standard.png';
 
 interface StreamerPackage {
   id: string;
-  name: string;
-  nameAr: string;
-  nameEn: string;
+  name_ar: string;
+  name_en: string;
   price: number;
-  image: string;
-  description: string;
-  descriptionAr: string;
+  image_url: string | null;
 }
 
-const packages: Record<string, StreamerPackage> = {
-  'package-custom': {
-    id: 'package-custom',
-    name: 'Custom Package',
-    nameAr: 'الباقة المخصصة',
-    nameEn: 'Custom Package',
-    price: 0,
-    image: packageCustom,
-    description: 'A fully customized streaming package tailored to your exact specifications and brand identity.',
-    descriptionAr: 'باقة بث مخصصة بالكامل حسب متطلباتك ومواصفاتك وهوية علامتك التجارية.',
-  },
-  'package-tbo-plus': {
-    id: 'package-tbo-plus',
-    name: 'TBO+ Package',
-    nameAr: 'باقة TBO+',
-    nameEn: 'TBO+ Package',
-    price: 12.00,
-    image: packageTboPlus,
-    description: 'Premium streaming package with advanced overlays, alerts, and professional designs.',
-    descriptionAr: 'باقة بث احترافية مع تصاميم متقدمة وتنبيهات واوفرلايز احترافية.',
-  },
-  'package-standard': {
-    id: 'package-standard',
-    name: 'Standard Package',
-    nameAr: 'الباقة العادية',
-    nameEn: 'Standard Package',
-    price: 4.00,
-    image: packageStandard,
-    description: 'Essential streaming package with clean overlays and basic alerts for new streamers.',
-    descriptionAr: 'باقة بث أساسية مع تصاميم نظيفة وتنبيهات أساسية للمبتدئين.',
-  },
+const defaultImages: Record<string, string> = {
+  'Custom Package': packageCustom,
+  'الباقة المخصصة': packageCustom,
+  'TBO+ Package': packageTboPlus,
+  'باقة TBO+': packageTboPlus,
+  'Standard Package': packageStandard,
+  'الباقة العادية': packageStandard,
 };
 
 const defaultColors = [
@@ -76,9 +53,15 @@ const StreamerPackageDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const { currency, exchangeRate } = useCurrency();
+  const { theme } = useTheme();
   const { addToCart, triggerFlyAnimation, cartIconRef } = useCart();
   const imageRef = useRef<HTMLImageElement>(null);
+
+  const symbolFilter = theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)';
   
+  const [pkg, setPkg] = useState<StreamerPackage | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isAdded, setIsAdded] = useState(false);
   const [hasLogo, setHasLogo] = useState<string>('');
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -90,21 +73,56 @@ const StreamerPackageDetail: React.FC = () => {
   const [installLocation, setInstallLocation] = useState<string>('');
   const [contactMethod, setContactMethod] = useState<string>('');
 
-  // Validate HEX color format
+  useEffect(() => {
+    const fetchPackage = async () => {
+      if (!id) return;
+      try {
+        const { data, error } = await supabase
+          .from('streamer_packages')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          setPkg({
+            ...data,
+            image_url: data.image_url || defaultImages[data.name_en] || defaultImages[data.name_ar] || null
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching package:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPackage();
+  }, [id]);
+
+  const formatPrice = (priceInSAR: number) => {
+    if (currency === 'SAR') {
+      return (
+        <span className="flex items-center gap-1 font-display">
+          {priceInSAR.toFixed(2)}
+          <img src={sarSymbol} alt="SAR" className="inline-block h-6 w-6" style={{ filter: symbolFilter }} />
+        </span>
+      );
+    }
+    const priceInUSD = priceInSAR / exchangeRate;
+    return <span className="font-display">${priceInUSD.toFixed(2)}</span>;
+  };
+
   const isValidHex = (hex: string): boolean => {
     const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
     return hexRegex.test(hex);
   };
 
   const handleHexChange = (value: string) => {
-    // Auto-add # if user doesn't include it
     let formattedValue = value;
     if (value && !value.startsWith('#')) {
       formattedValue = '#' + value;
     }
     setCustomHex(formattedValue);
-    
-    // Validate and show error
     if (formattedValue && formattedValue !== '#') {
       if (!isValidHex(formattedValue)) {
         setHexError(language === 'ar' ? 'صيغة HEX غير صحيحة (مثال: #FF0000)' : 'Invalid HEX format (e.g., #FF0000)');
@@ -116,14 +134,20 @@ const StreamerPackageDetail: React.FC = () => {
     }
   };
 
-  const pkg = id ? packages[id] : null;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!pkg) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Navbar />
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">
+          <h1 className="text-2xl font-bold text-foreground mb-4 font-display">
             {language === 'ar' ? 'الباقة غير موجودة' : 'Package not found'}
           </h1>
           <Link to="/products">
@@ -196,16 +220,16 @@ const StreamerPackageDetail: React.FC = () => {
       const imageRect = imageRef.current.getBoundingClientRect();
       triggerFlyAnimation(
         { x: imageRect.left + imageRect.width / 2, y: imageRect.top + imageRect.height / 2 },
-        pkg.image
+        pkg.image_url || ''
       );
     }
 
     addToCart({
       id: pkg.id,
-      name: pkg.nameEn,
-      nameAr: pkg.nameAr,
+      name: pkg.name_en,
+      nameAr: pkg.name_ar,
       price: pkg.price,
-      image: pkg.image,
+      image: pkg.image_url || '',
     });
 
     setIsAdded(true);
@@ -232,8 +256,8 @@ const StreamerPackageDetail: React.FC = () => {
               <div className="relative rounded-2xl overflow-hidden bg-gradient-card border border-border">
                 <motion.img
                   ref={imageRef}
-                  src={pkg.image}
-                  alt={language === 'ar' ? pkg.nameAr : pkg.nameEn}
+                  src={pkg.image_url || ''}
+                  alt={language === 'ar' ? pkg.name_ar : pkg.name_en}
                   className="w-full h-auto object-contain"
                   whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.3 }}
@@ -246,21 +270,16 @@ const StreamerPackageDetail: React.FC = () => {
               <div className="space-y-6">
                 {/* Name */}
                 <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
-                  {language === 'ar' ? pkg.nameAr : pkg.nameEn}
+                  {language === 'ar' ? pkg.name_ar : pkg.name_en}
                 </h1>
 
                 {/* Price */}
                 <div className="text-2xl font-bold text-primary">
                   {pkg.price === 0 
                     ? (language === 'ar' ? 'السعر حسب الطلب' : 'Price on request')
-                    : `$${pkg.price.toFixed(2)}`
+                    : formatPrice(pkg.price)
                   }
                 </div>
-
-                {/* Description */}
-                <p className="text-muted-foreground leading-relaxed">
-                  {language === 'ar' ? pkg.descriptionAr : pkg.description}
-                </p>
 
                 {/* Options Form */}
                 <div className="space-y-6 bg-muted/30 rounded-xl p-6 border border-border">

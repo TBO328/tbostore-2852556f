@@ -325,6 +325,42 @@ export type Database = {
         }
         Relationships: []
       }
+      streamer_packages: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name_ar: string
+          name_en: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name_ar: string
+          name_en: string
+          price?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name_ar?: string
+          name_en?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

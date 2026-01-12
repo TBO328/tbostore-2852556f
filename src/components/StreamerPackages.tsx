@@ -1,56 +1,73 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-
-import packageCustom from '@/assets/package-custom.png';
-import packageTboPlus from '@/assets/package-tbo-plus.png';
-import packageStandard from '@/assets/package-standard.png';
-
-interface StreamerPackage {
-  id: string;
-  name: string;
-  nameAr: string;
-  nameEn: string;
-  price: number;
-  image: string;
-}
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useStreamerPackages } from '@/hooks/useStreamerPackages';
+import sarSymbol from '@/assets/sar-symbol.png';
 
 const StreamerPackages: React.FC = () => {
   const { language } = useLanguage();
+  const { currency, exchangeRate } = useCurrency();
+  const { theme } = useTheme();
   const navigate = useNavigate();
+  const { packages, loading } = useStreamerPackages();
 
-  // Order: Custom (left), TBO+ (center), Standard (right) - Prices in USD
-  const packages: StreamerPackage[] = [
-    {
-      id: 'package-custom',
-      name: 'Custom Package',
-      nameAr: 'الباقة المخصصة',
-      nameEn: 'Custom Package',
-      price: 0,
-      image: packageCustom,
-    },
-    {
-      id: 'package-tbo-plus',
-      name: 'TBO+ Package',
-      nameAr: 'باقة TBO+',
-      nameEn: 'TBO+ Package',
-      price: 12.00,
-      image: packageTboPlus,
-    },
-    {
-      id: 'package-standard',
-      name: 'Standard Package',
-      nameAr: 'الباقة العادية',
-      nameEn: 'Standard Package',
-      price: 4.00,
-      image: packageStandard,
-    },
-  ];
+  const symbolFilter = theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)';
 
-  const handlePackageClick = (pkg: StreamerPackage) => {
-    navigate(`/streamer-package/${pkg.id}`);
+  // Track previous prices for animation
+  const previousPricesRef = useRef<Record<string, number>>({});
+  const [animatingPrices, setAnimatingPrices] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    packages.forEach(pkg => {
+      const prevPrice = previousPricesRef.current[pkg.id];
+      if (prevPrice !== undefined && prevPrice !== pkg.price) {
+        // Price changed - trigger animation
+        setAnimatingPrices(prev => ({ ...prev, [pkg.id]: true }));
+        setTimeout(() => {
+          setAnimatingPrices(prev => ({ ...prev, [pkg.id]: false }));
+        }, 600);
+      }
+      previousPricesRef.current[pkg.id] = pkg.price;
+    });
+  }, [packages]);
+
+  const formatPrice = (priceInSAR: number) => {
+    if (currency === 'SAR') {
+      return (
+        <span className="flex items-center justify-center gap-1 font-display">
+          {priceInSAR.toFixed(2)}
+          <img 
+            src={sarSymbol} 
+            alt="SAR" 
+            className="inline-block h-5 w-5" 
+            style={{ filter: symbolFilter }} 
+          />
+        </span>
+      );
+    }
+    const priceInUSD = priceInSAR / exchangeRate;
+    return <span className="font-display">${priceInUSD.toFixed(2)}</span>;
   };
+
+  const handlePackageClick = (pkgId: string) => {
+    navigate(`/streamer-package/${pkgId}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="py-12 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (packages.length === 0) {
+    return null;
+  }
 
   return (
     <div className="py-12">
@@ -65,7 +82,7 @@ const StreamerPackages: React.FC = () => {
           {language === 'en' ? 'Streamer Packages' : 'باقات الستريمرز'}
         </h2>
         <div className="flex items-center justify-center gap-2">
-          <span className="bg-[#1a1a2e] text-white px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2">
+          <span className="bg-[#1a1a2e] text-white px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 font-display">
             LIVE
             <span className="w-2.5 h-2.5 bg-[#00d4aa] rounded-full animate-pulse" />
           </span>
@@ -85,7 +102,7 @@ const StreamerPackages: React.FC = () => {
               transition: { duration: 0.3 } 
             }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => handlePackageClick(pkg)}
+            onClick={() => handlePackageClick(pkg.id)}
             className="flex flex-col items-center cursor-pointer group"
           >
             {/* Package Image */}
@@ -96,25 +113,49 @@ const StreamerPackages: React.FC = () => {
                 transition: { duration: 0.3 }
               }}
             >
-              <img 
-                src={pkg.image} 
-                alt={language === 'en' ? pkg.nameEn : pkg.nameAr}
-                className="w-full h-auto object-contain drop-shadow-2xl transition-transform duration-300 group-hover:drop-shadow-[0_20px_50px_rgba(0,212,170,0.3)]"
-              />
+              {pkg.image_url ? (
+                <img 
+                  src={pkg.image_url} 
+                  alt={language === 'en' ? pkg.name_en : pkg.name_ar}
+                  className="w-full h-auto object-contain drop-shadow-2xl transition-transform duration-300 group-hover:drop-shadow-[0_20px_50px_rgba(0,212,170,0.3)]"
+                />
+              ) : (
+                <div className="w-full aspect-video bg-muted rounded-xl flex items-center justify-center">
+                  <span className="text-muted-foreground font-display">
+                    {language === 'en' ? pkg.name_en : pkg.name_ar}
+                  </span>
+                </div>
+              )}
             </motion.div>
 
-            {/* Price Tag */}
+            {/* Price Tag with Animation */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="mt-4 px-6 py-2 bg-primary/10 border border-primary/30 rounded-full"
+              className="mt-4 px-6 py-2 bg-primary/10 border border-primary/30 rounded-full overflow-hidden"
             >
-              <span className="text-primary font-bold text-lg">
-                {pkg.price === 0 
-                  ? (language === 'en' ? 'Contact Us' : 'تواصل معنا')
-                  : `$${pkg.price.toFixed(2)}`
-                }
-              </span>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={`${pkg.id}-${pkg.price}-${currency}`}
+                  initial={animatingPrices[pkg.id] ? { y: -20, opacity: 0 } : false}
+                  animate={{ 
+                    y: 0, 
+                    opacity: 1,
+                    scale: animatingPrices[pkg.id] ? [1, 1.2, 1] : 1,
+                    color: animatingPrices[pkg.id] && currency === 'SAR' 
+                      ? ['hsl(var(--primary))', 'hsl(45, 100%, 50%)', 'hsl(var(--primary))'] 
+                      : 'hsl(var(--primary))'
+                  }}
+                  exit={{ y: 20, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-primary font-bold text-lg block"
+                >
+                  {pkg.price === 0 
+                    ? (language === 'en' ? 'Contact Us' : 'تواصل معنا')
+                    : formatPrice(pkg.price)
+                  }
+                </motion.span>
+              </AnimatePresence>
             </motion.div>
           </motion.div>
         ))}

@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X } from 'lucide-react';
+import { Search, X, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { products } from '@/data/products';
+import { useProducts } from '@/hooks/useProducts';
 
 interface SearchDialogProps {
   isOpen: boolean;
@@ -15,8 +15,9 @@ interface SearchDialogProps {
 
 const SearchDialog: React.FC<SearchDialogProps> = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
   const { formatPrice } = useCurrency();
+  const { products, loading } = useProducts();
 
   const filteredProducts = useMemo(() => {
     if (!query.trim()) return [];
@@ -26,7 +27,7 @@ const SearchDialog: React.FC<SearchDialogProps> = ({ isOpen, onClose }) => {
       product.nameAr.includes(query) ||
       product.category.toLowerCase().includes(searchTerm)
     ).slice(0, 6);
-  }, [query]);
+  }, [query, products]);
 
   const handleProductClick = () => {
     setQuery('');
@@ -70,8 +71,15 @@ const SearchDialog: React.FC<SearchDialogProps> = ({ isOpen, onClose }) => {
                 </Button>
               </div>
 
+              {/* Loading State */}
+              {loading && query.trim() && (
+                <div className="p-8 text-center">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" />
+                </div>
+              )}
+
               {/* Results */}
-              {filteredProducts.length > 0 && (
+              {!loading && filteredProducts.length > 0 && (
                 <div className="max-h-96 overflow-y-auto p-2">
                   {filteredProducts.map((product, index) => (
                     <motion.div
@@ -106,7 +114,7 @@ const SearchDialog: React.FC<SearchDialogProps> = ({ isOpen, onClose }) => {
               )}
 
               {/* No Results */}
-              {query.trim() && filteredProducts.length === 0 && (
+              {!loading && query.trim() && filteredProducts.length === 0 && (
                 <div className="p-8 text-center text-muted-foreground">
                   {language === 'ar' ? 'لا توجد نتائج' : 'No results found'}
                 </div>
