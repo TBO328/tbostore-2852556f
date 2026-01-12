@@ -28,78 +28,67 @@ const PartnersStrip = () => {
 
   if (partners.length === 0) return null;
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.2
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.9 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        type: 'spring' as const,
-        stiffness: 100,
-        damping: 12
-      }
-    }
-  };
+  // Duplicate partners for infinite scroll effect
+  const duplicatedPartners = [...partners, ...partners];
 
   return (
-    <section className="py-12 overflow-hidden relative">
-      <div className="container mx-auto px-4">
+    <section className="py-16 overflow-hidden relative bg-muted/30">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-background z-10 pointer-events-none" />
+      
+      <div className="container mx-auto px-4 mb-8">
         <motion.h3 
           initial={{ opacity: 0, y: -10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="font-display text-2xl md:text-3xl font-bold text-center text-foreground mb-10"
+          className="font-display text-2xl md:text-3xl font-bold text-center text-foreground"
         >
-          {language === 'en' ? 'Our Partners' : 'شركاؤنا'}
+          {language === 'en' ? 'Our Trusted Partners' : 'شركاؤنا الموثوقون'}
         </motion.h3>
-        
+        <p className="text-muted-foreground text-center mt-2">
+          {language === 'en' 
+            ? 'Working with the best in the industry' 
+            : 'نعمل مع الأفضل في المجال'
+          }
+        </p>
+      </div>
+      
+      {/* Infinite scroll container */}
+      <div className="relative">
         <motion.div 
-          className="flex flex-wrap items-center justify-center gap-8 md:gap-12"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
+          className="flex gap-12 items-center"
+          animate={{
+            x: [0, -50 * partners.length * 12],
+          }}
+          transition={{
+            x: {
+              repeat: Infinity,
+              repeatType: "loop",
+              duration: partners.length * 5,
+              ease: "linear",
+            },
+          }}
         >
-          {partners.map((partner, index) => (
+          {duplicatedPartners.map((partner, index) => (
             <motion.div
-              key={partner.id}
-              variants={itemVariants}
+              key={`${partner.id}-${index}`}
               whileHover={{ 
-                scale: 1.1,
+                scale: 1.15,
                 transition: { type: 'spring', stiffness: 300 }
               }}
-              className="relative group"
+              className="relative group shrink-0"
             >
               {/* Neon glow effect on hover */}
-              <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-primary/30 rounded-2xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
-              <div className="relative bg-card/50 backdrop-blur-sm rounded-2xl p-6 border border-border/30 group-hover:border-primary/50 transition-all duration-300">
+              <div className="relative bg-card/80 backdrop-blur-md rounded-2xl p-6 border border-border/50 group-hover:border-primary/60 transition-all duration-300 shadow-lg group-hover:shadow-primary/20">
                 <img
                   src={partner.logo_url}
                   alt={partner.name}
-                  className="h-16 md:h-20 max-w-[160px] md:max-w-[200px] object-contain opacity-70 group-hover:opacity-100 transition-opacity duration-300"
+                  className="h-14 md:h-16 w-auto max-w-[140px] md:max-w-[180px] object-contain grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100 transition-all duration-300"
                 />
               </div>
-              
-              {/* Separator dash - only show between items on larger screens */}
-              {index < partners.length - 1 && (
-                <span className="hidden lg:block absolute -right-6 md:-right-8 top-1/2 -translate-y-1/2 text-2xl text-muted-foreground/30 font-light select-none">
-                  —
-                </span>
-              )}
             </motion.div>
           ))}
         </motion.div>

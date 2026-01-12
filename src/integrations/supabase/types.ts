@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          label_ar: string
+          label_en: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          label_ar: string
+          label_en: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          label_ar?: string
+          label_en?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       coupons: {
         Row: {
           code: string
@@ -327,6 +360,8 @@ export type Database = {
       }
       streamer_packages: {
         Row: {
+          category: string | null
+          category_ar: string | null
           created_at: string
           display_order: number | null
           id: string
@@ -338,6 +373,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category?: string | null
+          category_ar?: string | null
           created_at?: string
           display_order?: number | null
           id?: string
@@ -349,6 +386,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category?: string | null
+          category_ar?: string | null
           created_at?: string
           display_order?: number | null
           id?: string
