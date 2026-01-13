@@ -28,14 +28,8 @@ const PartnersStrip = () => {
 
   if (partners.length === 0) return null;
 
-  // Duplicate partners for infinite scroll effect
-  const duplicatedPartners = [...partners, ...partners];
-
   return (
-    <section className="py-16 overflow-hidden relative bg-muted/30">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-background z-10 pointer-events-none" />
-      
+    <section className="py-16 relative bg-gradient-to-b from-card/50 to-background border-y border-border/30">
       <div className="container mx-auto px-4 mb-8">
         <motion.h3 
           initial={{ opacity: 0, y: -10 }}
@@ -54,30 +48,20 @@ const PartnersStrip = () => {
         </p>
       </div>
       
-      {/* Infinite scroll container */}
-      <div className="relative">
-        <motion.div 
-          className="flex gap-12 items-center"
-          animate={{
-            x: [0, -50 * partners.length * 12],
-          }}
-          transition={{
-            x: {
-              repeat: Infinity,
-              repeatType: "loop",
-              duration: partners.length * 5,
-              ease: "linear",
-            },
-          }}
-        >
-          {duplicatedPartners.map((partner, index) => (
+      {/* Static partners grid */}
+      <div className="container mx-auto px-4">
+        <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+          {partners.map((partner) => (
             <motion.div
-              key={`${partner.id}-${index}`}
+              key={partner.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
               whileHover={{ 
-                scale: 1.15,
+                scale: 1.1,
                 transition: { type: 'spring', stiffness: 300 }
               }}
-              className="relative group shrink-0"
+              className="relative group"
             >
               {/* Neon glow effect on hover */}
               <div className="absolute inset-0 bg-primary/30 rounded-2xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -86,12 +70,12 @@ const PartnersStrip = () => {
                 <img
                   src={partner.logo_url}
                   alt={partner.name}
-                  className="h-14 md:h-16 w-auto max-w-[140px] md:max-w-[180px] object-contain grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100 transition-all duration-300"
+                  className="h-14 md:h-16 w-auto max-w-[140px] md:max-w-[180px] object-contain transition-transform duration-300"
                 />
               </div>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
