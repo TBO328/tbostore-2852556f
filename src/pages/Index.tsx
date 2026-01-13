@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, Star, Shield, Truck, Headphones, Loader2 } from 'lucide-react';
+import { ArrowRight, Sparkles, Star, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
@@ -13,23 +13,7 @@ import { useReviews } from '@/hooks/useReviews';
 import { useMultiplePageContent } from '@/hooks/usePageContent';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
 import PartnersStrip from '@/components/PartnersStrip';
-
-const features = [{
-  icon: Shield,
-  titleKey: 'securePayments',
-  defaultTitle: { en: 'Secure Payments', ar: 'دفع آمن' },
-  color: 'cyan'
-}, {
-  icon: Truck,
-  titleKey: 'fastDelivery',
-  defaultTitle: { en: 'Fast Delivery', ar: 'توصيل سريع' },
-  color: 'magenta'
-}, {
-  icon: Headphones,
-  titleKey: 'support247',
-  defaultTitle: { en: '24/7 Support', ar: 'دعم متواصل' },
-  color: 'purple'
-}];
+import AllPackagesSection from '@/components/AllPackagesSection';
 
 const Index: React.FC = () => {
   const { t, language } = useLanguage();
@@ -39,20 +23,8 @@ const Index: React.FC = () => {
   const displayReviews = reviews.slice(0, 3);
   
   // جلب محتوى الصفحات من قاعدة البيانات مع التحديث التلقائي
-  const { getText } = useMultiplePageContent(['hero', 'features', 'products_section', 'about', 'reviews_section']);
+  const { getText } = useMultiplePageContent(['hero', 'products_section', 'about', 'reviews_section']);
   
-  const getColorClasses = (color: string) => {
-    switch (color) {
-      case 'cyan':
-        return 'text-neon-cyan bg-neon-cyan/10';
-      case 'magenta':
-        return 'text-neon-magenta bg-neon-magenta/10';
-      case 'purple':
-        return 'text-neon-purple bg-neon-purple/10';
-      default:
-        return 'text-primary bg-primary/10';
-    }
-  };
   return <div className="min-h-screen bg-background">
       <Navbar />
       <main>
@@ -258,32 +230,8 @@ const Index: React.FC = () => {
           <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background to-transparent" />
         </section>
 
-        {/* Features Strip */}
-        <section className="py-12 bg-gradient-to-r from-card/80 via-card to-card/80 border-y border-primary/10 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5" />
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="flex flex-wrap justify-center gap-10 md:gap-20">
-              {features.map((feature, index) => (
-                <AnimatedSection key={index} delay={index * 0.1}>
-                  <motion.div 
-                    whileHover={{ scale: 1.1, y: -5 }} 
-                    className="flex items-center gap-4 group cursor-pointer"
-                  >
-                    <motion.div 
-                      whileHover={{ rotate: 10 }}
-                      className={`w-14 h-14 rounded-2xl flex items-center justify-center ${getColorClasses(feature.color)} shadow-lg transition-shadow group-hover:shadow-xl`}
-                    >
-                      <feature.icon className="w-7 h-7" />
-                    </motion.div>
-                    <span className="font-semibold text-lg text-foreground">
-                      {getText('features', feature.titleKey, feature.defaultTitle[language])}
-                    </span>
-                  </motion.div>
-                </AnimatedSection>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* All Packages Section */}
+        <AllPackagesSection />
 
         {/* Featured Products Preview */}
         <section className="py-20 md:py-32 bg-background relative overflow-hidden">
