@@ -13,6 +13,8 @@ export interface StreamerPackage {
   image_url: string | null;
   display_order: number;
   is_active: boolean;
+  category: string | null;
+  category_ar: string | null;
 }
 
 // Default images mapping

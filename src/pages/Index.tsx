@@ -13,7 +13,6 @@ import { useReviews } from '@/hooks/useReviews';
 import { useMultiplePageContent } from '@/hooks/usePageContent';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
 import PartnersStrip from '@/components/PartnersStrip';
-import AllPackagesSection from '@/components/AllPackagesSection';
 
 const Index: React.FC = () => {
   const { t, language } = useLanguage();
@@ -229,9 +228,6 @@ const Index: React.FC = () => {
 
           <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background to-transparent" />
         </section>
-
-        {/* All Packages Section */}
-        <AllPackagesSection />
 
         {/* Featured Products Preview */}
         <section className="py-20 md:py-32 bg-background relative overflow-hidden">
