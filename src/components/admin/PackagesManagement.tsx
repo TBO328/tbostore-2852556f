@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAdminCategories, type Category } from '@/hooks/useCategories';
 import { mapErrorToUserMessage } from '@/lib/errors';
 import sarSymbol from '@/assets/sar-symbol.png';
 
@@ -30,23 +31,14 @@ interface StreamerPackage {
   updated_at: string;
 }
 
-interface PackageCategory {
-  id: string;
-  value: string;
-  title_en: string;
-  title_ar: string;
-}
-
 const PackagesManagement: React.FC = () => {
   const { language } = useLanguage();
   const { formatPrice, currency } = useCurrency();
   const { theme } = useTheme();
   const { toast } = useToast();
+  const { categories: dbCategories, loading: categoriesLoading, addCategory, deleteCategory: removeCategory, refetch: refetchCategories } = useAdminCategories();
 
   const [packages, setPackages] = useState<StreamerPackage[]>([]);
-  const [packageCategories, setPackageCategories] = useState<PackageCategory[]>([
-    { id: '1', value: 'streamers', title_en: 'Streamer Packages', title_ar: 'باقات الستريمرز' }
-  ]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
@@ -55,6 +47,7 @@ const PackagesManagement: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState('packages');
+  const [addingCategory, setAddingCategory] = useState(false);
 
   const [form, setForm] = useState({
     name_en: '',
@@ -63,14 +56,14 @@ const PackagesManagement: React.FC = () => {
     image_url: '',
     display_order: '',
     is_active: true,
-    category: 'streamers',
-    category_ar: 'باقات الستريمرز'
+    category: 'Designs',
+    category_ar: 'تصاميم'
   });
 
   const [categoryForm, setCategoryForm] = useState({
     value: '',
-    title_en: '',
-    title_ar: ''
+    label_en: '',
+    label_ar: ''
   });
 
   const symbolFilter = theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)';
@@ -89,24 +82,7 @@ const PackagesManagement: React.FC = () => {
 
   useEffect(() => {
     fetchPackages();
-    loadCategories();
   }, []);
-
-  const loadCategories = () => {
-    const saved = localStorage.getItem('tbo_package_categories');
-    if (saved) {
-      try {
-        setPackageCategories(JSON.parse(saved));
-      } catch (e) {
-        console.error('Error loading package categories:', e);
-      }
-    }
-  };
-
-  const saveCategories = (cats: PackageCategory[]) => {
-    localStorage.setItem('tbo_package_categories', JSON.stringify(cats));
-    setPackageCategories(cats);
-  };
 
   const fetchPackages = async () => {
     try {
@@ -173,6 +149,9 @@ const PackagesManagement: React.FC = () => {
         }
       }
 
+      // Get category Arabic name
+      const selectedCat = dbCategories.find(c => c.value === form.category);
+
       const packageData = {
         name_en: form.name_en,
         name_ar: form.name_ar,
@@ -181,7 +160,7 @@ const PackagesManagement: React.FC = () => {
         display_order: parseInt(form.display_order) || 0,
         is_active: form.is_active,
         category: form.category,
-        category_ar: form.category_ar
+        category_ar: selectedCat?.label_ar || form.category_ar
       };
 
       if (editingPackage) {
@@ -214,8 +193,8 @@ const PackagesManagement: React.FC = () => {
     }
   };
 
-  const handleAddCategory = () => {
-    if (!categoryForm.value || !categoryForm.title_en || !categoryForm.title_ar) {
+  const handleAddCategory = async () => {
+    if (!categoryForm.value || !categoryForm.label_en || !categoryForm.label_ar) {
       toast({
         title: language === 'en' ? 'Error' : 'خطأ',
         description: language === 'en' ? 'Please fill all fields' : 'يرجى ملء جميع الحقول',
@@ -224,23 +203,49 @@ const PackagesManagement: React.FC = () => {
       return;
     }
 
-    const newCategory: PackageCategory = {
-      id: Date.now().toString(),
-      value: categoryForm.value.toLowerCase().replace(/\s+/g, '-'),
-      title_en: categoryForm.title_en,
-      title_ar: categoryForm.title_ar
-    };
+    setAddingCategory(true);
+    try {
+      const maxOrder = dbCategories.length > 0 
+        ? Math.max(...dbCategories.map(c => c.display_order || 0)) 
+        : 0;
 
-    saveCategories([...packageCategories, newCategory]);
-    setCategoryDialogOpen(false);
-    setCategoryForm({ value: '', title_en: '', title_ar: '' });
-    toast({ title: language === 'en' ? 'Category added!' : 'تمت إضافة النوع!' });
+      await addCategory({
+        value: categoryForm.value,
+        label_en: categoryForm.label_en,
+        label_ar: categoryForm.label_ar,
+        display_order: maxOrder + 1,
+        is_active: true
+      });
+
+      setCategoryDialogOpen(false);
+      setCategoryForm({ value: '', label_en: '', label_ar: '' });
+      toast({ title: language === 'en' ? 'Category added!' : 'تمت إضافة النوع!' });
+    } catch (error) {
+      const userMessage = mapErrorToUserMessage(error, language);
+      toast({
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: userMessage,
+        variant: 'destructive'
+      });
+    } finally {
+      setAddingCategory(false);
+    }
   };
 
-  const deleteCategory = (id: string) => {
-    if (id === '1') return; // Don't delete default category
-    saveCategories(packageCategories.filter(c => c.id !== id));
-    toast({ title: language === 'en' ? 'Category deleted' : 'تم حذف النوع' });
+  const handleDeleteCategory = async (id: string) => {
+    if (!confirm(language === 'en' ? 'Delete this category?' : 'حذف هذا النوع؟')) return;
+    
+    try {
+      await removeCategory(id);
+      toast({ title: language === 'en' ? 'Category deleted' : 'تم حذف النوع' });
+    } catch (error) {
+      const userMessage = mapErrorToUserMessage(error, language);
+      toast({
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: userMessage,
+        variant: 'destructive'
+      });
+    }
   };
 
   const resetForm = () => {
@@ -252,8 +257,8 @@ const PackagesManagement: React.FC = () => {
       image_url: '',
       display_order: '',
       is_active: true,
-      category: 'streamers',
-      category_ar: 'باقات الستريمرز'
+      category: 'Designs',
+      category_ar: 'تصاميم'
     });
     setImageFile(null);
     setImagePreview(null);
@@ -268,8 +273,8 @@ const PackagesManagement: React.FC = () => {
       image_url: pkg.image_url || '',
       display_order: pkg.display_order.toString(),
       is_active: pkg.is_active,
-      category: pkg.category || 'streamers',
-      category_ar: pkg.category_ar || 'باقات الستريمرز'
+      category: pkg.category || 'Designs',
+      category_ar: pkg.category_ar || 'تصاميم'
     });
     setImagePreview(pkg.image_url || null);
     setImageFile(null);
@@ -299,13 +304,13 @@ const PackagesManagement: React.FC = () => {
 
   // Group packages by category
   const groupedPackages = packages.reduce((acc, pkg) => {
-    const cat = pkg.category || 'streamers';
+    const cat = pkg.category || 'Designs';
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(pkg);
     return acc;
   }, {} as Record<string, StreamerPackage[]>);
 
-  if (loading) {
+  if (loading || categoriesLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -348,15 +353,15 @@ const PackagesManagement: React.FC = () => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Category Selection */}
                   <div className="space-y-2">
-                    <Label className="font-display">{language === 'en' ? 'Package Type' : 'نوع الباقة'}</Label>
+                    <Label className="font-display">{language === 'en' ? 'Show in Category' : 'عرض في الفئة'}</Label>
                     <Select 
                       value={form.category} 
                       onValueChange={(value) => {
-                        const cat = packageCategories.find(c => c.value === value);
+                        const cat = dbCategories.find(c => c.value === value);
                         setForm({ 
                           ...form, 
                           category: value,
-                          category_ar: cat?.title_ar || value
+                          category_ar: cat?.label_ar || value
                         });
                       }}
                     >
@@ -364,9 +369,9 @@ const PackagesManagement: React.FC = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {packageCategories.map(cat => (
+                        {dbCategories.map(cat => (
                           <SelectItem key={cat.id} value={cat.value} className="font-display">
-                            {language === 'ar' ? cat.title_ar : cat.title_en}
+                            {language === 'ar' ? cat.label_ar : cat.label_en}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -494,15 +499,15 @@ const PackagesManagement: React.FC = () => {
                     <Input 
                       value={categoryForm.value} 
                       onChange={e => setCategoryForm({ ...categoryForm, value: e.target.value })} 
-                      placeholder="e.g., gaming"
+                      placeholder="e.g., Gaming"
                       className="font-display"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="font-display">Title (EN)</Label>
                     <Input 
-                      value={categoryForm.title_en} 
-                      onChange={e => setCategoryForm({ ...categoryForm, title_en: e.target.value })} 
+                      value={categoryForm.label_en} 
+                      onChange={e => setCategoryForm({ ...categoryForm, label_en: e.target.value })} 
                       placeholder="e.g., Gaming Packages"
                       className="font-display"
                     />
@@ -510,15 +515,27 @@ const PackagesManagement: React.FC = () => {
                   <div className="space-y-2">
                     <Label className="font-display">العنوان (عربي)</Label>
                     <Input 
-                      value={categoryForm.title_ar} 
-                      onChange={e => setCategoryForm({ ...categoryForm, title_ar: e.target.value })} 
+                      value={categoryForm.label_ar} 
+                      onChange={e => setCategoryForm({ ...categoryForm, label_ar: e.target.value })} 
                       placeholder="مثال: باقات الألعاب"
                       dir="rtl"
                       className="font-display"
                     />
                   </div>
-                  <Button onClick={handleAddCategory} variant="neon-filled" className="w-full font-display">
-                    {language === 'en' ? 'Add Type' : 'إضافة النوع'}
+                  <Button 
+                    onClick={handleAddCategory} 
+                    variant="neon-filled" 
+                    className="w-full font-display"
+                    disabled={addingCategory}
+                  >
+                    {addingCategory ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        {language === 'en' ? 'Adding...' : 'جاري الإضافة...'}
+                      </>
+                    ) : (
+                      language === 'en' ? 'Add Type' : 'إضافة النوع'
+                    )}
                   </Button>
                 </div>
               </DialogContent>
@@ -529,12 +546,12 @@ const PackagesManagement: React.FC = () => {
         <TabsContent value="packages">
           {/* Grouped Packages */}
           {Object.entries(groupedPackages).map(([category, pkgs]) => {
-            const catInfo = packageCategories.find(c => c.value === category);
+            const catInfo = dbCategories.find(c => c.value === category);
             return (
               <div key={category} className="mb-8">
                 <h3 className="text-lg font-display font-bold text-foreground mb-4 flex items-center gap-2">
                   <Package className="w-5 h-5 text-primary" />
-                  {language === 'ar' ? (catInfo?.title_ar || category) : (catInfo?.title_en || category)}
+                  {language === 'ar' ? (catInfo?.label_ar || category) : (catInfo?.label_en || category)}
                 </h3>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {pkgs.map(pkg => (
@@ -544,12 +561,17 @@ const PackagesManagement: React.FC = () => {
                       animate={{ opacity: 1, y: 0 }} 
                       className="bg-card rounded-xl border border-border overflow-hidden hover:border-primary/50 transition-colors"
                     >
-                      <div className="aspect-video bg-muted relative overflow-hidden">
+                      {/* Image Preview - More prominent */}
+                      <div className="aspect-[16/10] bg-muted relative overflow-hidden">
                         {pkg.image_url ? (
-                          <img src={pkg.image_url} alt={pkg.name_en} className="w-full h-full object-contain" />
+                          <img 
+                            src={pkg.image_url} 
+                            alt={pkg.name_en} 
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Image className="w-12 h-12 text-muted-foreground" />
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+                            <Image className="w-16 h-16 text-muted-foreground/50" />
                           </div>
                         )}
                         {!pkg.is_active && (
@@ -559,6 +581,10 @@ const PackagesManagement: React.FC = () => {
                             </span>
                           </div>
                         )}
+                        {/* Category Badge */}
+                        <div className="absolute top-2 left-2 px-2 py-1 bg-primary/90 text-primary-foreground text-xs rounded font-display">
+                          {language === 'ar' ? (catInfo?.label_ar || category) : (catInfo?.label_en || category)}
+                        </div>
                       </div>
                       <div className="p-4">
                         <h3 className="font-display font-bold text-foreground truncate">
@@ -613,7 +639,7 @@ const PackagesManagement: React.FC = () => {
 
         <TabsContent value="categories">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {packageCategories.map(cat => (
+            {dbCategories.map(cat => (
               <motion.div 
                 key={cat.id}
                 initial={{ opacity: 0, y: 10 }} 
@@ -623,24 +649,34 @@ const PackagesManagement: React.FC = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="font-display font-bold text-foreground">
-                      {language === 'ar' ? cat.title_ar : cat.title_en}
+                      {language === 'ar' ? cat.label_ar : cat.label_en}
                     </h4>
                     <p className="text-sm text-muted-foreground font-mono">{cat.value}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'en' ? 'Order:' : 'الترتيب:'} {cat.display_order}
+                    </p>
                   </div>
-                  {cat.id !== '1' && (
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => deleteCategory(cat.id)}
-                      className="hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => handleDeleteCategory(cat.id)}
+                    className="hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
               </motion.div>
             ))}
           </div>
+
+          {dbCategories.length === 0 && (
+            <div className="text-center py-12 bg-card rounded-xl border border-border">
+              <FolderPlus className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+              <p className="text-muted-foreground font-display">
+                {language === 'en' ? 'No categories yet' : 'لا توجد فئات بعد'}
+              </p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

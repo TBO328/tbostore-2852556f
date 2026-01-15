@@ -181,12 +181,10 @@ const Products: React.FC = () => {
               </div>
             ) : (
               <>
-                {/* Streamer Packages - Show only for Designs category */}
-                {activeCategory === 'Designs' && (
-                  <AnimatedSection delay={0.2}>
-                    <StreamerPackages />
-                  </AnimatedSection>
-                )}
+                {/* Streamer Packages - Show for selected category or All */}
+                <AnimatedSection delay={0.2}>
+                  <StreamerPackages categoryFilter={activeCategory === 'All' ? null : activeCategory} />
+                </AnimatedSection>
 
                 {/* Products Grid */}
                 <motion.div 
@@ -210,7 +208,7 @@ const Products: React.FC = () => {
             )}
 
             {/* Empty State */}
-            {!loading && filteredProducts.length === 0 && activeCategory !== 'Designs' && (
+            {!loading && filteredProducts.length === 0 && (
               <div className="text-center py-20">
                 <p className="text-muted-foreground text-lg">
                   {language === 'en' ? 'No products found in this category.' : 'لا توجد منتجات في هذه الفئة.'}
