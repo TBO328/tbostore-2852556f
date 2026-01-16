@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, Star, Loader2 } from 'lucide-react';
+import { ArrowRight, Sparkles, Star, Loader2, Shield, Truck, Headphones } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
@@ -227,6 +227,95 @@ const Index: React.FC = () => {
           </motion.div>
 
           <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background to-transparent" />
+        </section>
+
+        {/* Features Strip - Premium Design */}
+        <section className="py-16 bg-gradient-to-b from-background via-card/30 to-background relative overflow-hidden">
+          {/* Background decorations */}
+          <div className="absolute inset-0">
+            <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+            <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-secondary/5 rounded-full blur-3xl" />
+          </div>
+          
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {[
+                { 
+                  icon: Shield, 
+                  titleEn: 'Secure Payment', 
+                  titleAr: 'دفع آمن',
+                  descEn: 'Your transactions are protected',
+                  descAr: 'معاملاتك محمية بالكامل',
+                  color: 'primary',
+                  delay: 0
+                },
+                { 
+                  icon: Truck, 
+                  titleEn: 'Fast Delivery', 
+                  titleAr: 'تسليم سريع',
+                  descEn: 'Quick and reliable shipping',
+                  descAr: 'شحن سريع وموثوق',
+                  color: 'secondary',
+                  delay: 0.1
+                },
+                { 
+                  icon: Headphones, 
+                  titleEn: '24/7 Support', 
+                  titleAr: 'دعم متواصل',
+                  descEn: 'We are here to help you',
+                  descAr: 'نحن هنا لمساعدتك',
+                  color: 'accent',
+                  delay: 0.2
+                }
+              ].map((feature, index) => {
+                const Icon = feature.icon;
+                return (
+                  <AnimatedSection key={index} delay={feature.delay}>
+                    <motion.div
+                      whileHover={{ 
+                        y: -8,
+                        transition: { duration: 0.3, ease: "easeOut" }
+                      }}
+                      className="relative group"
+                    >
+                      {/* Glow effect on hover */}
+                      <div className={`absolute inset-0 bg-${feature.color}/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                      
+                      <div className="relative bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm rounded-2xl p-8 border border-border/50 group-hover:border-primary/30 transition-all duration-500">
+                        {/* Icon container with animation */}
+                        <motion.div 
+                          className={`w-16 h-16 rounded-xl bg-gradient-to-br from-${feature.color}/20 to-${feature.color}/5 flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-500`}
+                          whileHover={{ rotate: [0, -5, 5, 0] }}
+                          transition={{ duration: 0.5 }}
+                        >
+                          <Icon className={`w-8 h-8 text-${feature.color}`} />
+                        </motion.div>
+                        
+                        {/* Title */}
+                        <h3 className="font-display text-xl font-bold text-foreground text-center mb-2">
+                          {language === 'en' ? feature.titleEn : feature.titleAr}
+                        </h3>
+                        
+                        {/* Description */}
+                        <p className="text-muted-foreground text-center text-sm">
+                          {language === 'en' ? feature.descEn : feature.descAr}
+                        </p>
+                        
+                        {/* Bottom accent line */}
+                        <motion.div 
+                          className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-1 bg-gradient-to-r from-transparent via-${feature.color} to-transparent rounded-full`}
+                          initial={{ width: 0, opacity: 0 }}
+                          whileInView={{ width: '60%', opacity: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.8, delay: feature.delay + 0.3 }}
+                        />
+                      </div>
+                    </motion.div>
+                  </AnimatedSection>
+                );
+              })}
+            </div>
+          </div>
         </section>
 
         {/* Featured Products Preview */}
