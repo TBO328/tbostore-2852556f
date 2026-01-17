@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, Star, Loader2, Shield, Truck, Headphones } from 'lucide-react';
+import { ArrowRight, Sparkles, Star, Loader2, Shield, Zap, Headphones } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
@@ -250,11 +250,11 @@ const Index: React.FC = () => {
                   delay: 0
                 },
                 { 
-                  icon: Truck, 
-                  titleEn: 'Fast Delivery', 
-                  titleAr: 'تسليم سريع',
-                  descEn: 'Quick and reliable shipping',
-                  descAr: 'شحن سريع وموثوق',
+                  icon: Zap, 
+                  titleEn: 'Instant Delivery', 
+                  titleAr: 'تسليم فوري',
+                  descEn: 'Get your digital products instantly',
+                  descAr: 'احصل على منتجاتك الرقمية فوراً',
                   color: 'secondary',
                   delay: 0.1
                 },
