@@ -210,21 +210,6 @@ const Index: React.FC = () => {
             </div>
           </div>
 
-          {/* Scroll indicator */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1, y: [0, 10, 0] }}
-            transition={{ delay: 2, duration: 1.5, repeat: Infinity }}
-            className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10"
-          >
-            <div className="w-6 h-10 rounded-full border-2 border-primary/50 flex justify-center pt-2">
-              <motion.div 
-                animate={{ y: [0, 12, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="w-1.5 h-1.5 rounded-full bg-primary"
-              />
-            </div>
-          </motion.div>
 
           <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background to-transparent" />
         </section>
