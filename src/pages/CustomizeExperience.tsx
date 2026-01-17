@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Snowflake, MousePointer, Sun, Moon, Palette } from 'lucide-react';
+import { ArrowRight, Snowflake, MousePointer, Sun, Moon, Palette, Sparkles } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -10,9 +10,19 @@ import Footer from '@/components/Footer';
 
 const CustomizeExperience: React.FC = () => {
   const { language } = useLanguage();
-  const { winterMode, setWinterMode, customCursor, setCustomCursor, theme, toggleTheme } = useTheme();
+  const { winterMode, setWinterMode, customCursor, setCustomCursor, theme, toggleTheme, particlesMode, setParticlesMode } = useTheme();
 
   const customizationOptions = [
+    {
+      id: 'particles',
+      icon: Sparkles,
+      titleEn: 'Particles Effect',
+      titleAr: 'تأثير الجزيئات',
+      descEn: 'Show animated particles background',
+      descAr: 'عرض خلفية الجزيئات المتحركة',
+      checked: particlesMode,
+      onChange: setParticlesMode,
+    },
     {
       id: 'winter',
       icon: Snowflake,
