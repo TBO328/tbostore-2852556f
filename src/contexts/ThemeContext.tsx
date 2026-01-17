@@ -10,6 +10,8 @@ interface ThemeContextType {
   setWinterMode: (enabled: boolean) => void;
   customCursor: boolean;
   setCustomCursor: (enabled: boolean) => void;
+  particlesMode: boolean;
+  setParticlesMode: (enabled: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -22,12 +24,17 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const [winterMode, setWinterMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('winterMode');
-    return saved ? saved === 'true' : true; // Default to enabled
+    return saved ? saved === 'true' : true;
   });
 
   const [customCursor, setCustomCursor] = useState<boolean>(() => {
     const saved = localStorage.getItem('customCursor');
-    return saved ? saved === 'true' : true; // Default to enabled
+    return saved ? saved === 'true' : true;
+  });
+
+  const [particlesMode, setParticlesMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('particlesMode');
+    return saved ? saved === 'true' : true;
   });
 
   useEffect(() => {
@@ -44,12 +51,21 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem('customCursor', String(customCursor));
   }, [customCursor]);
 
+  useEffect(() => {
+    localStorage.setItem('particlesMode', String(particlesMode));
+  }, [particlesMode]);
+
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, winterMode, setWinterMode, customCursor, setCustomCursor }}>
+    <ThemeContext.Provider value={{ 
+      theme, setTheme, toggleTheme, 
+      winterMode, setWinterMode, 
+      customCursor, setCustomCursor,
+      particlesMode, setParticlesMode
+    }}>
       {children}
     </ThemeContext.Provider>
   );
