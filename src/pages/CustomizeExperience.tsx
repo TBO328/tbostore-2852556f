@@ -12,26 +12,38 @@ const CustomizeExperience: React.FC = () => {
   const { language } = useLanguage();
   const { winterMode, setWinterMode, customCursor, setCustomCursor, theme, toggleTheme, particlesMode, setParticlesMode } = useTheme();
 
+  // Handle particles toggle - disable winter mode when particles are enabled
+  const handleParticlesChange = (enabled: boolean) => {
+    setParticlesMode(enabled);
+    if (enabled) {
+      setWinterMode(false);
+    }
+  };
+
   const customizationOptions = [
     {
       id: 'particles',
       icon: Sparkles,
       titleEn: 'Particles Effect',
       titleAr: 'تأثير الجزيئات',
-      descEn: 'Show animated particles background',
-      descAr: 'عرض خلفية الجزيئات المتحركة',
+      descEn: 'Show particles background',
+      descAr: 'عرض خلفية الجزيئات',
       checked: particlesMode,
-      onChange: setParticlesMode,
+      onChange: handleParticlesChange,
+      disabled: false,
     },
     {
       id: 'winter',
       icon: Snowflake,
       titleEn: 'Winter Mode',
       titleAr: 'المود الشتوي',
-      descEn: 'Show falling snowflakes effect',
-      descAr: 'عرض تأثير الثلج المتساقط',
+      descEn: particlesMode 
+        ? (language === 'en' ? 'Disable particles first' : 'أوقف الجزيئات أولاً')
+        : (language === 'en' ? 'Show falling snowflakes' : 'عرض تأثير الثلج المتساقط'),
+      descAr: particlesMode ? 'أوقف الجزيئات أولاً' : 'عرض تأثير الثلج المتساقط',
       checked: winterMode,
       onChange: setWinterMode,
+      disabled: particlesMode,
     },
     {
       id: 'cursor',
@@ -42,6 +54,7 @@ const CustomizeExperience: React.FC = () => {
       descAr: 'استخدام المؤشر المخصص',
       checked: customCursor,
       onChange: setCustomCursor,
+      disabled: false,
     },
     {
       id: 'theme',
@@ -52,6 +65,7 @@ const CustomizeExperience: React.FC = () => {
       descAr: 'التبديل بين الوضع الفاتح والداكن',
       checked: theme === 'dark',
       onChange: toggleTheme,
+      disabled: false,
     },
   ];
 
@@ -101,17 +115,17 @@ const CustomizeExperience: React.FC = () => {
                   initial={{ opacity: 0, x: language === 'ar' ? 20 : -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1 * customizationOptions.indexOf(option) }}
-                  className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border"
+                  className={`flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border ${option.disabled ? 'opacity-50' : ''}`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <option.icon className="w-5 h-5 text-primary" />
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${option.disabled ? 'bg-muted' : 'bg-primary/10'}`}>
+                      <option.icon className={`w-5 h-5 ${option.disabled ? 'text-muted-foreground' : 'text-primary'}`} />
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-foreground text-sm md:text-base">
                         {language === 'en' ? option.titleEn : option.titleAr}
                       </p>
-                      <p className="text-xs md:text-sm text-muted-foreground truncate">
+                      <p className={`text-xs md:text-sm truncate ${option.disabled ? 'text-destructive/70' : 'text-muted-foreground'}`}>
                         {language === 'en' ? option.descEn : option.descAr}
                       </p>
                     </div>
@@ -119,6 +133,7 @@ const CustomizeExperience: React.FC = () => {
                   <Switch
                     checked={option.checked}
                     onCheckedChange={option.onChange}
+                    disabled={option.disabled}
                     className="flex-shrink-0 ml-2"
                   />
                 </motion.div>
