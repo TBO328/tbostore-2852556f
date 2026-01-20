@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface Particle {
@@ -15,10 +15,11 @@ const Particles: React.FC = () => {
   const { particlesMode } = useTheme();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
+  const [pageHeight, setPageHeight] = useState(0);
 
   const createParticles = useCallback((width: number, height: number) => {
     const particles: Particle[] = [];
-    const count = Math.min(30, Math.floor((width * height) / 40000));
+    const count = Math.min(50, Math.floor((width * height) / 30000));
     
     for (let i = 0; i < count; i++) {
       particles.push({
@@ -41,16 +42,20 @@ const Particles: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const handleResize = () => {
+    const updateSize = () => {
+      const docHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.offsetHeight
+      );
+      setPageHeight(docHeight);
       canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.height = docHeight;
       particlesRef.current = createParticles(canvas.width, canvas.height);
+      drawParticles();
     };
 
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    // Draw particles once (static)
     const drawParticles = () => {
       if (!ctx || !canvas) return;
       
@@ -61,7 +66,6 @@ const Particles: React.FC = () => {
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
         
-        // Draw particle with glow
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fillStyle = p.color;
@@ -72,7 +76,6 @@ const Particles: React.FC = () => {
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
         
-        // Draw connections
         for (let j = i + 1; j < particles.length; j++) {
           const p2 = particles[j];
           const dx = p.x - p2.x;
@@ -94,10 +97,20 @@ const Particles: React.FC = () => {
       }
     };
 
-    drawParticles();
+    // Initial draw
+    setTimeout(updateSize, 100);
+    
+    window.addEventListener('resize', updateSize);
+    
+    // Observe DOM changes for dynamic content
+    const observer = new MutationObserver(() => {
+      setTimeout(updateSize, 100);
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', updateSize);
+      observer.disconnect();
     };
   }, [particlesMode, createParticles]);
 
@@ -106,8 +119,11 @@ const Particles: React.FC = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0"
-      style={{ background: 'transparent' }}
+      className="absolute top-0 left-0 pointer-events-none z-0"
+      style={{ 
+        background: 'transparent',
+        minHeight: pageHeight || '100vh',
+      }}
     />
   );
 };
