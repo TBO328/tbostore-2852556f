@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Snowflake, MousePointer, Sun, Moon, Palette, Sparkles } from 'lucide-react';
+import { ArrowRight, Snowflake, MousePointer, Sun, Moon, Palette } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -10,40 +10,19 @@ import Footer from '@/components/Footer';
 
 const CustomizeExperience: React.FC = () => {
   const { language } = useLanguage();
-  const { winterMode, setWinterMode, customCursor, setCustomCursor, theme, toggleTheme, particlesMode, setParticlesMode } = useTheme();
-
-  // Handle particles toggle - disable winter mode when particles are enabled
-  const handleParticlesChange = (enabled: boolean) => {
-    setParticlesMode(enabled);
-    if (enabled) {
-      setWinterMode(false);
-    }
-  };
+  const { winterMode, setWinterMode, customCursor, setCustomCursor, theme, toggleTheme } = useTheme();
 
   const customizationOptions = [
-    {
-      id: 'particles',
-      icon: Sparkles,
-      titleEn: 'Particles Effect',
-      titleAr: 'تأثير الجزيئات',
-      descEn: 'Show particles background',
-      descAr: 'عرض خلفية الجزيئات',
-      checked: particlesMode,
-      onChange: handleParticlesChange,
-      disabled: false,
-    },
     {
       id: 'winter',
       icon: Snowflake,
       titleEn: 'Winter Mode',
       titleAr: 'المود الشتوي',
-      descEn: particlesMode 
-        ? (language === 'en' ? 'Disable particles first' : 'أوقف الجزيئات أولاً')
-        : (language === 'en' ? 'Show falling snowflakes' : 'عرض تأثير الثلج المتساقط'),
-      descAr: particlesMode ? 'أوقف الجزيئات أولاً' : 'عرض تأثير الثلج المتساقط',
+      descEn: 'Show falling snowflakes',
+      descAr: 'عرض تأثير الثلج المتساقط',
       checked: winterMode,
       onChange: setWinterMode,
-      disabled: particlesMode,
+      disabled: false,
     },
     {
       id: 'cursor',
