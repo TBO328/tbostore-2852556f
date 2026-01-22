@@ -34,6 +34,7 @@ import AISupportButton from "./components/AISupportButton";
 import VisualEditorOverlay from "./components/admin/VisualEditorOverlay";
 import Snowflakes from "./components/Snowflakes";
 import GlobalCursor from "./components/GlobalCursor";
+import ScreenshotProtection from "./components/ScreenshotProtection";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,7 @@ const App = () => (
                   <VisualEditorProvider>
                     <Snowflakes />
                     <GlobalCursor />
+                    <ScreenshotProtection />
                     <AnimatedRoutes />
                     <VisualEditorOverlay />
                     <AISupportButton />

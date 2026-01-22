@@ -515,6 +515,10 @@ export type Database = {
         Args: { p_target_user_id: string }
         Returns: boolean
       }
+      admin_send_password_reset: {
+        Args: { p_target_user_email: string }
+        Returns: boolean
+      }
       admin_update_loyalty_points: {
         Args: {
           p_description_ar?: string
