@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft, ArrowRight, User, Mail, Calendar, Shield, ShieldOff, 
-  Ban, Coins, Plus, Minus, Ticket, Trash2, Loader2, Save, Key,
-  Copy, Check
+  Ban, Coins, Plus, Minus, Ticket, Trash2, Loader2, Save,
+  Copy, Check, Upload
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,6 +74,7 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
   // Editable fields
   const [fullName, setFullName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   
   // Points adjustment
   const [pointsDialog, setPointsDialog] = useState(false);
@@ -128,13 +129,80 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
     fetchUserDetails();
   }, [userId]);
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: language === 'en' ? 'Invalid file' : 'ملف غير صالح',
+        description: language === 'en' ? 'Please select an image file' : 'يرجى اختيار ملف صورة',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: language === 'en' ? 'File too large' : 'الملف كبير جداً',
+        description: language === 'en' ? 'Max size is 2MB' : 'الحد الأقصى 2 ميجابايت',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update the avatar URL
+      const { error: updateError } = await supabase.rpc('admin_update_user_profile', {
+        p_target_user_id: userId,
+        p_full_name: null,
+        p_avatar_url: publicUrl
+      });
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      toast({
+        title: language === 'en' ? 'Success' : 'تم بنجاح',
+        description: language === 'en' ? 'Avatar updated' : 'تم تحديث الصورة',
+      });
+      fetchUserDetails();
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast({
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: language === 'en' ? 'Failed to upload avatar' : 'فشل في رفع الصورة',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
       const { data, error } = await supabase.rpc('admin_update_user_profile', {
         p_target_user_id: userId,
         p_full_name: fullName || null,
-        p_avatar_url: avatarUrl || null
+        p_avatar_url: null // Don't update avatar here, it's handled separately
       });
       
       if (error) throw error;
@@ -455,13 +523,36 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
             />
           </div>
           <div>
-            <Label>{language === 'en' ? 'Avatar URL' : 'رابط الصورة'}</Label>
-            <Input
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder="https://..."
-              className="mt-1"
-            />
+            <Label>{language === 'en' ? 'Avatar' : 'الصورة الشخصية'}</Label>
+            <div className="mt-1 flex items-center gap-3">
+              <Avatar className="w-12 h-12 border-2 border-border">
+                <AvatarImage src={avatarUrl || user.avatar_url || undefined} />
+                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-primary">
+                  {fullName?.[0] || user.email[0].toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <label className="cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                  disabled={uploadingAvatar}
+                />
+                <div className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg hover:bg-muted transition-colors">
+                  {uploadingAvatar ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Upload className="w-4 h-4" />
+                  )}
+                  <span className="text-sm">
+                    {uploadingAvatar 
+                      ? (language === 'en' ? 'Uploading...' : 'جاري الرفع...')
+                      : (language === 'en' ? 'Upload' : 'رفع صورة')}
+                  </span>
+                </div>
+              </label>
+            </div>
           </div>
         </div>
         <Button onClick={handleSaveProfile} disabled={saving} className="mt-4">
