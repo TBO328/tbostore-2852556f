@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   ArrowLeft, ArrowRight, User, Mail, Calendar, Shield, ShieldOff, 
   Ban, Coins, Plus, Minus, Ticket, Trash2, Loader2, Save,
-  Copy, Check, Upload
+  Copy, Check, Upload, KeyRound
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -92,6 +92,9 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
   
   // Delete confirmation
   const [deleteDialog, setDeleteDialog] = useState(false);
+  
+  // Password reset
+  const [resettingPassword, setResettingPassword] = useState(false);
 
   const fetchUserDetails = async () => {
     try {
@@ -372,6 +375,37 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleResetPassword = async () => {
+    if (!user?.email) return;
+    
+    setResettingPassword(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/forgot-password`
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: language === 'en' ? 'Success' : 'تم بنجاح',
+        description: language === 'en' 
+          ? 'Password reset email sent to user'
+          : 'تم إرسال رابط إعادة تعيين كلمة المرور للمستخدم',
+      });
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      toast({
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: language === 'en' 
+          ? 'Failed to send password reset email'
+          : 'فشل في إرسال رابط إعادة تعيين كلمة المرور',
+        variant: 'destructive',
+      });
+    } finally {
+      setResettingPassword(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -562,7 +596,7 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
       </div>
 
       {/* Actions Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {/* Admin Toggle */}
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center justify-between">
@@ -632,6 +666,33 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
             <Button size="sm" variant="outline" onClick={() => setCouponDialog(true)}>
               <Plus className="w-4 h-4 mr-1" />
               {language === 'en' ? 'Add' : 'إضافة'}
+            </Button>
+          </div>
+        </div>
+
+        {/* Password Reset */}
+        <div className="bg-card border border-border rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <KeyRound className="w-5 h-5 text-primary" />
+              <span className="font-medium text-sm">
+                {language === 'en' ? 'Password' : 'كلمة المرور'}
+              </span>
+            </div>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={handleResetPassword}
+              disabled={resettingPassword}
+            >
+              {resettingPassword ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <KeyRound className="w-4 h-4 mr-1" />
+                  {language === 'en' ? 'Reset' : 'إعادة'}
+                </>
+              )}
             </Button>
           </div>
         </div>

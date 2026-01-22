@@ -18,7 +18,9 @@ import { z } from 'zod';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
+import PointsRedemptionSection from '@/components/PointsRedemptionSection';
 import stcPayLogo from '@/assets/stc-pay-logo.png';
+import useLoyaltyPoints from '@/hooks/useLoyaltyPoints';
 
 const WHATSAPP_NUMBER = '905510070277';
 
@@ -35,6 +37,7 @@ const Cart: React.FC = () => {
   const { formatPrice } = useCurrency();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { redeemPoints } = useLoyaltyPoints();
 
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -50,6 +53,10 @@ const Cart: React.FC = () => {
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
+
+  // Points redemption state
+  const [redeemedPoints, setRedeemedPoints] = useState(0);
+  const [pointsDiscount, setPointsDiscount] = useState(0);
 
   useEffect(() => {
     fetchPaymentSettings();
@@ -129,8 +136,17 @@ const Cart: React.FC = () => {
     return (getTotalPrice() * appliedCoupon.discount) / 100;
   };
 
+  const getPointsDiscount = () => {
+    return pointsDiscount;
+  };
+
   const getFinalTotal = () => {
-    return getTotalPrice() - getDiscountAmount();
+    return Math.max(0, getTotalPrice() - getDiscountAmount() - getPointsDiscount());
+  };
+
+  const handlePointsRedemption = (points: number, discount: number) => {
+    setRedeemedPoints(points);
+    setPointsDiscount(discount);
   };
 
   const handleStripeCheckout = async () => {
@@ -231,6 +247,16 @@ const Cart: React.FC = () => {
       const { data: orderNumberData } = await supabase.rpc('generate_order_number');
       const orderNumber = orderNumberData || `TBO-${Date.now()}`;
 
+      // Build notes with coupon and points info
+      let notes = '';
+      if (appliedCoupon) {
+        notes += `Coupon: ${appliedCoupon.code} (-${appliedCoupon.discount}%)`;
+      }
+      if (redeemedPoints > 0) {
+        notes += notes ? ', ' : '';
+        notes += `Points: ${redeemedPoints} (-${formatPrice(pointsDiscount)})`;
+      }
+
       // Insert order with validated data
       const { error } = await supabase.from('orders').insert({
         order_number: orderNumber,
@@ -241,10 +267,15 @@ const Cart: React.FC = () => {
         payment_method: orderData.payment_method,
         total_amount: orderData.total_amount,
         status: 'pending',
-        notes: appliedCoupon ? `Coupon: ${appliedCoupon.code} (-${appliedCoupon.discount}%)` : null,
+        notes: notes || null,
       });
 
       if (error) throw error;
+
+      // Redeem points if used
+      if (redeemedPoints > 0) {
+        await redeemPoints(redeemedPoints);
+      }
 
       // Send WhatsApp message
       sendWhatsAppMessage(orderNumber);
@@ -677,6 +708,15 @@ const Cart: React.FC = () => {
                       )}
                     </div>
 
+                    {/* Points Redemption Section */}
+                    <div className="mb-4">
+                      <PointsRedemptionSection
+                        cartTotal={getTotalPrice() - getDiscountAmount()}
+                        onPointsRedemption={handlePointsRedemption}
+                        redeemedPoints={redeemedPoints}
+                      />
+                    </div>
+
                     {/* Divider */}
                     <div className="border-t border-border my-4" />
 
@@ -690,14 +730,26 @@ const Cart: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Discount */}
+                    {/* Coupon Discount */}
                     {appliedCoupon && (
                       <div className="flex justify-between items-center text-sm mb-2">
                         <span className="text-green-500">
-                          {language === 'ar' ? 'الخصم' : 'Discount'} ({appliedCoupon.discount}%)
+                          {language === 'ar' ? 'خصم الكوبون' : 'Coupon'} ({appliedCoupon.discount}%)
                         </span>
                         <span className="text-green-500">
                           -{formatPrice(getDiscountAmount())}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Points Discount */}
+                    {pointsDiscount > 0 && (
+                      <div className="flex justify-between items-center text-sm mb-2">
+                        <span className="text-amber-500">
+                          {language === 'ar' ? `خصم النقاط (${redeemedPoints})` : `Points (${redeemedPoints})`}
+                        </span>
+                        <span className="text-amber-500">
+                          -{formatPrice(pointsDiscount)}
                         </span>
                       </div>
                     )}
