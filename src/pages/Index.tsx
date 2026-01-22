@@ -13,7 +13,6 @@ import { useReviews } from '@/hooks/useReviews';
 import { useMultiplePageContent } from '@/hooks/usePageContent';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
 import PartnersStrip from '@/components/PartnersStrip';
-import StatsSection from '@/components/StatsSection';
 const Index: React.FC = () => {
   const { t, language } = useLanguage();
   
@@ -350,9 +349,6 @@ const Index: React.FC = () => {
             </div>
           </div>
         </section>
-
-        {/* Stats Section */}
-        <StatsSection />
 
         {/* About Preview */}
         <section className="py-20 md:py-32 bg-gradient-hero relative overflow-hidden">
