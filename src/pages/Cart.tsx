@@ -86,8 +86,12 @@ const Cart: React.FC = () => {
     setCouponError(null);
     
     try {
+      // Get current user ID for personal coupons
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { data, error } = await supabase.rpc('validate_coupon', {
-        coupon_code: couponCode.trim().toUpperCase()
+        coupon_code: couponCode.trim().toUpperCase(),
+        p_user_id: user?.id || null
       });
       
       if (error) throw error;
