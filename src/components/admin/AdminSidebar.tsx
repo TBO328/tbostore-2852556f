@@ -26,7 +26,7 @@ const menuItems = [
   { id: 'products', icon: Package, labelEn: 'Products', labelAr: 'المنتجات' },
   { id: 'packages', icon: Package, labelEn: 'Packages', labelAr: 'الباقات' },
   { id: 'reviews', icon: Star, labelEn: 'Reviews', labelAr: 'التقييمات' },
-  { id: 'users', icon: Users, labelEn: 'Users', labelAr: 'المستخدمين' },
+  { id: 'user-management', icon: Users, labelEn: 'User Management', labelAr: 'إدارة المستخدمين' },
   { id: 'partners', icon: Handshake, labelEn: 'Partners', labelAr: 'الشركاء' },
   { id: 'coupons', icon: Ticket, labelEn: 'Coupons', labelAr: 'الكوبونات' },
   { id: 'loyalty', icon: Coins, labelEn: 'Loyalty Program', labelAr: 'نقاط الولاء' },

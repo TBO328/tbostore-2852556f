@@ -55,6 +55,8 @@ export type Database = {
           expires_at: string | null
           id: string
           is_active: boolean | null
+          is_personal: boolean | null
+          user_id: string | null
         }
         Insert: {
           code: string
@@ -63,6 +65,8 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          is_personal?: boolean | null
+          user_id?: string | null
         }
         Update: {
           code?: string
@@ -71,6 +75,8 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          is_personal?: boolean | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -355,25 +361,31 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          blacklist_reason: string | null
           created_at: string
           full_name: string | null
           id: string
+          is_blacklisted: boolean | null
           updated_at: string
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
+          blacklist_reason?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
+          is_blacklisted?: boolean | null
           updated_at?: string
           user_id: string
         }
         Update: {
           avatar_url?: string | null
+          blacklist_reason?: string | null
           created_at?: string
           full_name?: string | null
           id?: string
+          is_blacklisted?: boolean | null
           updated_at?: string
           user_id?: string
         }
@@ -499,11 +511,41 @@ export type Database = {
         }
         Returns: boolean
       }
+      admin_delete_user: {
+        Args: { p_target_user_id: string }
+        Returns: boolean
+      }
+      admin_update_loyalty_points: {
+        Args: {
+          p_description_ar?: string
+          p_description_en?: string
+          p_points_change: number
+          p_target_user_id: string
+        }
+        Returns: boolean
+      }
+      admin_update_user_profile: {
+        Args: {
+          p_avatar_url?: string
+          p_full_name?: string
+          p_target_user_id: string
+        }
+        Returns: boolean
+      }
       calculate_points_from_amount: {
         Args: { amount: number }
         Returns: number
       }
       check_order_rate_limit: { Args: { p_phone: string }; Returns: boolean }
+      create_personal_coupon: {
+        Args: {
+          p_code: string
+          p_discount_percent: number
+          p_expires_at?: string
+          p_target_user_id: string
+        }
+        Returns: string
+      }
       generate_order_number: { Args: never; Returns: string }
       get_all_users_with_roles: {
         Args: never
@@ -512,6 +554,33 @@ export type Database = {
           email: string
           is_admin: boolean
           user_id: string
+        }[]
+      }
+      get_user_details_for_admin: {
+        Args: { p_user_id: string }
+        Returns: {
+          avatar_url: string
+          blacklist_reason: string
+          created_at: string
+          email: string
+          full_name: string
+          is_admin: boolean
+          is_blacklisted: boolean
+          loyalty_points: number
+          total_earned: number
+          total_redeemed: number
+          user_id: string
+        }[]
+      }
+      get_user_personal_coupons: {
+        Args: { p_user_id: string }
+        Returns: {
+          code: string
+          created_at: string
+          discount_percent: number
+          expires_at: string
+          id: string
+          is_active: boolean
         }[]
       }
       get_user_points: { Args: { p_user_id: string }; Returns: number }
@@ -531,17 +600,46 @@ export type Database = {
         }
         Returns: boolean
       }
+      search_users_for_admin: {
+        Args: { p_search_term?: string }
+        Returns: {
+          avatar_url: string
+          created_at: string
+          email: string
+          full_name: string
+          is_admin: boolean
+          is_blacklisted: boolean
+          loyalty_points: number
+          user_id: string
+        }[]
+      }
       set_admin_role: {
         Args: { _make_admin: boolean; _target_user_id: string }
         Returns: boolean
       }
-      validate_coupon: {
-        Args: { coupon_code: string }
-        Returns: {
-          discount_percent: number
-          is_valid: boolean
-        }[]
+      set_user_blacklist: {
+        Args: {
+          p_is_blacklisted: boolean
+          p_reason?: string
+          p_target_user_id: string
+        }
+        Returns: boolean
       }
+      validate_coupon:
+        | {
+            Args: { coupon_code: string }
+            Returns: {
+              discount_percent: number
+              is_valid: boolean
+            }[]
+          }
+        | {
+            Args: { coupon_code: string; p_user_id?: string }
+            Returns: {
+              discount_percent: number
+              is_valid: boolean
+            }[]
+          }
     }
     Enums: {
       app_role: "admin" | "user"

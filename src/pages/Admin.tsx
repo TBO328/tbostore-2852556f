@@ -18,7 +18,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { mapErrorToUserMessage } from '@/lib/errors';
 import ReviewsManagement from '@/components/admin/ReviewsManagement';
-import { UsersManagement } from '@/components/admin/UsersManagement';
+import { UserManagement } from '@/components/admin/UserManagement';
 import PartnersManagement from '@/components/admin/PartnersManagement';
 import PagesManagement from '@/components/admin/PagesManagement';
 import OrdersManagement from '@/components/admin/OrdersManagement';
@@ -708,8 +708,8 @@ const Admin: React.FC = () => {
       case 'packages':
         return <PackagesManagement />;
 
-      case 'users':
-        return <UsersManagement language={language} toast={toast} currentUserId={user?.id} />;
+      case 'user-management':
+        return <UserManagement language={language} toast={toast} currentUserId={user?.id} />;
 
       case 'partners':
         return <PartnersManagement />;
