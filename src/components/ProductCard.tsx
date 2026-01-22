@@ -8,6 +8,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useFavorites } from '@/hooks/useFavorites';
 import { toast } from 'sonner';
 import PriceDisplay from '@/components/PriceDisplay';
+import ProductPointsBadge from '@/components/ProductPointsBadge';
 import type { Product } from '@/data/products';
 
 interface ProductCardProps {
@@ -238,12 +239,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
           </div>
 
           {/* Price */}
-          <div className="mb-4">
+          <div className="mb-3">
             <PriceDisplay 
               price={product.price} 
               originalPrice={product.originalPrice} 
               size="lg" 
             />
+          </div>
+
+          {/* Points Badge */}
+          <div className="mb-4">
+            <ProductPointsBadge price={product.price} />
           </div>
 
           {/* Add to Cart Button */}

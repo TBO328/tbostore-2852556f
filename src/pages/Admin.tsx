@@ -27,6 +27,7 @@ import IconsManagement from '@/components/admin/IconsManagement';
 import AIAssistant from '@/components/admin/AIAssistant';
 import SeasonalThemesManagement from '@/components/admin/SeasonalThemesManagement';
 import PackagesManagement from '@/components/admin/PackagesManagement';
+import LoyaltyManagement from '@/components/admin/LoyaltyManagement';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -721,6 +722,9 @@ const Admin: React.FC = () => {
 
       case 'seasonal-themes':
         return <SeasonalThemesManagement />;
+      
+      case 'loyalty':
+        return <LoyaltyManagement />;
 
       case 'coupons':
         return (

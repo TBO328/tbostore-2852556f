@@ -103,6 +103,36 @@ export type Database = {
           },
         ]
       }
+      loyalty_points: {
+        Row: {
+          created_at: string
+          id: string
+          points: number
+          total_earned: number
+          total_redeemed: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points?: number
+          total_earned?: number
+          total_redeemed?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points?: number
+          total_earned?: number
+          total_redeemed?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string
@@ -235,6 +265,39 @@ export type Database = {
           setting_key?: string
           setting_value?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      points_transactions: {
+        Row: {
+          created_at: string
+          description_ar: string | null
+          description_en: string | null
+          id: string
+          order_id: string | null
+          points: number
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description_ar?: string | null
+          description_en?: string | null
+          id?: string
+          order_id?: string | null
+          points: number
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description_ar?: string | null
+          description_en?: string | null
+          id?: string
+          order_id?: string | null
+          points?: number
+          transaction_type?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -426,6 +489,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_loyalty_points: {
+        Args: {
+          p_description_ar?: string
+          p_description_en?: string
+          p_order_id?: string
+          p_points: number
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      calculate_points_from_amount: {
+        Args: { amount: number }
+        Returns: number
+      }
       check_order_rate_limit: { Args: { p_phone: string }; Returns: boolean }
       generate_order_number: { Args: never; Returns: string }
       get_all_users_with_roles: {
@@ -437,10 +514,20 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_user_points: { Args: { p_user_id: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
+        }
+        Returns: boolean
+      }
+      redeem_loyalty_points: {
+        Args: {
+          p_description_ar?: string
+          p_description_en?: string
+          p_points: number
+          p_user_id: string
         }
         Returns: boolean
       }

@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   ShoppingBag, Package, Star, Users, Handshake, 
-  Ticket, Settings, FileText, Home, LogOut, Palette, Sparkles, MousePointer, Calendar, ArrowRight
+  Ticket, Settings, FileText, Home, LogOut, Palette, Sparkles, MousePointer, Calendar, ArrowRight, Coins
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ const menuItems = [
   { id: 'users', icon: Users, labelEn: 'Users', labelAr: 'المستخدمين' },
   { id: 'partners', icon: Handshake, labelEn: 'Partners', labelAr: 'الشركاء' },
   { id: 'coupons', icon: Ticket, labelEn: 'Coupons', labelAr: 'الكوبونات' },
+  { id: 'loyalty', icon: Coins, labelEn: 'Loyalty Program', labelAr: 'نقاط الولاء' },
   { id: 'seasonal-themes', icon: Calendar, labelEn: 'Updates', labelAr: 'التحديثات' },
   { id: 'pages', icon: FileText, labelEn: 'Pages', labelAr: 'الصفحات' },
   { id: 'icons', icon: Palette, labelEn: 'Icons', labelAr: 'الأيقونات' },

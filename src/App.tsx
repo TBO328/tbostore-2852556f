@@ -28,6 +28,7 @@ import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
 import MyOrders from "./pages/MyOrders";
+import LoyaltyPoints from "./pages/LoyaltyPoints";
 import PageTransition from "./components/PageTransition";
 import AISupportButton from "./components/AISupportButton";
 import VisualEditorOverlay from "./components/admin/VisualEditorOverlay";
@@ -58,6 +59,7 @@ const AnimatedRoutes = () => {
         <Route path="/customize" element={<PageTransition><CustomizeExperience /></PageTransition>} />
         <Route path="/favorites" element={<PageTransition><Favorites /></PageTransition>} />
         <Route path="/my-orders" element={<PageTransition><MyOrders /></PageTransition>} />
+        <Route path="/loyalty-points" element={<PageTransition><LoyaltyPoints /></PageTransition>} />
         <Route path="/checkout/success" element={<PageTransition><CheckoutSuccess /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>

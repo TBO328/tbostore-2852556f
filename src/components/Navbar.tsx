@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import FlyingCartItem from '@/components/FlyingCartItem';
 import SearchDialog from '@/components/SearchDialog';
 import UserMenu from '@/components/UserMenu';
+import LoyaltyPointsBadge from '@/components/LoyaltyPointsBadge';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
 import sarSymbol from '@/assets/sar-symbol.png';
 
@@ -203,6 +204,9 @@ const Navbar: React.FC = () => {
                   <Search className="w-5 h-5" />
                 </Button>
               </motion.div>
+
+              {/* Loyalty Points Badge */}
+              <LoyaltyPointsBadge />
 
               {/* Admin Link */}
               {isAdmin && <Link to="/admin">
