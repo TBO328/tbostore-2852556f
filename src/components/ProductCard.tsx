@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { ShoppingCart, Heart, Eye, Star, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -23,6 +23,31 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
   const { addToCart, triggerFlyAnimation, cartIconRef } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
   const imageRef = useRef<HTMLImageElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // 3D Tilt Effect
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [15, -15]), { stiffness: 300, damping: 30 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-15, 15]), { stiffness: 300, damping: 30 });
+  const glareX = useTransform(mouseX, [-0.5, 0.5], [100, 0]);
+  const glareY = useTransform(mouseY, [-0.5, 0.5], [100, 0]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    mouseX.set(0);
+    mouseY.set(0);
+  };
 
   const isLiked = isFavorite(String(product.id));
 
@@ -64,16 +89,33 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
   };
 
   return (
-    <Link to={`/product/${product.id}`}>
+    <Link to={`/product/${product.id}`} className="block" style={{ perspective: '1000px' }}>
       <motion.div
+        ref={cardRef}
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: index * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-        whileHover={{ y: -8 }}
+        style={{
+          rotateX: isHovered ? rotateX : 0,
+          rotateY: isHovered ? rotateY : 0,
+          transformStyle: 'preserve-3d',
+        }}
+        whileHover={{ y: -8, z: 50 }}
         className="group relative bg-card rounded-2xl overflow-hidden border border-border transition-all duration-500 hover:border-primary/50 hover:shadow-neon-cyan"
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       >
+        {/* 3D Glare Effect */}
+        <motion.div
+          className="absolute inset-0 z-30 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          style={{
+            background: useTransform(
+              [glareX, glareY],
+              ([x, y]) => `radial-gradient(circle at ${x}% ${y}%, hsl(var(--primary) / 0.15), transparent 50%)`
+            ),
+          }}
+        />
         {/* Animated Background Gradient */}
         <motion.div 
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-0"
