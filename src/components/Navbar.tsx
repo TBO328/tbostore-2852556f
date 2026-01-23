@@ -26,7 +26,8 @@ const Navbar: React.FC = () => {
   const {
     getTotalItems,
     cartIconRef,
-    flyingItem
+    flyingItem,
+    isShaking
   } = useCart();
   const {
     theme,
@@ -226,23 +227,48 @@ const Navbar: React.FC = () => {
 
               {/* Cart */}
               <Link to="/cart">
-                <motion.div ref={cartIconRef} whileHover={{
-                scale: 1.05
-              }} whileTap={{
-                scale: 0.95
-              }}>
+                <motion.div 
+                  ref={cartIconRef} 
+                  whileHover={{ scale: 1.05 }} 
+                  whileTap={{ scale: 0.95 }}
+                  animate={isShaking ? {
+                    x: [0, -4, 4, -4, 4, -2, 2, 0],
+                    rotate: [0, -5, 5, -5, 5, -2, 2, 0],
+                    scale: [1, 1.1, 1.1, 1.1, 1.1, 1.05, 1.05, 1]
+                  } : {}}
+                  transition={isShaking ? {
+                    duration: 0.5,
+                    ease: "easeInOut"
+                  } : {}}
+                >
                   <Button variant="neon" size="icon" className="relative">
-                    <ShoppingCart className="w-5 h-5" />
+                    <motion.div
+                      animate={isShaking ? {
+                        scale: [1, 1.2, 1],
+                        filter: [
+                          'drop-shadow(0 0 0px hsl(var(--primary)))',
+                          'drop-shadow(0 0 15px hsl(var(--primary)))',
+                          'drop-shadow(0 0 0px hsl(var(--primary)))'
+                        ]
+                      } : {}}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <ShoppingCart className="w-5 h-5" />
+                    </motion.div>
                     <AnimatePresence>
-                      {itemCount > 0 && <motion.span key="cart-count" initial={{
-                      scale: 0
-                    }} animate={{
-                      scale: 1
-                    }} exit={{
-                      scale: 0
-                    }} className="absolute -top-1 -right-1 w-5 h-5 bg-secondary text-secondary-foreground text-xs rounded-full flex items-center justify-center font-bold">
+                      {itemCount > 0 && (
+                        <motion.span 
+                          key="cart-count" 
+                          initial={{ scale: 0 }} 
+                          animate={isShaking ? { 
+                            scale: [1, 1.3, 1],
+                          } : { scale: 1 }} 
+                          exit={{ scale: 0 }} 
+                          className="absolute -top-1 -right-1 w-5 h-5 bg-secondary text-secondary-foreground text-xs rounded-full flex items-center justify-center font-bold"
+                        >
                           {itemCount > 99 ? '99+' : itemCount}
-                        </motion.span>}
+                        </motion.span>
+                      )}
                     </AnimatePresence>
                   </Button>
                 </motion.div>
