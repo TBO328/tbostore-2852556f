@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import ProductCard from '@/components/ProductCard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
@@ -34,6 +34,29 @@ const Products: React.FC = () => {
   const [products, setProducts] = useState<DisplayProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const { categories: dbCategories, loading: categoriesLoading } = useCategories();
+  
+  // Parallax effect state
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Smooth spring animations for parallax
+  const parallaxX1 = useSpring(useTransform(mouseX, [0, 1], [-30, 30]), { stiffness: 100, damping: 30 });
+  const parallaxY1 = useSpring(useTransform(mouseY, [0, 1], [-30, 30]), { stiffness: 100, damping: 30 });
+  const parallaxX2 = useSpring(useTransform(mouseX, [0, 1], [40, -40]), { stiffness: 80, damping: 25 });
+  const parallaxY2 = useSpring(useTransform(mouseY, [0, 1], [40, -40]), { stiffness: 80, damping: 25 });
+  const parallaxX3 = useSpring(useTransform(mouseX, [0, 1], [-20, 20]), { stiffness: 120, damping: 35 });
+  const parallaxY3 = useSpring(useTransform(mouseY, [0, 1], [-20, 20]), { stiffness: 120, damping: 35 });
+
+  // Handle mouse move for parallax
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -118,14 +141,29 @@ const Products: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div 
+      ref={containerRef}
+      className="min-h-screen bg-background"
+      onMouseMove={handleMouseMove}
+    >
       <Navbar />
       <main className="pt-20">
-        {/* Hero Section */}
+        {/* Hero Section with Parallax */}
         <section className="py-16 md:py-24 bg-gradient-hero relative overflow-hidden">
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-neon-cyan/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-magenta/10 rounded-full blur-3xl" />
+          {/* Parallax Background Elements */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <motion.div 
+              className="absolute top-1/4 left-1/4 w-64 h-64 bg-neon-cyan/10 rounded-full blur-3xl"
+              style={{ x: parallaxX1, y: parallaxY1 }}
+            />
+            <motion.div 
+              className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-magenta/10 rounded-full blur-3xl"
+              style={{ x: parallaxX2, y: parallaxY2 }}
+            />
+            <motion.div 
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-primary/5 rounded-full blur-3xl"
+              style={{ x: parallaxX3, y: parallaxY3 }}
+            />
           </div>
           
           <div className="container mx-auto px-4 relative z-10">
@@ -147,10 +185,21 @@ const Products: React.FC = () => {
           </div>
         </section>
 
-        {/* Products Section */}
+        {/* Products Section with Parallax */}
         <section className="py-16 bg-background relative overflow-hidden">
-          <div className="absolute top-1/2 left-0 w-72 h-72 bg-neon-cyan/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-neon-magenta/5 rounded-full blur-3xl" />
+          {/* Parallax Background Orbs */}
+          <motion.div 
+            className="absolute top-1/2 left-0 w-72 h-72 bg-neon-cyan/5 rounded-full blur-3xl pointer-events-none"
+            style={{ x: parallaxX2, y: parallaxY1 }}
+          />
+          <motion.div 
+            className="absolute bottom-0 right-0 w-96 h-96 bg-neon-magenta/5 rounded-full blur-3xl pointer-events-none"
+            style={{ x: parallaxX1, y: parallaxY2 }}
+          />
+          <motion.div 
+            className="absolute top-1/4 right-1/4 w-48 h-48 bg-primary/3 rounded-full blur-2xl pointer-events-none"
+            style={{ x: parallaxX3, y: parallaxY3 }}
+          />
 
           <div className="container mx-auto px-4 relative z-10">
             {/* Category Filter */}
