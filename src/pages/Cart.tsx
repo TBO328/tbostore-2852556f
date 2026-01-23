@@ -170,6 +170,7 @@ const Cart: React.FC = () => {
             price: item.price,
             quantity: item.quantity,
             image: item.image,
+            customization: item.customization || undefined,
           })),
           customerName: customerName.trim(),
           customerPhone: customerPhone.trim(),
@@ -215,6 +216,7 @@ const Cart: React.FC = () => {
       price: item.price,
       quantity: item.quantity,
       image: item.image,
+      customization: item.customization || undefined,
     }));
 
     const orderData = {
@@ -259,17 +261,17 @@ const Cart: React.FC = () => {
       }
 
       // Insert order with validated data
-      const { error } = await supabase.from('orders').insert({
+      const { error } = await supabase.from('orders').insert([{
         order_number: orderNumber,
         customer_name: orderData.customer_name.trim(),
         customer_phone: orderData.customer_phone.trim(),
         customer_address: orderData.customer_address.trim(),
-        items: orderData.items,
+        items: orderData.items as unknown as import('@/integrations/supabase/types').Json,
         payment_method: orderData.payment_method,
         total_amount: orderData.total_amount,
         status: 'pending',
         notes: notes || null,
-      });
+      }]);
 
       if (error) throw error;
 

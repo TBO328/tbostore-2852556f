@@ -13,6 +13,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { mapErrorToUserMessage } from '@/lib/errors';
 import sarSymbol from '@/assets/sar-symbol.png';
 
+interface OrderItemCustomization {
+  hasLogo?: boolean;
+  logoFile?: string;
+  selectedColor?: string;
+  customHexColor?: string;
+  installLocation?: string;
+  contactMethod?: string;
+  selectedFeatures?: string[];
+}
+
 interface Order {
   id: string;
   order_number: string;
@@ -26,6 +36,7 @@ interface Order {
     price: number;
     quantity: number;
     image: string;
+    customization?: OrderItemCustomization;
   }>;
   payment_method: string;
   total_amount: number;
@@ -268,15 +279,107 @@ const OrdersManagement: React.FC<OrdersManagementProps> = ({ orders, onRefresh }
 
               <div>
                 <h4 className="font-semibold mb-3">{language === 'en' ? 'Items' : 'المنتجات'}</h4>
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {selectedOrder.items.map((item, index) => (
-                    <div key={index} className="flex items-center gap-3 p-2 bg-muted/50 rounded-lg">
-                      <img src={item.image} alt={item.name} className="w-12 h-12 rounded object-cover" />
-                      <div className="flex-1">
-                        <p className="font-medium">{language === 'ar' ? item.nameAr : item.name}</p>
-                        <p className="text-sm text-muted-foreground">x{item.quantity}</p>
+                    <div key={index} className="p-4 bg-muted/50 rounded-xl border border-border/50">
+                      <div className="flex items-center gap-3 mb-3">
+                        <img src={item.image} alt={item.name} className="w-14 h-14 rounded-lg object-cover" />
+                        <div className="flex-1">
+                          <p className="font-medium text-foreground">{language === 'ar' ? item.nameAr : item.name}</p>
+                          <p className="text-sm text-muted-foreground">x{item.quantity}</p>
+                        </div>
+                        <p className="font-bold text-primary">{formatPriceWithSymbol(item.price * item.quantity)}</p>
                       </div>
-                      <p className="font-medium">{formatPriceWithSymbol(item.price * item.quantity)}</p>
+                      
+                      {/* Customization Details */}
+                      {item.customization && (
+                        <div className="mt-3 pt-3 border-t border-border/50">
+                          <h5 className="text-sm font-semibold text-primary mb-2 flex items-center gap-2">
+                            <Tag className="w-4 h-4" />
+                            {language === 'en' ? 'Customization Details' : 'تفاصيل التخصيص'}
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                            {/* Logo */}
+                            {item.customization.hasLogo !== undefined && (
+                              <div className="flex items-start gap-2">
+                                <span className="text-muted-foreground min-w-[80px]">
+                                  {language === 'en' ? 'Logo:' : 'الشعار:'}
+                                </span>
+                                <div className="flex-1">
+                                  <span className="font-medium">
+                                    {item.customization.hasLogo 
+                                      ? (language === 'en' ? 'Yes' : 'نعم')
+                                      : (language === 'en' ? 'No' : 'لا')
+                                    }
+                                  </span>
+                                  {item.customization.hasLogo && item.customization.logoFile && (
+                                    <img 
+                                      src={item.customization.logoFile} 
+                                      alt="Logo" 
+                                      className="mt-2 w-16 h-16 rounded-lg object-contain bg-card border border-border"
+                                    />
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Color */}
+                            {item.customization.selectedColor && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground min-w-[80px]">
+                                  {language === 'en' ? 'Color:' : 'اللون:'}
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  <div 
+                                    className="w-6 h-6 rounded-full border-2 border-border shadow-sm"
+                                    style={{ backgroundColor: item.customization.selectedColor }}
+                                  />
+                                  <span className="font-mono text-xs">{item.customization.selectedColor}</span>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Installation Location */}
+                            {item.customization.installLocation && (
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground min-w-[80px]">
+                                  {language === 'en' ? 'Platform:' : 'المنصة:'}
+                                </span>
+                                <span className="font-medium capitalize">{item.customization.installLocation}</span>
+                              </div>
+                            )}
+                            
+                            {/* Contact Method */}
+                            {item.customization.contactMethod && (
+                              <div className="flex items-center gap-2 col-span-full">
+                                <span className="text-muted-foreground min-w-[80px]">
+                                  {language === 'en' ? 'Contact:' : 'التواصل:'}
+                                </span>
+                                <span className="font-medium text-primary">{item.customization.contactMethod}</span>
+                              </div>
+                            )}
+                            
+                            {/* Selected Features */}
+                            {item.customization.selectedFeatures && item.customization.selectedFeatures.length > 0 && (
+                              <div className="col-span-full">
+                                <span className="text-muted-foreground block mb-1">
+                                  {language === 'en' ? 'Selected Features:' : 'الميزات المختارة:'}
+                                </span>
+                                <div className="flex flex-wrap gap-1">
+                                  {item.customization.selectedFeatures.map((feature, idx) => (
+                                    <span 
+                                      key={idx}
+                                      className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full font-medium"
+                                    >
+                                      {feature}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
