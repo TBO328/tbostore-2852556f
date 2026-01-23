@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingCart, Search, Moon, Sun, DollarSign, AlertTriangle } from 'lucide-react';
+import { Menu, X, ShoppingCart, Search, Moon, Sun, DollarSign, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
@@ -14,7 +14,6 @@ import UserMenu from '@/components/UserMenu';
 import LoyaltyPointsBadge from '@/components/LoyaltyPointsBadge';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
 import sarSymbol from '@/assets/sar-symbol.png';
-
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -41,7 +40,7 @@ const Navbar: React.FC = () => {
     isAdmin
   } = useAuth();
   const location = useLocation();
-  
+
   // Remove favorites from nav links
   const navLinks = [{
     key: 'home',
@@ -128,67 +127,81 @@ const Navbar: React.FC = () => {
             <div className="flex items-center gap-2">
               {/* Language Toggle */}
               <div className="hidden sm:flex items-center gap-1.5">
-                <motion.button
-                  onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center justify-center px-3 h-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 transition-all overflow-hidden"
-                >
+                <motion.button onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')} whileHover={{
+                scale: 1.05
+              }} whileTap={{
+                scale: 0.95
+              }} className="flex items-center justify-center px-3 h-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 transition-all overflow-hidden">
                   <AnimatePresence mode="wait">
-                    <motion.span
-                      key={language}
-                      initial={{ y: -20, opacity: 0, rotateX: -90 }}
-                      animate={{ y: 0, opacity: 1, rotateX: 0 }}
-                      exit={{ y: 20, opacity: 0, rotateX: 90 }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="text-xs font-medium font-arabic"
-                    >
+                    <motion.span key={language} initial={{
+                    y: -20,
+                    opacity: 0,
+                    rotateX: -90
+                  }} animate={{
+                    y: 0,
+                    opacity: 1,
+                    rotateX: 0
+                  }} exit={{
+                    y: 20,
+                    opacity: 0,
+                    rotateX: 90
+                  }} transition={{
+                    duration: 0.3,
+                    ease: "easeOut"
+                  }} className="text-xs font-medium font-arabic">
                       {language === 'ar' ? 'عربي' : 'English'}
                     </motion.span>
                   </AnimatePresence>
                 </motion.button>
 
                 {/* Currency Toggle */}
-                <motion.button
-                  onClick={() => setCurrency(currency === 'SAR' ? 'USD' : 'SAR')}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 transition-all overflow-hidden"
-                >
+                <motion.button onClick={() => setCurrency(currency === 'SAR' ? 'USD' : 'SAR')} whileHover={{
+                scale: 1.05
+              }} whileTap={{
+                scale: 0.95
+              }} className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/50 transition-all overflow-hidden">
                   <AnimatePresence mode="wait">
-                    <motion.div
-                      key={currency}
-                      initial={{ scale: 0, rotate: -180 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      exit={{ scale: 0, rotate: 180 }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                    >
-                      {currency === 'SAR' ? (
-                        <img 
-                          src={sarSymbol} 
-                          alt="SAR" 
-                          className="w-4 h-4" 
-                          style={{ filter: theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)' }} 
-                        />
-                      ) : (
-                        <DollarSign className="w-4 h-4 text-foreground" />
-                      )}
+                    <motion.div key={currency} initial={{
+                    scale: 0,
+                    rotate: -180
+                  }} animate={{
+                    scale: 1,
+                    rotate: 0
+                  }} exit={{
+                    scale: 0,
+                    rotate: 180
+                  }} transition={{
+                    duration: 0.3,
+                    ease: "easeOut"
+                  }}>
+                      {currency === 'SAR' ? <img src={sarSymbol} alt="SAR" className="w-4 h-4" style={{
+                      filter: theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)'
+                    }} /> : <DollarSign className="w-4 h-4 text-foreground" />}
                     </motion.div>
                   </AnimatePresence>
                 </motion.button>
               </div>
 
               {/* Theme Toggle */}
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <motion.div whileHover={{
+              scale: 1.05
+            }} whileTap={{
+              scale: 0.95
+            }}>
                 <Button variant="ghost" size="icon" onClick={toggleTheme} className="hidden sm:flex">
                   <AnimatePresence mode="wait">
-                    <motion.div
-                      key={theme}
-                      initial={{ rotate: -90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: 90, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
+                    <motion.div key={theme} initial={{
+                    rotate: -90,
+                    opacity: 0
+                  }} animate={{
+                    rotate: 0,
+                    opacity: 1
+                  }} exit={{
+                    rotate: 90,
+                    opacity: 0
+                  }} transition={{
+                    duration: 0.2
+                  }}>
                       {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                     </motion.div>
                   </AnimatePresence>
@@ -217,7 +230,7 @@ const Navbar: React.FC = () => {
                 scale: 0.95
               }}>
                     <Button variant="ghost" size="icon" className="text-primary">
-                      <AlertTriangle className="w-5 h-5" />
+                      <Lock className="w-5 h-5" />
                     </Button>
                   </motion.div>
                 </Link>}
@@ -227,48 +240,39 @@ const Navbar: React.FC = () => {
 
               {/* Cart */}
               <Link to="/cart">
-                <motion.div 
-                  ref={cartIconRef} 
-                  whileHover={{ scale: 1.05 }} 
-                  whileTap={{ scale: 0.95 }}
-                  animate={isShaking ? {
-                    x: [0, -4, 4, -4, 4, -2, 2, 0],
-                    rotate: [0, -5, 5, -5, 5, -2, 2, 0],
-                    scale: [1, 1.1, 1.1, 1.1, 1.1, 1.05, 1.05, 1]
-                  } : {}}
-                  transition={isShaking ? {
-                    duration: 0.5,
-                    ease: "easeInOut"
-                  } : {}}
-                >
+                <motion.div ref={cartIconRef} whileHover={{
+                scale: 1.05
+              }} whileTap={{
+                scale: 0.95
+              }} animate={isShaking ? {
+                x: [0, -4, 4, -4, 4, -2, 2, 0],
+                rotate: [0, -5, 5, -5, 5, -2, 2, 0],
+                scale: [1, 1.1, 1.1, 1.1, 1.1, 1.05, 1.05, 1]
+              } : {}} transition={isShaking ? {
+                duration: 0.5,
+                ease: "easeInOut"
+              } : {}}>
                   <Button variant="neon" size="icon" className="relative">
-                    <motion.div
-                      animate={isShaking ? {
-                        scale: [1, 1.2, 1],
-                        filter: [
-                          'drop-shadow(0 0 0px hsl(var(--primary)))',
-                          'drop-shadow(0 0 15px hsl(var(--primary)))',
-                          'drop-shadow(0 0 0px hsl(var(--primary)))'
-                        ]
-                      } : {}}
-                      transition={{ duration: 0.5 }}
-                    >
+                    <motion.div animate={isShaking ? {
+                    scale: [1, 1.2, 1],
+                    filter: ['drop-shadow(0 0 0px hsl(var(--primary)))', 'drop-shadow(0 0 15px hsl(var(--primary)))', 'drop-shadow(0 0 0px hsl(var(--primary)))']
+                  } : {}} transition={{
+                    duration: 0.5
+                  }}>
                       <ShoppingCart className="w-5 h-5" />
                     </motion.div>
                     <AnimatePresence>
-                      {itemCount > 0 && (
-                        <motion.span 
-                          key="cart-count" 
-                          initial={{ scale: 0 }} 
-                          animate={isShaking ? { 
-                            scale: [1, 1.3, 1],
-                          } : { scale: 1 }} 
-                          exit={{ scale: 0 }} 
-                          className="absolute -top-1 -right-1 w-5 h-5 bg-secondary text-secondary-foreground text-xs rounded-full flex items-center justify-center font-bold"
-                        >
+                      {itemCount > 0 && <motion.span key="cart-count" initial={{
+                      scale: 0
+                    }} animate={isShaking ? {
+                      scale: [1, 1.3, 1]
+                    } : {
+                      scale: 1
+                    }} exit={{
+                      scale: 0
+                    }} className="absolute -top-1 -right-1 w-5 h-5 bg-secondary text-secondary-foreground text-xs rounded-full flex items-center justify-center font-bold">
                           {itemCount > 99 ? '99+' : itemCount}
-                        </motion.span>
-                      )}
+                        </motion.span>}
                     </AnimatePresence>
                   </Button>
                 </motion.div>
