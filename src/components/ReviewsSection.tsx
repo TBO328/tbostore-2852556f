@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Star, Quote, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useReviews } from '@/hooks/useReviews';
@@ -48,6 +48,42 @@ const ReviewsSection: React.FC = () => {
   const { reviews: dbReviews, loading } = useReviews(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // 3D Tilt Effect
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [10, -10]), { stiffness: 300, damping: 30 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-10, 10]), { stiffness: 300, damping: 30 });
+  const glareX = useTransform(mouseX, [-0.5, 0.5], [100, 0]);
+  const glareY = useTransform(mouseY, [-0.5, 0.5], [100, 0]);
+  
+  // Dynamic shadow
+  const shadowX = useSpring(useTransform(mouseX, [-0.5, 0.5], [25, -25]), { stiffness: 300, damping: 30 });
+  const shadowY = useSpring(useTransform(mouseY, [-0.5, 0.5], [25, -25]), { stiffness: 300, damping: 30 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setIsPaused(false);
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    setIsPaused(true);
+  };
 
   const reviews = dbReviews.length > 0 ? dbReviews : fallbackReviews;
 
@@ -90,11 +126,10 @@ const ReviewsSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Single Review Card with Animation */}
+        {/* Single Review Card with 3D Animation */}
         <div 
           className="max-w-3xl mx-auto relative"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
+          style={{ perspective: '1000px' }}
         >
           {/* Navigation Arrows */}
           {reviews.length > 1 && (
@@ -116,59 +151,104 @@ const ReviewsSection: React.FC = () => {
 
           <AnimatePresence mode="wait">
             <motion.div
+              ref={cardRef}
               key={currentReview?.id || currentIndex}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.4 }}
-              className="relative bg-gradient-card rounded-2xl p-8 border border-border hover:border-primary/50 transition-all duration-500 neon-glow"
+              initial={{ opacity: 0, x: 50, rotateY: -15 }}
+              animate={{ opacity: 1, x: 0, rotateY: 0 }}
+              exit={{ opacity: 0, x: -50, rotateY: 15 }}
+              transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+              style={{
+                rotateX: isHovered ? rotateX : 0,
+                rotateY: isHovered ? rotateY : 0,
+                transformStyle: 'preserve-3d',
+                boxShadow: isHovered 
+                  ? useTransform(
+                      [shadowX, shadowY],
+                      ([x, y]) => `${x}px ${y}px 40px -5px hsl(var(--primary) / 0.25), 0 15px 50px -15px hsl(var(--primary) / 0.2)`
+                    )
+                  : '0 4px 30px -5px hsl(var(--primary) / 0.1)',
+              }}
+              onMouseEnter={handleMouseEnter}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
+              className="relative bg-gradient-card rounded-2xl p-8 border border-border hover:border-primary/50 transition-colors duration-500"
             >
-              {/* Quote Icon */}
-              <div className="absolute top-4 right-4 text-primary/20">
+              {/* 3D Glare Effect */}
+              <motion.div
+                className="absolute inset-0 z-10 pointer-events-none rounded-2xl opacity-0 transition-opacity duration-300"
+                style={{
+                  opacity: isHovered ? 1 : 0,
+                  background: useTransform(
+                    [glareX, glareY],
+                    ([x, y]) => `radial-gradient(circle at ${x}% ${y}%, hsl(var(--primary) / 0.12), transparent 50%)`
+                  ),
+                }}
+              />
+
+              {/* Quote Icon with 3D depth */}
+              <motion.div 
+                className="absolute top-4 right-4 text-primary/20"
+                style={{ transform: 'translateZ(30px)' }}
+              >
                 <Quote className="w-12 h-12" />
-              </div>
+              </motion.div>
 
-              {/* Rating */}
-              <div className="flex gap-1 mb-4">
-                {[...Array(currentReview?.rating || 5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-primary fill-primary" />
-                ))}
-              </div>
-
-              {/* Review Text */}
-              <p className="text-foreground text-lg mb-6 leading-relaxed min-h-[80px]">
-                "{language === 'ar' 
-                  ? (currentReview?.review_text_ar || currentReview?.review_text_en)
-                  : (currentReview?.review_text_en || currentReview?.review_text_ar)
-                }"
-              </p>
-
-              {/* Product Tag */}
-              {(currentReview?.product_name_en || currentReview?.product_name_ar) && (
-                <div className="inline-block px-3 py-1 bg-muted rounded-full text-xs text-muted-foreground mb-6">
-                  {language === 'ar' 
-                    ? (currentReview?.product_name_ar || currentReview?.product_name_en)
-                    : (currentReview?.product_name_en || currentReview?.product_name_ar)
-                  }
+              {/* Content with 3D depth */}
+              <div style={{ transform: 'translateZ(20px)' }}>
+                {/* Rating */}
+                <div className="flex gap-1 mb-4">
+                  {[...Array(currentReview?.rating || 5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-primary fill-primary" />
+                  ))}
                 </div>
-              )}
 
-              {/* Author */}
-              <div className="flex items-center gap-3 pt-4 border-t border-border">
-                <img
-                  src={currentReview?.customer_avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80'}
-                  alt={currentReview?.customer_name}
-                  className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/50"
-                />
-                <div>
-                  <div className="font-semibold text-foreground">
-                    {currentReview?.customer_name}
+                {/* Review Text */}
+                <p className="text-foreground text-lg mb-6 leading-relaxed min-h-[80px]">
+                  "{language === 'ar' 
+                    ? (currentReview?.review_text_ar || currentReview?.review_text_en)
+                    : (currentReview?.review_text_en || currentReview?.review_text_ar)
+                  }"
+                </p>
+
+                {/* Product Tag */}
+                {(currentReview?.product_name_en || currentReview?.product_name_ar) && (
+                  <div className="inline-block px-3 py-1 bg-muted rounded-full text-xs text-muted-foreground mb-6">
+                    {language === 'ar' 
+                      ? (currentReview?.product_name_ar || currentReview?.product_name_en)
+                      : (currentReview?.product_name_en || currentReview?.product_name_ar)
+                    }
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {language === 'en' ? 'Verified Buyer' : 'مشتري موثق'}
+                )}
+
+                {/* Author */}
+                <div className="flex items-center gap-3 pt-4 border-t border-border">
+                  <motion.img
+                    src={currentReview?.customer_avatar || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80'}
+                    alt={currentReview?.customer_name}
+                    className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/50"
+                    style={{ transform: 'translateZ(40px)' }}
+                    whileHover={{ scale: 1.1 }}
+                  />
+                  <div>
+                    <div className="font-semibold text-foreground">
+                      {currentReview?.customer_name}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {language === 'en' ? 'Verified Buyer' : 'مشتري موثق'}
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Floating elements with depth */}
+              <motion.div
+                className="absolute -bottom-2 -right-2 w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-xl pointer-events-none"
+                style={{ transform: 'translateZ(-10px)' }}
+              />
+              <motion.div
+                className="absolute -top-2 -left-2 w-16 h-16 bg-gradient-to-br from-secondary/20 to-transparent rounded-full blur-xl pointer-events-none"
+                style={{ transform: 'translateZ(-10px)' }}
+              />
             </motion.div>
           </AnimatePresence>
 
