@@ -19,6 +19,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
 import PointsRedemptionSection from '@/components/PointsRedemptionSection';
+import CartItem3D from '@/components/CartItem3D';
 import stcPayLogo from '@/assets/stc-pay-logo.png';
 import useLoyaltyPoints from '@/hooks/useLoyaltyPoints';
 
@@ -409,79 +410,13 @@ const Cart: React.FC = () => {
                 {/* Items List */}
                 <AnimatePresence>
                   {items.map((item, index) => (
-                    <motion.div
+                    <CartItem3D
                       key={item.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -20, height: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="bg-gradient-card rounded-xl border border-border p-4 flex gap-4"
-                    >
-                      {/* Product Image */}
-                      <Link to={`/product/${item.id}`} className="shrink-0">
-                        <motion.img
-                          src={item.image}
-                          alt={language === 'ar' ? item.nameAr : item.name}
-                          className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg"
-                          whileHover={{ scale: 1.05 }}
-                        />
-                      </Link>
-
-                      {/* Product Details */}
-                      <div className="flex-1 flex flex-col justify-between">
-                        <div>
-                          <Link to={`/product/${item.id}`}>
-                            <h3 className="font-display font-semibold text-foreground hover:text-primary transition-colors">
-                              {language === 'ar' ? item.nameAr : item.name}
-                            </h3>
-                          </Link>
-                          <p className="text-primary font-bold mt-1">
-                            {formatPrice(item.price)}
-                          </p>
-                        </div>
-
-                        {/* Quantity & Actions */}
-                        <div className="flex items-center justify-between mt-4">
-                          {/* Quantity Controls */}
-                          <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                              className="w-8 h-8"
-                            >
-                              <Minus className="w-4 h-4" />
-                            </Button>
-                            <span className="w-8 text-center font-bold text-foreground">
-                              {item.quantity}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              className="w-8 h-8"
-                            >
-                              <Plus className="w-4 h-4" />
-                            </Button>
-                          </div>
-
-                          {/* Item Total & Remove */}
-                          <div className="flex items-center gap-4">
-                            <span className="font-display font-bold text-foreground">
-                              {formatPrice(item.price * item.quantity)}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeFromCart(item.id)}
-                              className="text-destructive hover:bg-destructive/10"
-                            >
-                              <Trash2 className="w-5 h-5" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
+                      item={item}
+                      index={index}
+                      onUpdateQuantity={updateQuantity}
+                      onRemove={removeFromCart}
+                    />
                   ))}
                 </AnimatePresence>
 
