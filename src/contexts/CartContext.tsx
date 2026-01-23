@@ -20,6 +20,7 @@ interface CartContextType {
   cartIconRef: React.RefObject<HTMLDivElement>;
   triggerFlyAnimation: (startPosition: { x: number; y: number }, image: string) => void;
   flyingItem: { x: number; y: number; image: string } | null;
+  isShaking: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -27,6 +28,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [flyingItem, setFlyingItem] = useState<{ x: number; y: number; image: string } | null>(null);
+  const [isShaking, setIsShaking] = useState(false);
   const cartIconRef = useRef<HTMLDivElement>(null);
 
   const addToCart = useCallback((product: Omit<CartItem, 'quantity'>) => {
@@ -73,7 +75,12 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const triggerFlyAnimation = useCallback((startPosition: { x: number; y: number }, image: string) => {
     setFlyingItem({ ...startPosition, image });
-    setTimeout(() => setFlyingItem(null), 800);
+    // Trigger shake after flying animation reaches the cart
+    setTimeout(() => {
+      setFlyingItem(null);
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 500);
+    }, 800);
   }, []);
 
   return (
@@ -87,7 +94,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       getTotalPrice,
       cartIconRef,
       triggerFlyAnimation,
-      flyingItem
+      flyingItem,
+      isShaking
     }}>
       {children}
     </CartContext.Provider>
