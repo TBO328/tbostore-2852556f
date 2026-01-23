@@ -63,6 +63,16 @@ const ReviewsSection: React.FC = () => {
   // Dynamic shadow
   const shadowX = useSpring(useTransform(mouseX, [-0.5, 0.5], [25, -25]), { stiffness: 300, damping: 30 });
   const shadowY = useSpring(useTransform(mouseY, [-0.5, 0.5], [25, -25]), { stiffness: 300, damping: 30 });
+  
+  // Pre-compute transforms at top level (React hooks rule)
+  const dynamicShadow = useTransform(
+    [shadowX, shadowY],
+    ([x, y]) => `${x}px ${y}px 40px -5px hsl(var(--primary) / 0.25), 0 15px 50px -15px hsl(var(--primary) / 0.2)`
+  );
+  const glareBackground = useTransform(
+    [glareX, glareY],
+    ([x, y]) => `radial-gradient(circle at ${x}% ${y}%, hsl(var(--primary) / 0.12), transparent 50%)`
+  );
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
@@ -161,12 +171,7 @@ const ReviewsSection: React.FC = () => {
                 rotateX: isHovered ? rotateX : 0,
                 rotateY: isHovered ? rotateY : 0,
                 transformStyle: 'preserve-3d',
-                boxShadow: isHovered 
-                  ? useTransform(
-                      [shadowX, shadowY],
-                      ([x, y]) => `${x}px ${y}px 40px -5px hsl(var(--primary) / 0.25), 0 15px 50px -15px hsl(var(--primary) / 0.2)`
-                    )
-                  : '0 4px 30px -5px hsl(var(--primary) / 0.1)',
+                boxShadow: isHovered ? dynamicShadow : '0 4px 30px -5px hsl(var(--primary) / 0.1)',
               }}
               onMouseEnter={handleMouseEnter}
               onMouseMove={handleMouseMove}
@@ -178,10 +183,7 @@ const ReviewsSection: React.FC = () => {
                 className="absolute inset-0 z-10 pointer-events-none rounded-2xl opacity-0 transition-opacity duration-300"
                 style={{
                   opacity: isHovered ? 1 : 0,
-                  background: useTransform(
-                    [glareX, glareY],
-                    ([x, y]) => `radial-gradient(circle at ${x}% ${y}%, hsl(var(--primary) / 0.12), transparent 50%)`
-                  ),
+                  background: glareBackground,
                 }}
               />
 
