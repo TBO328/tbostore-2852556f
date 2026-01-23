@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   ArrowLeft, ArrowRight, User, Mail, Calendar, Shield, ShieldOff, 
   Ban, Coins, Plus, Minus, Ticket, Trash2, Loader2, Save,
-  Copy, Check, Upload, KeyRound
+  Copy, Check, Upload, KeyRound, Eye, EyeOff, Send
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from '@/components/ui/input-otp';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -93,8 +98,15 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
   // Delete confirmation
   const [deleteDialog, setDeleteDialog] = useState(false);
   
-  // Password reset
-  const [resettingPassword, setResettingPassword] = useState(false);
+  // Password reset OTP system
+  const [passwordDialog, setPasswordDialog] = useState(false);
+  const [passwordStep, setPasswordStep] = useState<'generate' | 'verify' | 'reset'>('generate');
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [enteredOtp, setEnteredOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   const fetchUserDetails = async () => {
     try {
@@ -375,35 +387,146 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleResetPassword = async () => {
+  const handleGenerateOtp = async () => {
     if (!user?.email) return;
     
-    setResettingPassword(true);
+    setOtpLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: `${window.location.origin}/forgot-password`
+      const { data, error } = await supabase.rpc('generate_password_reset_otp', {
+        p_user_email: user.email
       });
       
       if (error) throw error;
       
+      setGeneratedOtp(data);
+      setPasswordStep('verify');
       toast({
-        title: language === 'en' ? 'Success' : 'تم بنجاح',
+        title: language === 'en' ? 'OTP Generated' : 'تم إنشاء الكود',
         description: language === 'en' 
-          ? 'Password reset email sent to user'
-          : 'تم إرسال رابط إعادة تعيين كلمة المرور للمستخدم',
+          ? 'Give this code to the user to verify their identity'
+          : 'أعط هذا الكود للمستخدم للتحقق من هويته',
       });
     } catch (error) {
-      console.error('Error resetting password:', error);
+      console.error('Error generating OTP:', error);
       toast({
         title: language === 'en' ? 'Error' : 'خطأ',
         description: language === 'en' 
-          ? 'Failed to send password reset email'
-          : 'فشل في إرسال رابط إعادة تعيين كلمة المرور',
+          ? 'Failed to generate OTP'
+          : 'فشل في إنشاء الكود',
         variant: 'destructive',
       });
     } finally {
-      setResettingPassword(false);
+      setOtpLoading(false);
     }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!user?.email || enteredOtp.length !== 6) return;
+    
+    setOtpLoading(true);
+    try {
+      const { data, error } = await supabase.rpc('verify_password_reset_otp', {
+        p_user_email: user.email,
+        p_otp: enteredOtp
+      });
+      
+      if (error) throw error;
+      
+      if (data) {
+        setPasswordStep('reset');
+        toast({
+          title: language === 'en' ? 'OTP Verified' : 'تم التحقق من الكود',
+          description: language === 'en' 
+            ? 'You can now set a new password'
+            : 'يمكنك الآن تعيين كلمة مرور جديدة',
+        });
+      } else {
+        toast({
+          title: language === 'en' ? 'Invalid OTP' : 'كود غير صحيح',
+          description: language === 'en' 
+            ? 'The code is incorrect or expired'
+            : 'الكود غير صحيح أو منتهي الصلاحية',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      toast({
+        title: language === 'en' ? 'Error' : 'خطأ',
+        variant: 'destructive',
+      });
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      toast({
+        title: language === 'en' ? 'Invalid Password' : 'كلمة مرور غير صالحة',
+        description: language === 'en' 
+          ? 'Password must be at least 6 characters'
+          : 'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setResetLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({
+          userId: userId,
+          newPassword: newPassword,
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to reset password');
+      }
+      
+      toast({
+        title: language === 'en' ? 'Success' : 'تم بنجاح',
+        description: language === 'en' 
+          ? 'Password has been reset successfully'
+          : 'تم إعادة تعيين كلمة المرور بنجاح',
+      });
+      
+      // Reset all states and close dialog
+      setPasswordDialog(false);
+      setPasswordStep('generate');
+      setGeneratedOtp('');
+      setEnteredOtp('');
+      setNewPassword('');
+    } catch (error: any) {
+      console.error('Error resetting password:', error);
+      toast({
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: error.message || (language === 'en' 
+          ? 'Failed to reset password'
+          : 'فشل في إعادة تعيين كلمة المرور'),
+        variant: 'destructive',
+      });
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const openPasswordDialog = () => {
+    setPasswordDialog(true);
+    setPasswordStep('generate');
+    setGeneratedOtp('');
+    setEnteredOtp('');
+    setNewPassword('');
   };
 
   if (loading) {
@@ -682,17 +805,10 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
             <Button 
               size="sm" 
               variant="outline" 
-              onClick={handleResetPassword}
-              disabled={resettingPassword}
+              onClick={openPasswordDialog}
             >
-              {resettingPassword ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  <KeyRound className="w-4 h-4 mr-1" />
-                  {language === 'en' ? 'Reset' : 'إعادة'}
-                </>
-              )}
+              <KeyRound className="w-4 h-4 mr-1" />
+              {language === 'en' ? 'Reset' : 'إعادة'}
             </Button>
           </div>
         </div>
@@ -882,6 +998,185 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Password Reset OTP Dialog */}
+      <Dialog open={passwordDialog} onOpenChange={(open) => {
+        if (!open) {
+          setPasswordDialog(false);
+          setPasswordStep('generate');
+          setGeneratedOtp('');
+          setEnteredOtp('');
+          setNewPassword('');
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {language === 'en' ? 'Reset Password' : 'إعادة تعيين كلمة المرور'}
+            </DialogTitle>
+            <DialogDescription>
+              {passwordStep === 'generate' && (
+                language === 'en' 
+                  ? 'Generate a one-time code to verify user identity'
+                  : 'إنشاء كود مؤقت للتحقق من هوية المستخدم'
+              )}
+              {passwordStep === 'verify' && (
+                language === 'en' 
+                  ? 'Enter the code provided by the user'
+                  : 'أدخل الكود الذي أعطاه لك المستخدم'
+              )}
+              {passwordStep === 'reset' && (
+                language === 'en' 
+                  ? 'Set a new password for the user'
+                  : 'تعيين كلمة مرور جديدة للمستخدم'
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Step 1: Generate OTP */}
+          {passwordStep === 'generate' && (
+            <div className="space-y-4">
+              <div className="text-center py-4">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Send className="w-8 h-8 text-primary" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'en' 
+                    ? 'Click to generate a 6-digit code. Share this code with the user for verification.'
+                    : 'اضغط لإنشاء كود من 6 أرقام. شارك هذا الكود مع المستخدم للتحقق.'}
+                </p>
+              </div>
+              <Button 
+                onClick={handleGenerateOtp} 
+                disabled={otpLoading} 
+                className="w-full"
+              >
+                {otpLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <Send className="w-4 h-4 mr-2" />
+                )}
+                {language === 'en' ? 'Generate Code' : 'إنشاء الكود'}
+              </Button>
+            </div>
+          )}
+
+          {/* Step 2: Show OTP and Verify */}
+          {passwordStep === 'verify' && (
+            <div className="space-y-6">
+              {/* Display Generated OTP */}
+              <div className="text-center p-4 bg-muted rounded-lg">
+                <Label className="text-xs text-muted-foreground">
+                  {language === 'en' ? 'Generated Code (Share with user)' : 'الكود المُنشأ (شاركه مع المستخدم)'}
+                </Label>
+                <div className="text-3xl font-mono font-bold tracking-widest text-primary mt-2">
+                  {generatedOtp}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {language === 'en' ? 'Valid for 10 minutes' : 'صالح لمدة 10 دقائق'}
+                </p>
+              </div>
+
+              <Separator />
+
+              {/* Enter OTP from user */}
+              <div className="space-y-3">
+                <Label className="text-center block">
+                  {language === 'en' ? 'Enter code from user' : 'أدخل الكود من المستخدم'}
+                </Label>
+                <div className="flex justify-center" dir="ltr">
+                  <InputOTP 
+                    maxLength={6} 
+                    value={enteredOtp} 
+                    onChange={setEnteredOtp}
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+              </div>
+
+              <Button 
+                onClick={handleVerifyOtp} 
+                disabled={otpLoading || enteredOtp.length !== 6} 
+                className="w-full"
+              >
+                {otpLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <Check className="w-4 h-4 mr-2" />
+                )}
+                {language === 'en' ? 'Verify Code' : 'تحقق من الكود'}
+              </Button>
+            </div>
+          )}
+
+          {/* Step 3: Reset Password */}
+          {passwordStep === 'reset' && (
+            <div className="space-y-4">
+              <div className="text-center py-2">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <Check className="w-6 h-6 text-green-500" />
+                </div>
+                <p className="text-sm text-green-600 dark:text-green-400">
+                  {language === 'en' ? 'Code verified successfully!' : 'تم التحقق من الكود بنجاح!'}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>{language === 'en' ? 'New Password' : 'كلمة المرور الجديدة'}</Label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder={language === 'en' ? 'Enter new password...' : 'أدخل كلمة المرور الجديدة...'}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {language === 'en' ? 'Minimum 6 characters' : '6 أحرف كحد أدنى'}
+                </p>
+              </div>
+
+              <Button 
+                onClick={handleResetPassword} 
+                disabled={resetLoading || newPassword.length < 6} 
+                className="w-full"
+              >
+                {resetLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <KeyRound className="w-4 h-4 mr-2" />
+                )}
+                {language === 'en' ? 'Reset Password' : 'إعادة تعيين كلمة المرور'}
+              </Button>
+            </div>
+          )}
+
+          <DialogFooter className="sm:justify-start">
+            <Button 
+              variant="outline" 
+              onClick={() => setPasswordDialog(false)}
+            >
+              {language === 'en' ? 'Close' : 'إغلاق'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };
