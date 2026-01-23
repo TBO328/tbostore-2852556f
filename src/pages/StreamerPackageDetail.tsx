@@ -263,12 +263,24 @@ const StreamerPackageDetail: React.FC = () => {
       );
     }
 
+    // Prepare customization data
+    const customization = {
+      hasLogo: hasLogo === 'yes',
+      logoFile: logoPreview || undefined,
+      selectedColor: selectedColor === 'custom' ? customHex : selectedColor,
+      customHexColor: selectedColor === 'custom' ? customHex : undefined,
+      installLocation: installLocation || undefined,
+      contactMethod: contactMethod || undefined,
+      selectedFeatures: isCustomPackage && selectedFeatures.length > 0 ? selectedFeatures : undefined,
+    };
+
     addToCart({
       id: pkg.id,
       name: pkg.name_en,
       nameAr: pkg.name_ar,
       price: pkg.price,
       image: pkg.image_url || '',
+      customization,
     });
 
     setIsAdded(true);
