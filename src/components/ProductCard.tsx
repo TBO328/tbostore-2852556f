@@ -37,6 +37,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
   // Dynamic shadow that follows tilt
   const shadowX = useSpring(useTransform(mouseX, [-0.5, 0.5], [20, -20]), { stiffness: 300, damping: 30 });
   const shadowY = useSpring(useTransform(mouseY, [-0.5, 0.5], [20, -20]), { stiffness: 300, damping: 30 });
+  
+  // Pre-compute the dynamic shadow transform (must be at top level, not conditional)
+  const dynamicShadow = useTransform(
+    [shadowX, shadowY],
+    ([x, y]) => `${x}px ${y}px 30px -5px hsl(var(--primary) / 0.3), 0 10px 40px -10px hsl(var(--primary) / 0.2)`
+  );
+  
+  // Pre-compute the glare background
+  const glareBackground = useTransform(
+    [glareX, glareY],
+    ([x, y]) => `radial-gradient(circle at ${x}% ${y}%, hsl(var(--primary) / 0.15), transparent 50%)`
+  );
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
@@ -103,12 +115,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
           rotateX: isHovered ? rotateX : 0,
           rotateY: isHovered ? rotateY : 0,
           transformStyle: 'preserve-3d',
-          boxShadow: isHovered 
-            ? useTransform(
-                [shadowX, shadowY],
-                ([x, y]) => `${x}px ${y}px 30px -5px hsl(var(--primary) / 0.3), 0 10px 40px -10px hsl(var(--primary) / 0.2)`
-              )
-            : '0 4px 20px -5px hsl(var(--primary) / 0.1)',
+          boxShadow: isHovered ? dynamicShadow : '0 4px 20px -5px hsl(var(--primary) / 0.1)',
         }}
         whileHover={{ y: -8, z: 50 }}
         className="group relative bg-card rounded-2xl overflow-hidden border border-border transition-all duration-500 hover:border-primary/50"
@@ -120,10 +127,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
         <motion.div
           className="absolute inset-0 z-30 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           style={{
-            background: useTransform(
-              [glareX, glareY],
-              ([x, y]) => `radial-gradient(circle at ${x}% ${y}%, hsl(var(--primary) / 0.15), transparent 50%)`
-            ),
+            background: glareBackground,
           }}
         />
         {/* Animated Background Gradient */}
