@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -12,6 +12,145 @@ import sarSymbol from '@/assets/sar-symbol.png';
 interface StreamerPackagesProps {
   categoryFilter?: string | null;
 }
+
+// 3D Card Component for Streamer Packages
+const StreamerPackageCard: React.FC<{
+  pkg: any;
+  index: number;
+  language: string;
+  formatPrice: (price: number) => React.ReactNode;
+  animatingPrices: Record<string, boolean>;
+  currency: string;
+  onClick: () => void;
+}> = ({ pkg, index, language, formatPrice, animatingPrices, currency, onClick }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Motion values for 3D effect
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Smooth spring animations
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [15, -15]), { stiffness: 300, damping: 30 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-15, 15]), { stiffness: 300, damping: 30 });
+
+  // Glare effect position
+  const glareX = useSpring(useTransform(mouseX, [-0.5, 0.5], [0, 100]), { stiffness: 300, damping: 30 });
+  const glareY = useSpring(useTransform(mouseY, [-0.5, 0.5], [0, 100]), { stiffness: 300, damping: 30 });
+
+  // Dynamic shadow
+  const shadowX = useSpring(useTransform(mouseX, [-0.5, 0.5], [25, -25]), { stiffness: 300, damping: 30 });
+  const shadowY = useSpring(useTransform(mouseY, [-0.5, 0.5], [25, -25]), { stiffness: 300, damping: 30 });
+
+  // Pre-compute transforms at top level
+  const dynamicShadow = useTransform(
+    [shadowX, shadowY],
+    ([x, y]) => `${x}px ${y}px 40px -5px hsl(var(--primary) / 0.3), 0 15px 50px -15px hsl(var(--primary) / 0.25)`
+  );
+  const glareBackground = useTransform(
+    [glareX, glareY],
+    ([x, y]) => `radial-gradient(circle at ${x}% ${y}%, hsl(var(--primary) / 0.2), transparent 50%)`
+  );
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseEnter = () => setIsHovered(true);
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={cardRef}
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      onMouseEnter={handleMouseEnter}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onClick={onClick}
+      className="flex flex-col items-center cursor-pointer group"
+      style={{ perspective: '1000px' }}
+    >
+      {/* Package Image with 3D Effect */}
+      <motion.div 
+        className="relative w-full rounded-2xl overflow-hidden"
+        style={{
+          rotateX: isHovered ? rotateX : 0,
+          rotateY: isHovered ? rotateY : 0,
+          transformStyle: 'preserve-3d',
+          boxShadow: isHovered ? dynamicShadow : '0 4px 20px -5px hsl(var(--primary) / 0.1)',
+        }}
+        whileHover={{ y: -10, z: 50 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        {/* Glare Effect */}
+        <motion.div
+          className="absolute inset-0 z-20 pointer-events-none rounded-2xl opacity-0 transition-opacity duration-300"
+          style={{
+            opacity: isHovered ? 1 : 0,
+            background: glareBackground,
+          }}
+        />
+
+        {pkg.image_url ? (
+          <img 
+            src={pkg.image_url} 
+            alt={language === 'en' ? pkg.name_en : pkg.name_ar}
+            className="w-full h-auto object-contain drop-shadow-2xl transition-all duration-300"
+            style={{ transform: isHovered ? 'translateZ(30px)' : 'translateZ(0)' }}
+          />
+        ) : (
+          <div className="w-full aspect-video bg-muted rounded-xl flex items-center justify-center">
+            <span className="text-muted-foreground font-display">
+              {language === 'en' ? pkg.name_en : pkg.name_ar}
+            </span>
+          </div>
+        )}
+      </motion.div>
+
+      {/* Price Tag with Animation */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="mt-4 px-6 py-2 bg-primary/10 border border-primary/30 rounded-full overflow-hidden"
+        style={{ transform: isHovered ? 'translateZ(40px)' : 'translateZ(0)' }}
+      >
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={`${pkg.id}-${pkg.price}-${currency}`}
+            initial={animatingPrices[pkg.id] ? { y: -20, opacity: 0 } : false}
+            animate={{ 
+              y: 0, 
+              opacity: 1,
+              scale: animatingPrices[pkg.id] ? [1, 1.2, 1] : 1,
+              color: animatingPrices[pkg.id] && currency === 'SAR' 
+                ? ['hsl(var(--primary))', 'hsl(45, 100%, 50%)', 'hsl(var(--primary))'] 
+                : 'hsl(var(--primary))'
+            }}
+            exit={{ y: 20, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="text-primary font-bold text-lg block"
+          >
+            {pkg.price === 0 
+              ? (language === 'en' ? 'Contact Us' : 'تواصل معنا')
+              : formatPrice(pkg.price)
+            }
+          </motion.span>
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
+  );
+};
 
 const StreamerPackages: React.FC<StreamerPackagesProps> = ({ categoryFilter = null }) => {
   const { language } = useLanguage();
@@ -44,7 +183,6 @@ const StreamerPackages: React.FC<StreamerPackagesProps> = ({ categoryFilter = nu
     packages.forEach(pkg => {
       const prevPrice = previousPricesRef.current[pkg.id];
       if (prevPrice !== undefined && prevPrice !== pkg.price) {
-        // Price changed - trigger animation
         setAnimatingPrices(prev => ({ ...prev, [pkg.id]: true }));
         setTimeout(() => {
           setAnimatingPrices(prev => ({ ...prev, [pkg.id]: false }));
@@ -121,72 +259,16 @@ const StreamerPackages: React.FC<StreamerPackagesProps> = ({ categoryFilter = nu
           {/* Packages Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-[1600px] mx-auto px-4" dir="rtl">
             {pkgs.map((pkg, index) => (
-              <motion.div
+              <StreamerPackageCard
                 key={pkg.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ 
-                  scale: 1.05, 
-                  transition: { duration: 0.3 } 
-                }}
-                whileTap={{ scale: 0.98 }}
+                pkg={pkg}
+                index={index}
+                language={language}
+                formatPrice={formatPrice}
+                animatingPrices={animatingPrices}
+                currency={currency}
                 onClick={() => handlePackageClick(pkg.id)}
-                className="flex flex-col items-center cursor-pointer group"
-              >
-                {/* Package Image */}
-                <motion.div 
-                  className="relative w-full"
-                  whileHover={{
-                    filter: "brightness(1.1)",
-                    transition: { duration: 0.3 }
-                  }}
-                >
-                  {pkg.image_url ? (
-                    <img 
-                      src={pkg.image_url} 
-                      alt={language === 'en' ? pkg.name_en : pkg.name_ar}
-                      className="w-full h-auto object-contain drop-shadow-2xl transition-transform duration-300 group-hover:drop-shadow-[0_20px_50px_rgba(0,212,170,0.3)]"
-                    />
-                  ) : (
-                    <div className="w-full aspect-video bg-muted rounded-xl flex items-center justify-center">
-                      <span className="text-muted-foreground font-display">
-                        {language === 'en' ? pkg.name_en : pkg.name_ar}
-                      </span>
-                    </div>
-                  )}
-                </motion.div>
-
-                {/* Price Tag with Animation */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="mt-4 px-6 py-2 bg-primary/10 border border-primary/30 rounded-full overflow-hidden"
-                >
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={`${pkg.id}-${pkg.price}-${currency}`}
-                      initial={animatingPrices[pkg.id] ? { y: -20, opacity: 0 } : false}
-                      animate={{ 
-                        y: 0, 
-                        opacity: 1,
-                        scale: animatingPrices[pkg.id] ? [1, 1.2, 1] : 1,
-                        color: animatingPrices[pkg.id] && currency === 'SAR' 
-                          ? ['hsl(var(--primary))', 'hsl(45, 100%, 50%)', 'hsl(var(--primary))'] 
-                          : 'hsl(var(--primary))'
-                      }}
-                      exit={{ y: 20, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="text-primary font-bold text-lg block"
-                    >
-                      {pkg.price === 0 
-                        ? (language === 'en' ? 'Contact Us' : 'تواصل معنا')
-                        : formatPrice(pkg.price)
-                      }
-                    </motion.span>
-                  </AnimatePresence>
-                </motion.div>
-              </motion.div>
+              />
             ))}
           </div>
         </div>
