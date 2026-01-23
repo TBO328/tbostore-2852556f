@@ -43,9 +43,9 @@ const StreamerPackageCard: React.FC<{
   const shadowY = useSpring(useTransform(mouseY, [-0.5, 0.5], [25, -25]), { stiffness: 300, damping: 30 });
 
   // Pre-compute transforms at top level
-  const dynamicShadow = useTransform(
+  const dynamicDropShadow = useTransform(
     [shadowX, shadowY],
-    ([x, y]) => `${x}px ${y}px 40px -5px hsl(var(--primary) / 0.3), 0 15px 50px -15px hsl(var(--primary) / 0.25)`
+    ([x, y]) => `drop-shadow(${x}px ${y}px 30px hsl(var(--primary) / 0.4))`
   );
   const glareBackground = useTransform(
     [glareX, glareY],
@@ -81,23 +81,23 @@ const StreamerPackageCard: React.FC<{
       className="flex flex-col items-center cursor-pointer group"
       style={{ perspective: '1000px' }}
     >
-      {/* Package Image with 3D Effect */}
+      {/* Package Image with 3D Effect - No box, effect on image only */}
       <motion.div 
-        className="relative w-full rounded-2xl overflow-hidden"
+        className="relative w-full"
         style={{
           rotateX: isHovered ? rotateX : 0,
           rotateY: isHovered ? rotateY : 0,
           transformStyle: 'preserve-3d',
-          boxShadow: isHovered ? dynamicShadow : '0 4px 20px -5px hsl(var(--primary) / 0.1)',
+          filter: isHovered ? dynamicDropShadow : 'drop-shadow(0 10px 20px hsl(var(--primary) / 0.1))',
         }}
         whileHover={{ y: -10, z: 50 }}
         whileTap={{ scale: 0.98 }}
       >
-        {/* Glare Effect */}
+        {/* Glare Effect on image */}
         <motion.div
           className="absolute inset-0 z-20 pointer-events-none rounded-2xl opacity-0 transition-opacity duration-300"
           style={{
-            opacity: isHovered ? 1 : 0,
+            opacity: isHovered ? 0.6 : 0,
             background: glareBackground,
           }}
         />
