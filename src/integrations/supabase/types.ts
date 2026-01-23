@@ -253,6 +253,36 @@ export type Database = {
         }
         Relationships: []
       }
+      password_reset_otps: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          otp_code: string
+          used: boolean | null
+          user_email: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          otp_code: string
+          used?: boolean | null
+          user_email: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          otp_code?: string
+          used?: boolean | null
+          user_email?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       payment_settings: {
         Row: {
           id: string
@@ -551,6 +581,10 @@ export type Database = {
         Returns: string
       }
       generate_order_number: { Args: never; Returns: string }
+      generate_password_reset_otp: {
+        Args: { p_user_email: string }
+        Returns: string
+      }
       get_all_users_with_roles: {
         Args: never
         Returns: {
@@ -644,6 +678,10 @@ export type Database = {
               is_valid: boolean
             }[]
           }
+      verify_password_reset_otp: {
+        Args: { p_otp: string; p_user_email: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user"
