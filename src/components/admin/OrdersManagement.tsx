@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingBag, Tag, Trash2, Loader2 } from 'lucide-react';
+import { ShoppingBag, Tag, Trash2, Loader2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -313,11 +313,29 @@ const OrdersManagement: React.FC<OrdersManagementProps> = ({ orders, onRefresh }
                                     }
                                   </span>
                                   {item.customization.hasLogo && item.customization.logoFile && (
-                                    <img 
-                                      src={item.customization.logoFile} 
-                                      alt="Logo" 
-                                      className="mt-2 w-16 h-16 rounded-lg object-contain bg-card border border-border"
-                                    />
+                                    <div className="mt-2 space-y-2">
+                                      <img 
+                                        src={item.customization.logoFile} 
+                                        alt="Logo" 
+                                        className="w-16 h-16 rounded-lg object-contain bg-card border border-border"
+                                      />
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="gap-2"
+                                        onClick={() => {
+                                          const link = document.createElement('a');
+                                          link.href = item.customization!.logoFile!;
+                                          link.download = `logo-${selectedOrder?.order_number || 'customer'}.png`;
+                                          document.body.appendChild(link);
+                                          link.click();
+                                          document.body.removeChild(link);
+                                        }}
+                                      >
+                                        <Download className="w-4 h-4" />
+                                        {language === 'en' ? 'Download' : 'تحميل'}
+                                      </Button>
+                                    </div>
                                   )}
                                 </div>
                               </div>

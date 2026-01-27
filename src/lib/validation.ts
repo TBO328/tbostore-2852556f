@@ -8,7 +8,9 @@ export const orderSchema = z.object({
     .max(100, 'Name must be less than 100 characters'),
   customer_phone: z.string()
     .trim()
-    .regex(/^(05\d{8}|9665\d{8}|\+9665\d{8})$/, 'Invalid phone format'),
+    .min(8, 'Phone number must be at least 8 digits')
+    .max(20, 'Phone number must be less than 20 characters')
+    .regex(/^[\d\s\-+()]+$/, 'Invalid phone format'),
   customer_address: z.string()
     .trim()
     .min(10, 'Address must be at least 10 characters')

@@ -1,22 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, Lock, User, ArrowRight, Loader2, Phone, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import PhoneInput from '@/components/PhoneInput';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
+
+type AuthMode = 'email' | 'phone';
+type PhoneStep = 'phone' | 'otp' | 'name';
 
 const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [authMode, setAuthMode] = useState<AuthMode>('email');
+  
+  // Email auth state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  
+  // Phone auth state
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [fullPhoneNumber, setFullPhoneNumber] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [phoneStep, setPhoneStep] = useState<PhoneStep>('phone');
+  const [phoneLoading, setPhoneLoading] = useState(false);
+  const [isNewPhoneUser, setIsNewPhoneUser] = useState(false);
+  
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language } = useLanguage();
@@ -58,7 +75,7 @@ const Auth: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -133,6 +150,160 @@ const Auth: React.FC = () => {
     }
   };
 
+  const handleSendOTP = async () => {
+    if (!phoneNumber || phoneNumber.length < 8) {
+      toast({
+        title: language === 'en' ? 'Invalid Phone' : 'رقم غير صالح',
+        description: language === 'en' 
+          ? 'Please enter a valid phone number' 
+          : 'يرجى إدخال رقم جوال صحيح',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setPhoneLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-sms-otp', {
+        body: { phone: fullPhoneNumber },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: language === 'en' ? 'OTP Sent!' : 'تم إرسال الرمز!',
+        description: language === 'en' 
+          ? 'Check your phone for the verification code' 
+          : 'تحقق من جوالك للحصول على رمز التحقق',
+      });
+
+      // For development, show the OTP if returned
+      if (data?.dev_otp) {
+        console.log('Development OTP:', data.dev_otp);
+        toast({
+          title: 'Development Mode',
+          description: `OTP: ${data.dev_otp}`,
+        });
+      }
+
+      setPhoneStep('otp');
+    } catch (error: any) {
+      toast({
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: error.message || (language === 'en' ? 'Failed to send OTP' : 'فشل إرسال الرمز'),
+        variant: 'destructive',
+      });
+    } finally {
+      setPhoneLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    if (otpCode.length !== 6) {
+      toast({
+        title: language === 'en' ? 'Invalid Code' : 'رمز غير صالح',
+        description: language === 'en' 
+          ? 'Please enter the 6-digit code' 
+          : 'يرجى إدخال الرمز المكون من 6 أرقام',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setPhoneLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-sms-otp', {
+        body: { 
+          phone: fullPhoneNumber, 
+          otp: otpCode,
+          fullName: fullName || undefined,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.isNewUser && !fullName) {
+        setIsNewPhoneUser(true);
+        setPhoneStep('name');
+        return;
+      }
+
+      // Use the magic link to sign in
+      if (data?.magicLink) {
+        window.location.href = data.magicLink;
+      } else {
+        toast({
+          title: language === 'en' ? 'Success!' : 'نجاح!',
+          description: language === 'en' 
+            ? 'You are now logged in' 
+            : 'تم تسجيل دخولك بنجاح',
+        });
+        navigate('/');
+      }
+    } catch (error: any) {
+      toast({
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: error.message || (language === 'en' ? 'Invalid OTP code' : 'رمز غير صحيح'),
+        variant: 'destructive',
+      });
+    } finally {
+      setPhoneLoading(false);
+    }
+  };
+
+  const handleCompletePhoneSignup = async () => {
+    if (!fullName.trim()) {
+      toast({
+        title: language === 'en' ? 'Name Required' : 'الاسم مطلوب',
+        description: language === 'en' 
+          ? 'Please enter your name' 
+          : 'يرجى إدخال اسمك',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setPhoneLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-sms-otp', {
+        body: { 
+          phone: fullPhoneNumber, 
+          otp: otpCode,
+          fullName: fullName.trim(),
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.magicLink) {
+        window.location.href = data.magicLink;
+      } else {
+        toast({
+          title: language === 'en' ? 'Account Created!' : 'تم إنشاء الحساب!',
+          description: language === 'en' 
+            ? 'Welcome to TBO Store!' 
+            : 'مرحباً بك في متجر TBO!',
+        });
+        navigate('/');
+      }
+    } catch (error: any) {
+      toast({
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setPhoneLoading(false);
+    }
+  };
+
+  const resetPhoneAuth = () => {
+    setPhoneStep('phone');
+    setOtpCode('');
+    setFullName('');
+    setIsNewPhoneUser(false);
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Effects */}
@@ -171,102 +342,324 @@ const Auth: React.FC = () => {
               : (language === 'en' ? 'Create Account' : 'إنشاء حساب')
             }
           </h1>
-          <p className="font-cairo text-muted-foreground text-center mb-8">
+          <p className="font-cairo text-muted-foreground text-center mb-6">
             {isLogin
               ? (language === 'en' ? 'Sign in to your account' : 'سجل دخولك إلى حسابك')
               : (language === 'en' ? 'Join TBO Store today' : 'انضم إلى متجر TBO اليوم')
             }
           </p>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName" className="font-cairo">
-                  {language === 'en' ? 'Full Name' : 'الاسم الكامل'}
-                </Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    id="fullName"
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder={language === 'en' ? 'Enter your name' : 'أدخل اسمك'}
-                    className="pl-10 bg-input border-border"
-                    required={!isLogin}
-                  />
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="font-cairo">
-                {language === 'en' ? 'Email' : 'البريد الإلكتروني'}
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={language === 'en' ? 'Enter your email' : 'أدخل بريدك الإلكتروني'}
-                  className="pl-10 bg-input border-border"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="font-cairo">
-                {language === 'en' ? 'Password' : 'كلمة المرور'}
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={language === 'en' ? 'Enter your password' : 'أدخل كلمة المرور'}
-                  className="pl-10 bg-input border-border"
-                  required
-                  minLength={6}
-                />
-              </div>
-              {isLogin && (
-                <div className="text-right">
-                  <Link 
-                    to="/forgot-password" 
-                    className="font-cairo text-sm text-primary hover:text-primary/80 transition-colors"
-                  >
-                    {language === 'en' ? 'Forgot Password?' : 'نسيت كلمة المرور؟'}
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            <Button
-              type="submit"
-              variant="neon-filled"
-              size="lg"
-              className="w-full group font-cairo"
-              disabled={loading}
+          {/* Auth Mode Toggle */}
+          <div className="flex gap-2 mb-6 p-1 bg-muted rounded-lg">
+            <button
+              type="button"
+              onClick={() => { setAuthMode('email'); resetPhoneAuth(); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                authMode === 'email' 
+                  ? 'bg-background text-foreground shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  {isLogin 
-                    ? (language === 'en' ? 'Sign In' : 'تسجيل الدخول')
-                    : (language === 'en' ? 'Create Account' : 'إنشاء حساب')
-                  }
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </Button>
-          </form>
+              <Mail className="w-4 h-4" />
+              {language === 'en' ? 'Email' : 'البريد'}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setAuthMode('phone'); resetPhoneAuth(); }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                authMode === 'phone' 
+                  ? 'bg-background text-foreground shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Phone className="w-4 h-4" />
+              {language === 'en' ? 'Phone' : 'الجوال'}
+            </button>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {authMode === 'email' ? (
+              <motion.div
+                key="email-form"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+              >
+                {/* Email Form */}
+                <form onSubmit={handleEmailSubmit} className="space-y-4">
+                  {!isLogin && (
+                    <div className="space-y-2">
+                      <Label htmlFor="fullName" className="font-cairo">
+                        {language === 'en' ? 'Full Name' : 'الاسم الكامل'}
+                      </Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="fullName"
+                          type="text"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          placeholder={language === 'en' ? 'Enter your name' : 'أدخل اسمك'}
+                          className="pl-10 bg-input border-border"
+                          required={!isLogin}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="font-cairo">
+                      {language === 'en' ? 'Email' : 'البريد الإلكتروني'}
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder={language === 'en' ? 'Enter your email' : 'أدخل بريدك الإلكتروني'}
+                        className="pl-10 bg-input border-border"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="font-cairo">
+                      {language === 'en' ? 'Password' : 'كلمة المرور'}
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <Input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder={language === 'en' ? 'Enter your password' : 'أدخل كلمة المرور'}
+                        className="pl-10 bg-input border-border"
+                        required
+                        minLength={6}
+                      />
+                    </div>
+                    {isLogin && (
+                      <div className="text-right">
+                        <Link 
+                          to="/forgot-password" 
+                          className="font-cairo text-sm text-primary hover:text-primary/80 transition-colors"
+                        >
+                          {language === 'en' ? 'Forgot Password?' : 'نسيت كلمة المرور؟'}
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+
+                  <Button
+                    type="submit"
+                    variant="neon-filled"
+                    size="lg"
+                    className="w-full group font-cairo"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>
+                        {isLogin 
+                          ? (language === 'en' ? 'Sign In' : 'تسجيل الدخول')
+                          : (language === 'en' ? 'Create Account' : 'إنشاء حساب')
+                        }
+                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="phone-form"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <AnimatePresence mode="wait">
+                  {phoneStep === 'phone' && (
+                    <motion.div
+                      key="phone-step"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="space-y-4"
+                    >
+                      <div className="space-y-2">
+                        <Label className="font-cairo">
+                          {language === 'en' ? 'Phone Number' : 'رقم الجوال'}
+                        </Label>
+                        <PhoneInput
+                          value={phoneNumber}
+                          onChange={(value, fullNumber) => {
+                            setPhoneNumber(value);
+                            setFullPhoneNumber(fullNumber);
+                          }}
+                          placeholder={language === 'en' ? '5XXXXXXXX' : '5XXXXXXXX'}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {language === 'en' 
+                            ? 'We will send a verification code to this number' 
+                            : 'سنرسل رمز التحقق إلى هذا الرقم'}
+                        </p>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="neon-filled"
+                        size="lg"
+                        className="w-full group font-cairo"
+                        onClick={handleSendOTP}
+                        disabled={phoneLoading}
+                      >
+                        {phoneLoading ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <>
+                            <MessageSquare className="w-5 h-5 mr-2" />
+                            {language === 'en' ? 'Send Verification Code' : 'إرسال رمز التحقق'}
+                          </>
+                        )}
+                      </Button>
+                    </motion.div>
+                  )}
+
+                  {phoneStep === 'otp' && (
+                    <motion.div
+                      key="otp-step"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="space-y-4"
+                    >
+                      <div className="text-center mb-4">
+                        <p className="text-sm text-muted-foreground">
+                          {language === 'en' 
+                            ? `Enter the code sent to ${fullPhoneNumber}` 
+                            : `أدخل الرمز المرسل إلى ${fullPhoneNumber}`}
+                        </p>
+                      </div>
+
+                      <div className="flex justify-center">
+                        <InputOTP
+                          maxLength={6}
+                          value={otpCode}
+                          onChange={(value) => setOtpCode(value)}
+                        >
+                          <InputOTPGroup>
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                            <InputOTPSlot index={3} />
+                            <InputOTPSlot index={4} />
+                            <InputOTPSlot index={5} />
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="neon-filled"
+                        size="lg"
+                        className="w-full group font-cairo"
+                        onClick={handleVerifyOTP}
+                        disabled={phoneLoading || otpCode.length !== 6}
+                      >
+                        {phoneLoading ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <>
+                            {language === 'en' ? 'Verify Code' : 'تحقق من الرمز'}
+                            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </>
+                        )}
+                      </Button>
+
+                      <div className="flex justify-between text-sm">
+                        <button
+                          type="button"
+                          onClick={resetPhoneAuth}
+                          className="text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {language === 'en' ? '← Change number' : '← تغيير الرقم'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSendOTP}
+                          disabled={phoneLoading}
+                          className="text-primary hover:text-primary/80 transition-colors"
+                        >
+                          {language === 'en' ? 'Resend code' : 'إعادة إرسال الرمز'}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {phoneStep === 'name' && (
+                    <motion.div
+                      key="name-step"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="space-y-4"
+                    >
+                      <div className="text-center mb-4">
+                        <p className="text-sm text-muted-foreground">
+                          {language === 'en' 
+                            ? 'Please enter your name to complete signup' 
+                            : 'يرجى إدخال اسمك لإكمال التسجيل'}
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="phoneName" className="font-cairo">
+                          {language === 'en' ? 'Full Name' : 'الاسم الكامل'}
+                        </Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                          <Input
+                            id="phoneName"
+                            type="text"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            placeholder={language === 'en' ? 'Enter your name' : 'أدخل اسمك'}
+                            className="pl-10 bg-input border-border"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="neon-filled"
+                        size="lg"
+                        className="w-full group font-cairo"
+                        onClick={handleCompletePhoneSignup}
+                        disabled={phoneLoading}
+                      >
+                        {phoneLoading ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <>
+                            {language === 'en' ? 'Complete Signup' : 'إكمال التسجيل'}
+                            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </>
+                        )}
+                      </Button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Divider */}
           <div className="relative my-6">
@@ -316,25 +709,27 @@ const Auth: React.FC = () => {
             )}
           </Button>
 
-          {/* Toggle */}
-          <div className="mt-6 text-center">
-            <p className="font-cairo text-muted-foreground">
-              {isLogin 
-                ? (language === 'en' ? "Don't have an account?" : 'ليس لديك حساب؟')
-                : (language === 'en' ? 'Already have an account?' : 'لديك حساب بالفعل؟')
-              }
-              <button
-                type="button"
-                onClick={() => setIsLogin(!isLogin)}
-                className="font-cairo ml-2 text-primary hover:text-primary/80 font-medium transition-colors"
-              >
+          {/* Toggle - Only for email mode */}
+          {authMode === 'email' && (
+            <div className="mt-6 text-center">
+              <p className="font-cairo text-muted-foreground">
                 {isLogin 
-                  ? (language === 'en' ? 'Sign Up' : 'سجل الآن')
-                  : (language === 'en' ? 'Sign In' : 'تسجيل الدخول')
+                  ? (language === 'en' ? "Don't have an account?" : 'ليس لديك حساب؟')
+                  : (language === 'en' ? 'Already have an account?' : 'لديك حساب بالفعل؟')
                 }
-              </button>
-            </p>
-          </div>
+                <button
+                  type="button"
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="font-cairo ml-2 text-primary hover:text-primary/80 font-medium transition-colors"
+                >
+                  {isLogin 
+                    ? (language === 'en' ? 'Sign Up' : 'سجل الآن')
+                    : (language === 'en' ? 'Sign In' : 'تسجيل الدخول')
+                  }
+                </button>
+              </p>
+            </div>
+          )}
 
           {/* Back to Home */}
           <div className="mt-4 text-center">
