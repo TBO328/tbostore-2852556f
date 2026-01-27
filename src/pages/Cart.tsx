@@ -280,8 +280,25 @@ const Cart: React.FC = () => {
         await redeemPoints(redeemedPoints);
       }
 
-      // Send WhatsApp message
-      sendWhatsAppMessage(orderNumber);
+      // Send notification to admin
+      try {
+        await supabase.functions.invoke('send-order-notification', {
+          body: {
+            orderNumber,
+            customerName: orderData.customer_name,
+            customerPhone: orderData.customer_phone,
+            totalAmount: orderData.total_amount,
+            paymentMethod: orderData.payment_method,
+            items: orderData.items,
+          }
+        });
+      } catch (notifyError) {
+        console.error('Failed to send admin notification:', notifyError);
+      }
+
+      // Send WhatsApp message with receipt request for bank transfer/STC Pay
+      const needsReceipt = paymentMethod === 'stc_pay' || paymentMethod === 'bank_transfer';
+      sendWhatsAppMessage(orderNumber, needsReceipt);
 
       // Show success
       setOrderSuccess(orderNumber);
@@ -303,16 +320,23 @@ const Cart: React.FC = () => {
     }
   };
 
-  const sendWhatsAppMessage = (orderNumber: string) => {
+  const sendWhatsAppMessage = (orderNumber: string, needsReceipt: boolean = false) => {
     const itemsList = items.map(item => 
       `• ${language === 'ar' ? item.nameAr : item.name} x${item.quantity} - ${formatPrice(item.price * item.quantity)}`
     ).join('\n');
     
     const paymentMethodText = paymentMethod === 'stc_pay' ? 'STC Pay' : (language === 'ar' ? 'تحويل بنكي' : 'Bank Transfer');
     
+    // Add receipt request message for bank transfer / STC Pay
+    const receiptMessage = needsReceipt 
+      ? (language === 'ar' 
+          ? '\n\n📎 قم بإرفاق إيصال التحويل لكي تتم عملية الشراء ✅' 
+          : '\n\n📎 Please attach the transfer receipt to complete your purchase ✅')
+      : '';
+    
     const message = language === 'ar' 
-      ? `🛒 طلب جديد\n\n📋 رقم الطلب: ${orderNumber}\n\n👤 الاسم: ${customerName}\n📱 الجوال: ${customerPhone}\n📍 العنوان: ${customerAddress}\n\n🛍️ المنتجات:\n${itemsList}\n\n💳 طريقة الدفع: ${paymentMethodText}\n💰 الإجمالي: ${formatPrice(getTotalPrice())}`
-      : `🛒 New Order\n\n📋 Order #: ${orderNumber}\n\n👤 Name: ${customerName}\n📱 Phone: ${customerPhone}\n📍 Address: ${customerAddress}\n\n🛍️ Items:\n${itemsList}\n\n💳 Payment: ${paymentMethodText}\n💰 Total: ${formatPrice(getTotalPrice())}`;
+      ? `🛒 طلب جديد\n\n📋 رقم الطلب: ${orderNumber}\n\n👤 الاسم: ${customerName}\n📱 الجوال: ${customerPhone}\n📍 العنوان: ${customerAddress}\n\n🛍️ المنتجات:\n${itemsList}\n\n💳 طريقة الدفع: ${paymentMethodText}\n💰 الإجمالي: ${formatPrice(getTotalPrice())}${receiptMessage}`
+      : `🛒 New Order\n\n📋 Order #: ${orderNumber}\n\n👤 Name: ${customerName}\n📱 Phone: ${customerPhone}\n📍 Address: ${customerAddress}\n\n🛍️ Items:\n${itemsList}\n\n💳 Payment: ${paymentMethodText}\n💰 Total: ${formatPrice(getTotalPrice())}${receiptMessage}`;
     
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');

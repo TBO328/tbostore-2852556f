@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useOwnerCheck } from '@/hooks/useOwnerCheck';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -29,6 +30,7 @@ import AIAssistant from '@/components/admin/AIAssistant';
 import SeasonalThemesManagement from '@/components/admin/SeasonalThemesManagement';
 import PackagesManagement from '@/components/admin/PackagesManagement';
 import LoyaltyManagement from '@/components/admin/LoyaltyManagement';
+import FingerprintLock from '@/components/admin/FingerprintLock';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -65,11 +67,15 @@ interface PaymentSettings {
 
 const Admin: React.FC = () => {
   const { user, isAdmin, loading: authLoading, signOut } = useAuth();
+  const { isOwner, loading: ownerLoading } = useOwnerCheck();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language, t } = useLanguage();
   const { formatPrice, currency } = useCurrency();
   const { theme } = useTheme();
+  
+  // Fingerprint lock state
+  const [isUnlocked, setIsUnlocked] = useState(false);
 
   const symbolFilter = theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)';
 
@@ -903,6 +909,11 @@ const Admin: React.FC = () => {
     }
   };
 
+  // Show fingerprint lock if not unlocked
+  if (!isUnlocked) {
+    return <FingerprintLock onUnlock={() => setIsUnlocked(true)} />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       {/* Mobile Header with Back Button */}
@@ -925,6 +936,7 @@ const Admin: React.FC = () => {
         onTabChange={setActiveTab} 
         isOpen={isMobile ? sidebarOpen : true}
         onClose={() => setSidebarOpen(false)}
+        isOwner={isOwner}
       />
 
       {/* Main Content */}
