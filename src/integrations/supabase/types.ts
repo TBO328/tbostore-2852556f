@@ -304,6 +304,33 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_otps: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          otp_code: string
+          phone: string
+          used: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          otp_code: string
+          phone: string
+          used?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          otp_code?: string
+          phone?: string
+          used?: boolean | null
+        }
+        Relationships: []
+      }
       points_transactions: {
         Row: {
           created_at: string
@@ -571,6 +598,7 @@ export type Database = {
         Returns: number
       }
       check_order_rate_limit: { Args: { p_phone: string }; Returns: boolean }
+      cleanup_expired_phone_otps: { Args: never; Returns: undefined }
       create_personal_coupon: {
         Args: {
           p_code: string
