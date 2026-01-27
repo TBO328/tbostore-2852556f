@@ -604,6 +604,7 @@ export type Database = {
           full_name: string
           is_admin: boolean
           is_blacklisted: boolean
+          is_owner: boolean
           loyalty_points: number
           total_earned: number
           total_redeemed: number
@@ -629,6 +630,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_owner: { Args: { _user_id: string }; Returns: boolean }
       redeem_loyalty_points: {
         Args: {
           p_description_ar?: string
@@ -647,6 +649,7 @@ export type Database = {
           full_name: string
           is_admin: boolean
           is_blacklisted: boolean
+          is_owner: boolean
           loyalty_points: number
           user_id: string
         }[]
@@ -684,7 +687,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "owner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -812,7 +815,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "owner"],
     },
   },
 } as const

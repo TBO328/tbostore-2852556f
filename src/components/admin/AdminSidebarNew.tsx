@@ -19,6 +19,7 @@ interface AdminSidebarProps {
   onTabChange: (tab: string) => void;
   isOpen?: boolean;
   onClose?: () => void;
+  isOwner?: boolean;
 }
 
 const menuItems = [
@@ -137,7 +138,8 @@ const AdminSidebarNew: React.FC<AdminSidebarProps> = ({
   activeTab,
   onTabChange,
   isOpen = true,
-  onClose
+  onClose,
+  isOwner = false
 }) => {
   const { language } = useLanguage();
   const { user, signOut } = useAuth();
@@ -145,7 +147,15 @@ const AdminSidebarNew: React.FC<AdminSidebarProps> = ({
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const isRTL = language === 'ar';
-
+  
+  // Filter menu items based on role
+  // Owner only: user-management
+  // Both Owner and Admin: everything else
+  const filteredMenuItems = menuItems.filter(item => {
+    if (item.type === 'divider') return true;
+    if (item.id === 'user-management') return isOwner;
+    return true;
+  });
   const handleTabClick = (item: typeof menuItems[0]) => {
     if (item.type === 'divider') return;
     
@@ -268,7 +278,7 @@ const AdminSidebarNew: React.FC<AdminSidebarProps> = ({
         {/* Navigation */}
         <ScrollArea className="flex-1 px-3 py-4">
           <nav className="space-y-1">
-            {menuItems.map((item, index) => {
+            {filteredMenuItems.map((item, index) => {
               if (item.type === 'divider') {
                 return (
                   <motion.div

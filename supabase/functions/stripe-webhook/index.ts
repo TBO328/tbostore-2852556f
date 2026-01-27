@@ -137,6 +137,33 @@ serve(async (req) => {
         logStep("ERROR: Failed to create order", { error: orderError.message, code: orderError.code });
       } else {
         logStep("SUCCESS: Order created", { orderNumber });
+        
+        // Send notification to admin
+        try {
+          const notifyResponse = await fetch(`${supabaseUrl}/functions/v1/send-order-notification`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseKey}`,
+            },
+            body: JSON.stringify({
+              orderNumber: orderData.order_number,
+              customerName: orderData.customer_name,
+              customerPhone: orderData.customer_phone,
+              totalAmount: orderData.total_amount,
+              paymentMethod: 'stripe',
+              items: items,
+            }),
+          });
+          
+          if (notifyResponse.ok) {
+            logStep("Admin notification sent successfully");
+          } else {
+            logStep("WARNING: Failed to send admin notification");
+          }
+        } catch (notifyError) {
+          logStep("WARNING: Error sending admin notification", { error: String(notifyError) });
+        }
       }
     } else {
       logStep("Event type not handled, ignoring", { type: event.type });

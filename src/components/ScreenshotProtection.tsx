@@ -1,13 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert, Camera } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const ScreenshotProtection: React.FC = () => {
   const [isBlurred, setIsBlurred] = useState(false);
   const { language } = useLanguage();
+  const lastTriggerTime = useRef<number>(0);
 
   const showWarning = useCallback(() => {
+    // Debounce to prevent multiple triggers
+    const now = Date.now();
+    if (now - lastTriggerTime.current < 1000) return;
+    lastTriggerTime.current = now;
+    
     setIsBlurred(true);
     // Hide after 3 seconds
     setTimeout(() => {
@@ -16,21 +22,51 @@ const ScreenshotProtection: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Detect PrintScreen key
+    // Detect PrintScreen key (all variations)
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'PrintScreen' || e.code === 'PrintScreen') {
-        e.preventDefault();
-        showWarning();
-      }
-      // Detect common screenshot shortcuts
-      // Windows: Win + Shift + S, Win + PrintScreen
-      // Mac: Cmd + Shift + 3, Cmd + Shift + 4
+      // PrintScreen detection (works on key up for some systems)
       if (
-        (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4')) ||
-        (e.metaKey && e.shiftKey && e.key === 's') ||
-        (e.ctrlKey && e.key === 'p')
+        e.key === 'PrintScreen' || 
+        e.code === 'PrintScreen' ||
+        e.keyCode === 44
       ) {
         e.preventDefault();
+        showWarning();
+        return;
+      }
+      
+      // Windows Snipping Tool: Win + Shift + S
+      if (e.metaKey && e.shiftKey && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        showWarning();
+        return;
+      }
+      
+      // Mac screenshots: Cmd + Shift + 3, 4, 5
+      if (e.metaKey && e.shiftKey && ['3', '4', '5'].includes(e.key)) {
+        e.preventDefault();
+        showWarning();
+        return;
+      }
+      
+      // Print dialog (often used to save as PDF)
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        showWarning();
+        return;
+      }
+      
+      // Save page
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        showWarning();
+        return;
+      }
+    };
+
+    // Key up handler for PrintScreen (some systems only trigger on keyup)
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'PrintScreen' || e.code === 'PrintScreen' || e.keyCode === 44) {
         showWarning();
       }
     };
@@ -38,51 +74,68 @@ const ScreenshotProtection: React.FC = () => {
     // Detect right-click to prevent context menu screenshots
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
+      showWarning();
       return false;
     };
 
-    // Detect visibility change (some screenshot tools minimize/restore)
+    // Detect visibility change (screenshot tools may cause this)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        // When tab becomes hidden, could be screenshot
         showWarning();
       }
     };
 
-    // Detect devtools opening (F12, Ctrl+Shift+I)
+    // Detect window blur (could be screenshot tool opening)
+    const handleWindowBlur = () => {
+      showWarning();
+    };
+
+    // Detect devtools opening
     const handleDevTools = (e: KeyboardEvent) => {
       if (
         e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-        (e.ctrlKey && e.shiftKey && e.key === 'J') ||
-        (e.ctrlKey && e.shiftKey && e.key === 'C')
+        (e.ctrlKey && e.shiftKey && ['I', 'J', 'C', 'i', 'j', 'c'].includes(e.key))
       ) {
         e.preventDefault();
         showWarning();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keydown', handleDevTools);
-    document.addEventListener('contextmenu', handleContextMenu);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Disable text selection copy for extra protection
+    // Detect clipboard access
     const handleCopy = (e: ClipboardEvent) => {
-      // Allow copy in input/textarea elements
       const target = e.target as HTMLElement;
       if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
         e.preventDefault();
+        showWarning();
       }
     };
-    document.addEventListener('copy', handleCopy);
+
+    // Add all listeners
+    window.addEventListener('keydown', handleKeyDown, true);
+    window.addEventListener('keyup', handleKeyUp, true);
+    window.addEventListener('keydown', handleDevTools, true);
+    document.addEventListener('contextmenu', handleContextMenu, true);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleWindowBlur);
+    document.addEventListener('copy', handleCopy, true);
+
+    // Detect screen capture API if available
+    if ('getDisplayMedia' in navigator.mediaDevices) {
+      const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
+      navigator.mediaDevices.getDisplayMedia = function(...args) {
+        showWarning();
+        return originalGetDisplayMedia.apply(this, args);
+      };
+    }
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keydown', handleDevTools);
-      document.removeEventListener('contextmenu', handleContextMenu);
+      window.removeEventListener('keydown', handleKeyDown, true);
+      window.removeEventListener('keyup', handleKeyUp, true);
+      window.removeEventListener('keydown', handleDevTools, true);
+      document.removeEventListener('contextmenu', handleContextMenu, true);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      document.removeEventListener('copy', handleCopy);
+      window.removeEventListener('blur', handleWindowBlur);
+      document.removeEventListener('copy', handleCopy, true);
     };
   }, [showWarning]);
 
