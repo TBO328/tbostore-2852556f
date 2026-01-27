@@ -180,10 +180,16 @@ const Auth: React.FC = () => {
       // For development, show the OTP if returned
       if (data?.dev_otp) {
         console.log('Development OTP:', data.dev_otp);
-        toast({
-          title: 'Development Mode',
-          description: `OTP: ${data.dev_otp}`,
-        });
+        // Show prominent dev OTP notification
+        setTimeout(() => {
+          toast({
+            title: language === 'en' ? '🔐 Development Mode' : '🔐 وضع التطوير',
+            description: language === 'en' 
+              ? `Your verification code is: ${data.dev_otp}` 
+              : `رمز التحقق الخاص بك هو: ${data.dev_otp}`,
+            duration: 30000, // 30 seconds
+          });
+        }, 500);
       }
 
       setPhoneStep('otp');
