@@ -149,156 +149,206 @@ const Products: React.FC = () => {
     >
       <Navbar />
       <main className="pt-20">
-        {/* Hero Section with Enhanced Animations */}
-        <section className="py-20 md:py-28 bg-gradient-hero relative overflow-hidden">
-          {/* Animated Background Grid */}
-          <div className="absolute inset-0 opacity-20">
+        {/* Epic Hero Section */}
+        <section className="py-24 md:py-32 relative overflow-hidden">
+          {/* Animated Mesh Gradient Background */}
+          <div className="absolute inset-0 bg-gradient-hero">
             <motion.div 
               className="absolute inset-0"
-              animate={{ 
-                backgroundPosition: ['0% 0%', '100% 100%'],
-              }}
-              transition={{ duration: 20, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
               style={{
-                backgroundImage: `
-                  linear-gradient(to right, hsl(var(--neon-cyan) / 0.15) 1px, transparent 1px),
-                  linear-gradient(to bottom, hsl(var(--neon-cyan) / 0.15) 1px, transparent 1px)
-                `,
-                backgroundSize: '60px 60px'
+                background: `
+                  radial-gradient(circle at 20% 20%, hsl(var(--neon-cyan) / 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, hsl(var(--neon-magenta) / 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.1) 0%, transparent 60%)
+                `
               }}
+              animate={{
+                scale: [1, 1.1, 1],
+              }}
+              transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
             />
           </div>
 
-          {/* Parallax Background Elements */}
+          {/* Floating Geometric Shapes */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <motion.div 
-              className="absolute top-1/4 left-1/4 w-80 h-80 bg-neon-cyan/15 rounded-full blur-3xl"
+              className="absolute top-20 left-[10%] w-32 h-32 border border-primary/30 rounded-full"
+              animate={{ 
+                y: [0, -30, 0],
+                rotate: [0, 360],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
               style={{ x: parallaxX1, y: parallaxY1 }}
-              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.div 
-              className="absolute bottom-1/4 right-1/4 w-[450px] h-[450px] bg-neon-magenta/15 rounded-full blur-3xl"
-              style={{ x: parallaxX2, y: parallaxY2 }}
-              animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.5, 0.3] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              className="absolute bottom-32 right-[15%] w-24 h-24 border border-secondary/30"
+              style={{ 
+                borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
+                x: parallaxX2, 
+                y: parallaxY2 
+              }}
+              animate={{ 
+                rotate: [0, -360],
+                borderRadius: ['30% 70% 70% 30% / 30% 30% 70% 70%', '70% 30% 30% 70% / 70% 70% 30% 30%', '30% 70% 70% 30% / 30% 30% 70% 70%']
+              }}
+              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.div 
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl"
+              className="absolute top-1/3 right-[20%] w-20 h-20 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl backdrop-blur-sm"
+              animate={{ 
+                y: [0, 20, 0],
+                rotate: [45, 90, 45]
+              }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               style={{ x: parallaxX3, y: parallaxY3 }}
-              animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
-              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            />
+            
+            {/* Glowing Orbs */}
+            <motion.div 
+              className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-cyan/20 rounded-full blur-[100px]"
+              animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.5, 0.3] }}
+              transition={{ duration: 6, repeat: Infinity }}
+            />
+            <motion.div 
+              className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-neon-magenta/15 rounded-full blur-[120px]"
+              animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] }}
+              transition={{ duration: 8, repeat: Infinity, delay: 1 }}
             />
           </div>
           
           <div className="container mx-auto px-4 relative z-10">
-            <AnimatedSection>
-              <div className="text-center max-w-4xl mx-auto">
-                {/* Animated Badge */}
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="inline-flex items-center gap-2 px-5 py-2 bg-primary/10 backdrop-blur-md rounded-full border border-primary/30 mb-6"
-                >
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                  >
-                    <Sparkles className="w-4 h-4 text-primary" />
-                  </motion.div>
-                  <span className="text-sm font-medium text-primary">
-                    {language === 'en' ? 'Explore & Discover' : 'استكشف واكتشف'}
-                  </span>
-                </motion.div>
-
-                {/* Main Title with Stagger Animation */}
+            <div className="text-center max-w-4xl mx-auto">
+              {/* Animated Title with Split Effect */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
                 <motion.h1 
-                  className="font-display text-5xl md:text-7xl font-bold text-foreground mb-6"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="font-display text-6xl md:text-8xl lg:text-9xl font-black mb-8 relative"
                 >
                   <motion.span 
-                    className="block"
-                    initial={{ opacity: 0, x: -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4, duration: 0.5 }}
+                    className="block text-foreground"
+                    initial={{ opacity: 0, y: 80, rotateX: -90 }}
+                    animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                    transition={{ delay: 0.2, duration: 0.8, type: "spring", stiffness: 100 }}
                   >
-                    {language === 'en' ? 'Our Amazing' : 'مجموعة'}
+                    {language === 'en' ? 'Our' : 'منتجاتنا'}
                   </motion.span>
                   <motion.span 
-                    className="text-gradient-neon glow-text-cyan block mt-2"
-                    initial={{ opacity: 0, x: 30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5, duration: 0.5 }}
+                    className="block relative"
+                    initial={{ opacity: 0, y: 80, rotateX: -90 }}
+                    animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                    transition={{ delay: 0.4, duration: 0.8, type: "spring", stiffness: 100 }}
                   >
-                    {language === 'en' ? 'Products' : 'منتجاتنا المميزة'}
+                    <span className="text-gradient-neon glow-text-cyan">
+                      {language === 'en' ? 'Products' : 'المميزة'}
+                    </span>
+                    {/* Animated Underline */}
+                    <motion.div
+                      className="absolute -bottom-4 left-1/2 -translate-x-1/2 h-1.5 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full"
+                      initial={{ width: 0, opacity: 0 }}
+                      animate={{ width: '80%', opacity: 1 }}
+                      transition={{ delay: 1, duration: 0.8 }}
+                    />
                   </motion.span>
                 </motion.h1>
+              </motion.div>
 
-                {/* Subtitle with Typewriter Effect */}
-                <motion.p 
-                  className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.7, duration: 0.6 }}
-                >
-                  {language === 'en'
-                    ? 'Discover our handpicked collection of premium digital products designed for creators and streamers.'
-                    : 'اكتشف مجموعتنا المختارة من المنتجات الرقمية المميزة المصممة للمبدعين والمذيعين.'}
-                </motion.p>
-              </div>
-            </AnimatedSection>
+              {/* Subtitle */}
+              <motion.p 
+                className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.6 }}
+              >
+                {language === 'en'
+                  ? 'Discover premium digital products crafted for creators'
+                  : 'اكتشف منتجات رقمية مميزة صممت للمبدعين'}
+              </motion.p>
+            </div>
           </div>
 
-          {/* Bottom Wave */}
-          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
+          {/* Bottom Fade */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
         </section>
 
-        {/* Products Section with Parallax */}
-        <section className="py-16 bg-background relative overflow-hidden">
-          {/* Parallax Background Orbs */}
-          <motion.div 
-            className="absolute top-1/2 left-0 w-72 h-72 bg-neon-cyan/5 rounded-full blur-3xl pointer-events-none"
-            style={{ x: parallaxX2, y: parallaxY1 }}
-          />
-          <motion.div 
-            className="absolute bottom-0 right-0 w-96 h-96 bg-neon-magenta/5 rounded-full blur-3xl pointer-events-none"
-            style={{ x: parallaxX1, y: parallaxY2 }}
-          />
-          <motion.div 
-            className="absolute top-1/4 right-1/4 w-48 h-48 bg-primary/3 rounded-full blur-2xl pointer-events-none"
-            style={{ x: parallaxX3, y: parallaxY3 }}
-          />
+        {/* Products Section */}
+        <section className="py-20 bg-background relative overflow-hidden">
+          {/* Subtle Background */}
+          <div className="absolute inset-0 pointer-events-none">
+            <motion.div 
+              className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[150px]"
+              animate={{ x: [0, 50, 0], y: [0, -30, 0] }}
+              transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.div 
+              className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-secondary/3 rounded-full blur-[120px]"
+              animate={{ x: [0, -40, 0], y: [0, 40, 0] }}
+              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </div>
 
           <div className="container mx-auto px-4 relative z-10">
-            {/* Category Filter */}
-            <AnimatedSection delay={0.1}>
-              <div className="flex flex-wrap justify-center gap-3 mb-12">
-                {!categoriesLoading && allCategories.map((category) => (
+            {/* Category Filter - Redesigned */}
+            <motion.div 
+              className="mb-16"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <div className="flex flex-wrap justify-center gap-4">
+                {!categoriesLoading && allCategories.map((category, index) => (
                   <motion.button
                     key={category}
                     onClick={() => setActiveCategory(category)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`px-6 py-2.5 rounded-full font-arabic font-medium text-sm transition-all duration-300 ${
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * index }}
+                    whileHover={{ y: -3, scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`relative px-8 py-3.5 rounded-2xl font-bold text-base transition-all duration-300 overflow-hidden group ${
                       activeCategory === category
-                        ? 'bg-primary text-primary-foreground shadow-neon-cyan'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+                        ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-xl shadow-primary/30'
+                        : 'bg-card/50 backdrop-blur-sm text-muted-foreground hover:text-foreground border border-border/50 hover:border-primary/30'
                     }`}
                   >
-                    {getCategoryLabel(category)}
+                    {/* Hover Glow Effect */}
+                    {activeCategory !== category && (
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      />
+                    )}
+                    <span className="relative z-10">{getCategoryLabel(category)}</span>
                   </motion.button>
                 ))}
               </div>
-            </AnimatedSection>
+            </motion.div>
 
             {/* Loading State */}
             {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              </div>
+              <motion.div 
+                className="flex flex-col items-center justify-center py-24"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <motion.div
+                  className="relative w-20 h-20"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                >
+                  <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
+                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary" />
+                </motion.div>
+                <motion.p 
+                  className="mt-6 text-muted-foreground"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  {language === 'en' ? 'Loading products...' : 'جاري تحميل المنتجات...'}
+                </motion.p>
+              </motion.div>
             ) : (
               <>
                 {/* Streamer Packages - Show only for specific categories, NOT for All */}
@@ -308,34 +358,55 @@ const Products: React.FC = () => {
                   </AnimatedSection>
                 )}
 
-                {/* Products Grid */}
+                {/* Products Grid - Enhanced */}
                 <motion.div 
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
                   layout
                 >
-                  {filteredProducts.map((product, index) => (
-                    <motion.div
-                      key={product.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 20 }}
-                      transition={{ delay: index * 0.05, duration: 0.4 }}
-                      layout
-                    >
-                      <ProductCard product={product} />
-                    </motion.div>
-                  ))}
+                  <AnimatePresence mode="popLayout">
+                    {filteredProducts.map((product, index) => (
+                      <motion.div
+                        key={product.id}
+                        initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: -20 }}
+                        transition={{ 
+                          delay: index * 0.05, 
+                          duration: 0.4,
+                          type: "spring",
+                          stiffness: 200
+                        }}
+                        layout
+                      >
+                        <ProductCard product={product} />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
                 </motion.div>
               </>
             )}
 
-            {/* Empty State */}
+            {/* Empty State - Enhanced */}
             {!loading && filteredProducts.length === 0 && (
-              <div className="text-center py-20">
-                <p className="text-muted-foreground text-lg">
-                  {language === 'en' ? 'No products found in this category.' : 'لا توجد منتجات في هذه الفئة.'}
+              <motion.div 
+                className="text-center py-24"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <motion.div
+                  className="w-24 h-24 mx-auto mb-6 rounded-full bg-muted/50 flex items-center justify-center"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <ShoppingBag className="w-10 h-10 text-muted-foreground" />
+                </motion.div>
+                <p className="text-xl text-muted-foreground mb-2">
+                  {language === 'en' ? 'No products found' : 'لا توجد منتجات'}
                 </p>
-              </div>
+                <p className="text-sm text-muted-foreground/70">
+                  {language === 'en' ? 'Try selecting a different category' : 'جرب اختيار فئة أخرى'}
+                </p>
+              </motion.div>
             )}
           </div>
         </section>

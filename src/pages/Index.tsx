@@ -71,160 +71,152 @@ const Index: React.FC = () => {
           </div>
 
           <div className="container mx-auto px-4 relative z-10 pt-20">
-            <div className="max-w-4xl mx-auto text-center">
-              {/* Animated Welcome Badge */}
-              <AnimatedSection>
-                <motion.div 
-                  initial={{ scale: 0.9, opacity: 0, y: 20 }} 
-                  animate={{ scale: 1, opacity: 1, y: 0 }} 
-                  transition={{ delay: 0.2, duration: 0.6 }} 
-                  className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 backdrop-blur-md rounded-full border border-primary/40 mb-8 shadow-lg shadow-primary/20"
+            <div className="max-w-5xl mx-auto text-center">
+              {/* Glowing Ring Animation */}
+              <motion.div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-primary/20"
+                animate={{ 
+                  scale: [1, 1.1, 1],
+                  opacity: [0.3, 0.5, 0.3],
+                  rotate: [0, 180, 360]
+                }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              />
+              <motion.div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full border border-secondary/20"
+                animate={{ 
+                  scale: [1.1, 1, 1.1],
+                  opacity: [0.2, 0.4, 0.2],
+                  rotate: [360, 180, 0]
+                }}
+                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+              />
+
+              {/* Main Title - Epic Animation */}
+              <AnimatedSection delay={0.1}>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2, duration: 0.8, type: "spring" }}
                 >
-                  <motion.div 
-                    animate={{ 
-                      scale: [1, 1.2, 1],
-                      rotate: [0, 180, 360],
-                    }} 
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <Sparkles className="w-5 h-5 text-primary" />
-                  </motion.div>
-                  <motion.span 
-                    className="text-sm font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent bg-[length:200%_auto]"
-                    animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                  >
-                    {language === 'en' ? '✨ Welcome to TBO Store ✨' : '✨ أهلاً بكم في TBO Store ✨'}
-                  </motion.span>
-                  <motion.div 
-                    animate={{ 
-                      scale: [1, 1.2, 1],
-                      rotate: [360, 180, 0],
-                    }} 
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <Sparkles className="w-5 h-5 text-secondary" />
-                  </motion.div>
+                  <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-black mb-4 relative">
+                    <motion.span 
+                      className="text-foreground block"
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3, duration: 0.6 }}
+                    >
+                      {getText('hero', 'heroTitle', t('heroTitle')).split('\n')[0]}
+                    </motion.span>
+                    <motion.span 
+                      className="relative inline-block"
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5, duration: 0.6 }}
+                    >
+                      <span className="text-gradient-neon glow-text-cyan">
+                        {getText('hero', 'heroTitle', t('heroTitle')).split('\n')[1] || 'TBO STORE'}
+                      </span>
+                      {/* Underline Animation */}
+                      <motion.div
+                        className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary rounded-full"
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        transition={{ delay: 1, duration: 0.8 }}
+                      />
+                    </motion.span>
+                  </h1>
                 </motion.div>
               </AnimatedSection>
 
-              <AnimatedSection delay={0.1}>
-                <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold mb-6">
-                  <motion.span 
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, duration: 0.6 }}
-                    className="text-foreground block"
-                  >
-                    {getText('hero', 'heroTitle', t('heroTitle')).split('\n')[0]}
-                  </motion.span>
-                  <motion.span 
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.6 }}
-                    className="text-gradient-neon glow-text-cyan block mt-2"
-                  >
-                    {getText('hero', 'heroTitle', t('heroTitle')).split('\n')[1] || 'TBO STORE'}
-                  </motion.span>
-                </h1>
-              </AnimatedSection>
-
-              <AnimatedSection delay={0.2}>
+              {/* Subtitle with Gradient Text */}
+              <AnimatedSection delay={0.3}>
                 <motion.p 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.7, duration: 0.6 }}
-                  className="text-lg md:text-xl text-muted-foreground mb-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8, duration: 0.6 }}
+                  className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed"
                 >
                   {getText('hero', 'heroSubtitle', t('heroSubtitle'))}
                 </motion.p>
               </AnimatedSection>
 
-              <AnimatedSection delay={0.3}>
-                <motion.p 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.9, duration: 0.6 }}
-                  className="text-base text-muted-foreground/80 max-w-2xl mx-auto mb-10"
-                >
-                  {getText('hero', 'heroDescription', t('heroDescription'))}
-                </motion.p>
-              </AnimatedSection>
-
+              {/* CTA Buttons - Redesigned */}
               <AnimatedSection delay={0.4}>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <motion.div 
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 1.1 }}
-                    whileHover={{ scale: 1.05, boxShadow: "0 0 30px hsl(var(--primary) / 0.5)" }} 
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Link to="/products">
-                      <Button variant="neon-filled" size="lg" className="group">
-                        {t('shopNow')}
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </Link>
-                  </motion.div>
-                  <motion.div 
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 1.2 }}
-                    whileHover={{ scale: 1.05 }} 
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Link to="/about">
-                      <Button variant="neon" size="lg">
-                        {t('exploreMore')}
-                      </Button>
-                    </Link>
-                  </motion.div>
-                </div>
-              </AnimatedSection>
-
-              {/* Stats */}
-              <AnimatedSection delay={0.5}>
                 <motion.div 
+                  className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.4 }}
-                  className="grid grid-cols-3 gap-4 md:gap-8 mt-16 pt-8 border-t border-border/50"
+                  transition={{ delay: 1 }}
                 >
-                  <motion.div 
-                    whileHover={{ y: -5, scale: 1.02 }} 
-                    className="text-center p-3 rounded-xl bg-primary/5 backdrop-blur-sm border border-primary/10"
-                  >
-                    <div className="font-display text-3xl md:text-4xl font-bold text-primary glow-text-cyan">
-                      {getText('hero', 'productsCount', '500+')}
-                    </div>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      {language === 'en' ? 'Products' : 'منتج'}
-                    </div>
-                  </motion.div>
-                  <motion.div 
-                    whileHover={{ y: -5, scale: 1.02 }} 
-                    className="text-center p-3 rounded-xl bg-secondary/5 backdrop-blur-sm border border-secondary/10"
-                  >
-                    <div className="font-display text-3xl md:text-4xl font-bold text-secondary glow-text-magenta">
-                      {getText('hero', 'customersCount', '10K+')}
-                    </div>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      {language === 'en' ? 'Customers' : 'عميل'}
-                    </div>
-                  </motion.div>
-                  <motion.div 
-                    whileHover={{ y: -5, scale: 1.02 }} 
-                    className="text-center p-3 rounded-xl bg-accent/5 backdrop-blur-sm border border-accent/10"
-                  >
-                    <div className="font-display text-3xl md:text-4xl font-bold text-accent">
-                      {getText('hero', 'ratingValue', '4.9★')}
-                    </div>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      {language === 'en' ? 'Rating' : 'تقييم'}
-                    </div>
-                  </motion.div>
+                  <Link to="/products">
+                    <motion.button
+                      whileHover={{ scale: 1.05, y: -3 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="group relative px-10 py-4 bg-gradient-to-r from-primary to-secondary rounded-2xl text-primary-foreground font-bold text-lg overflow-hidden shadow-2xl shadow-primary/30"
+                    >
+                      <span className="relative z-10 flex items-center gap-3">
+                        {t('shopNow')}
+                        <motion.span
+                          animate={{ x: [0, 5, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          <ArrowRight className="w-5 h-5" />
+                        </motion.span>
+                      </span>
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-secondary to-primary"
+                        initial={{ x: "100%" }}
+                        whileHover={{ x: 0 }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </motion.button>
+                  </Link>
+                  <Link to="/about">
+                    <motion.button
+                      whileHover={{ scale: 1.05, y: -3 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="px-10 py-4 border-2 border-primary/50 rounded-2xl text-foreground font-bold text-lg backdrop-blur-sm hover:border-primary hover:bg-primary/10 transition-all duration-300"
+                    >
+                      {t('exploreMore')}
+                    </motion.button>
+                  </Link>
                 </motion.div>
+              </AnimatedSection>
+
+              {/* Floating Stats Cards */}
+              <AnimatedSection delay={0.5}>
+                <div className="flex flex-wrap justify-center gap-6">
+                  {[
+                    { value: getText('hero', 'productsCount', '500+'), label: language === 'en' ? 'Products' : 'منتج', color: 'primary', delay: 0 },
+                    { value: getText('hero', 'customersCount', '10K+'), label: language === 'en' ? 'Customers' : 'عميل', color: 'secondary', delay: 0.1 },
+                    { value: getText('hero', 'ratingValue', '4.9★'), label: language === 'en' ? 'Rating' : 'تقييم', color: 'accent', delay: 0.2 },
+                  ].map((stat, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 40, rotateX: -30 }}
+                      animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                      transition={{ delay: 1.3 + stat.delay, duration: 0.5, type: "spring" }}
+                      whileHover={{ 
+                        y: -10, 
+                        scale: 1.05,
+                        rotateY: 5,
+                        boxShadow: `0 20px 40px -10px hsl(var(--${stat.color}) / 0.4)`
+                      }}
+                      className={`relative px-8 py-5 rounded-2xl bg-gradient-to-br from-${stat.color}/10 to-${stat.color}/5 border border-${stat.color}/20 backdrop-blur-md cursor-pointer group`}
+                      style={{ perspective: '1000px' }}
+                    >
+                      <div className={`font-display text-3xl md:text-4xl font-black text-${stat.color}`}>
+                        {stat.value}
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
+                      {/* Glow Effect */}
+                      <motion.div
+                        className={`absolute inset-0 rounded-2xl bg-${stat.color}/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10`}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
               </AnimatedSection>
             </div>
           </div>
