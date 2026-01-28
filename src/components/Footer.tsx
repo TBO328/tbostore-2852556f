@@ -25,21 +25,22 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="bg-card border-t border-border relative">
-      {/* Wave Effect at Top - As a decorative header */}
-      <div className="absolute top-0 left-0 right-0 w-full h-40 -mt-40 pointer-events-none overflow-hidden">
+    <>
+      {/* Wave Separator - Above Footer */}
+      <div className="w-full h-32 md:h-48 relative -mb-1">
         <img 
           src={footerWave} 
           alt="" 
-          className="w-full h-full object-cover object-bottom"
+          className="w-full h-full object-cover object-top"
         />
       </div>
 
-      {/* Background Effects */}
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-neon-cyan/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-neon-magenta/5 rounded-full blur-3xl" />
+      <footer className="bg-card border-t border-border relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-neon-cyan/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-neon-magenta/5 rounded-full blur-3xl" />
 
-      <div className="container mx-auto px-4 py-16 relative z-10">
+        <div className="container mx-auto px-4 py-16 relative z-10">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div>
@@ -159,7 +160,8 @@ const Footer: React.FC = () => {
           </div>
         </div>
       </div>
-    </footer>
+      </footer>
+    </>
   );
 };
 
