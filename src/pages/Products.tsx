@@ -248,32 +248,6 @@ const Products: React.FC = () => {
                     ? 'Discover our handpicked collection of premium digital products designed for creators and streamers.'
                     : 'اكتشف مجموعتنا المختارة من المنتجات الرقمية المميزة المصممة للمبدعين والمذيعين.'}
                 </motion.p>
-
-                {/* Animated Stats Bar */}
-                <motion.div 
-                  className="flex justify-center gap-8 mt-10"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.9 }}
-                >
-                  {[
-                    { value: '100+', label: language === 'en' ? 'Products' : 'منتج' },
-                    { value: '5K+', label: language === 'en' ? 'Sold' : 'مبيعات' },
-                    { value: '4.9★', label: language === 'en' ? 'Rating' : 'تقييم' },
-                  ].map((stat, index) => (
-                    <motion.div 
-                      key={index}
-                      className="text-center"
-                      whileHover={{ scale: 1.1, y: -5 }}
-                      transition={{ type: "spring", stiffness: 300 }}
-                    >
-                      <div className="font-display text-2xl md:text-3xl font-bold text-primary glow-text-cyan">
-                        {stat.value}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
-                    </motion.div>
-                  ))}
-                </motion.div>
               </div>
             </AnimatedSection>
           </div>
