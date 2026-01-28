@@ -25,13 +25,13 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="bg-card border-t border-border relative overflow-hidden">
-      {/* Wave Effect at Top */}
-      <div className="absolute top-0 left-0 right-0 w-full h-32 -translate-y-full pointer-events-none">
+    <footer className="bg-card border-t border-border relative">
+      {/* Wave Effect at Top - As a decorative header */}
+      <div className="absolute top-0 left-0 right-0 w-full h-40 -mt-40 pointer-events-none overflow-hidden">
         <img 
           src={footerWave} 
           alt="" 
-          className="w-full h-full object-cover object-bottom opacity-80"
+          className="w-full h-full object-cover object-bottom"
         />
       </div>
 
