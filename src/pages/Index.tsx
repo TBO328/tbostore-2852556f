@@ -92,38 +92,29 @@ const Index: React.FC = () => {
                 transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
               />
 
-              {/* Main Title - Epic Animation */}
+              {/* Main Title */}
               <AnimatedSection delay={0.1}>
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.2, duration: 0.8, type: "spring" }}
                 >
-                  <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-black mb-4 relative">
+                  <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-8">
                     <motion.span 
-                      className="text-foreground block"
-                      initial={{ opacity: 0, y: 50 }}
+                      className="text-foreground block mb-4"
+                      initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3, duration: 0.6 }}
                     >
                       {getText('hero', 'heroTitle', t('heroTitle')).split('\n')[0]}
                     </motion.span>
                     <motion.span 
-                      className="relative inline-block"
-                      initial={{ opacity: 0, y: 50 }}
+                      className="text-gradient-neon glow-text-cyan block"
+                      initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5, duration: 0.6 }}
                     >
-                      <span className="text-gradient-neon glow-text-cyan">
-                        {getText('hero', 'heroTitle', t('heroTitle')).split('\n')[1] || 'TBO STORE'}
-                      </span>
-                      {/* Underline Animation */}
-                      <motion.div
-                        className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary rounded-full"
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: 1 }}
-                        transition={{ delay: 1, duration: 0.8 }}
-                      />
+                      {getText('hero', 'heroTitle', t('heroTitle')).split('\n')[1] || 'TBO STORE'}
                     </motion.span>
                   </h1>
                 </motion.div>

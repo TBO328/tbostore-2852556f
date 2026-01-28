@@ -22,7 +22,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const [winterMode, setWinterMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('winterMode');
-    return saved ? saved === 'true' : true;
+    return saved ? saved === 'true' : false; // Default to false (disabled)
   });
 
   const [customCursor, setCustomCursor] = useState<boolean>(() => {

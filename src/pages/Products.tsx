@@ -226,32 +226,23 @@ const Products: React.FC = () => {
                 transition={{ duration: 0.5 }}
               >
                 <motion.h1 
-                  className="font-display text-6xl md:text-8xl lg:text-9xl font-black mb-8 relative"
+                  className="font-display text-5xl md:text-6xl lg:text-7xl font-bold mb-8"
                 >
                   <motion.span 
-                    className="block text-foreground"
-                    initial={{ opacity: 0, y: 80, rotateX: -90 }}
-                    animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                    transition={{ delay: 0.2, duration: 0.8, type: "spring", stiffness: 100 }}
+                    className="block text-foreground mb-2"
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
                   >
                     {language === 'en' ? 'Our' : 'منتجاتنا'}
                   </motion.span>
                   <motion.span 
-                    className="block relative"
-                    initial={{ opacity: 0, y: 80, rotateX: -90 }}
-                    animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                    transition={{ delay: 0.4, duration: 0.8, type: "spring", stiffness: 100 }}
+                    className="block text-gradient-neon glow-text-cyan"
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.6 }}
                   >
-                    <span className="text-gradient-neon glow-text-cyan">
-                      {language === 'en' ? 'Products' : 'المميزة'}
-                    </span>
-                    {/* Animated Underline */}
-                    <motion.div
-                      className="absolute -bottom-4 left-1/2 -translate-x-1/2 h-1.5 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full"
-                      initial={{ width: 0, opacity: 0 }}
-                      animate={{ width: '80%', opacity: 1 }}
-                      transition={{ delay: 1, duration: 0.8 }}
-                    />
+                    {language === 'en' ? 'Products' : 'المميزة'}
                   </motion.span>
                 </motion.h1>
               </motion.div>

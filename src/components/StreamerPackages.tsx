@@ -166,9 +166,15 @@ const StreamerPackages: React.FC<StreamerPackagesProps> = ({ categoryFilter = nu
   const previousPricesRef = useRef<Record<string, number>>({});
   const [animatingPrices, setAnimatingPrices] = useState<Record<string, boolean>>({});
 
-  // Filter packages by category
+  // Filter packages by category - match 'streamers' category with 'Designs' filter
   const filteredPackages = categoryFilter 
-    ? packages.filter(pkg => pkg.category === categoryFilter)
+    ? packages.filter(pkg => {
+        // If filter is 'Designs', show packages with 'streamers' category
+        if (categoryFilter === 'Designs') {
+          return pkg.category === 'streamers' || pkg.category === 'Designs';
+        }
+        return pkg.category === categoryFilter;
+      })
     : packages;
 
   // Group packages by category
