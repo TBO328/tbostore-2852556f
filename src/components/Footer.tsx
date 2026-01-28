@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Instagram } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
+import footerWave from '@/assets/footer-wave.png';
 
 const Footer: React.FC = () => {
   const { t, language } = useLanguage();
@@ -25,6 +26,15 @@ const Footer: React.FC = () => {
 
   return (
     <footer className="bg-card border-t border-border relative overflow-hidden">
+      {/* Wave Effect at Top */}
+      <div className="absolute top-0 left-0 right-0 w-full h-32 -translate-y-full pointer-events-none">
+        <img 
+          src={footerWave} 
+          alt="" 
+          className="w-full h-full object-cover object-bottom opacity-80"
+        />
+      </div>
+
       {/* Background Effects */}
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-neon-cyan/5 rounded-full blur-3xl" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-neon-magenta/5 rounded-full blur-3xl" />
