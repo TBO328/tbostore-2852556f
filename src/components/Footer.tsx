@@ -27,11 +27,12 @@ const Footer: React.FC = () => {
   return (
     <>
       {/* Wave Separator - Above Footer */}
-      <div className="w-full h-32 md:h-48 relative -mb-1">
+      <div className="w-full h-32 md:h-48 relative bg-background">
         <img 
           src={footerWave} 
           alt="" 
-          className="w-full h-full object-cover object-top"
+          className="w-full h-full object-cover"
+          style={{ transform: 'scaleY(-1)' }}
         />
       </div>
 
