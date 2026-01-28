@@ -30,6 +30,7 @@ import AIAssistant from '@/components/admin/AIAssistant';
 import SeasonalThemesManagement from '@/components/admin/SeasonalThemesManagement';
 import PackagesManagement from '@/components/admin/PackagesManagement';
 import LoyaltyManagement from '@/components/admin/LoyaltyManagement';
+import PaymentsManagement from '@/components/admin/PaymentsManagement';
 import FingerprintLock from '@/components/admin/FingerprintLock';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
@@ -492,6 +493,9 @@ const Admin: React.FC = () => {
       
       case 'orders':
         return <OrdersManagement orders={orders} onRefresh={fetchData} />;
+      
+      case 'payments':
+        return <PaymentsManagement />;
       
       case 'products':
         return (

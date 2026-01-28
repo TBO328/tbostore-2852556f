@@ -283,6 +283,42 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_receipts: {
+        Row: {
+          created_at: string
+          customer_note: string | null
+          id: string
+          order_id: string
+          order_number: string
+          payment_method: string
+          receipt_url: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_note?: string | null
+          id?: string
+          order_id: string
+          order_number: string
+          payment_method: string
+          receipt_url: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_note?: string | null
+          id?: string
+          order_id?: string
+          order_number?: string
+          payment_method?: string
+          receipt_url?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payment_settings: {
         Row: {
           id: string
