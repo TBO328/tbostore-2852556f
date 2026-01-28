@@ -561,7 +561,7 @@ const Auth: React.FC = () => {
                       {isLogin && (
                         <div className="text-right">
                           <Link 
-                            to="/forgot-password" 
+                            to="/request-password-reset" 
                             className="font-cairo text-xs text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1"
                           >
                             <Shield className="w-3 h-3" />
