@@ -22,7 +22,6 @@ import Policies from "./pages/Policies";
 import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import RequestPasswordReset from "./pages/RequestPasswordReset";
-import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import CustomizeExperience from "./pages/CustomizeExperience";
@@ -58,7 +57,6 @@ const AnimatedRoutes = () => {
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
         <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
         <Route path="/request-password-reset" element={<PageTransition><RequestPasswordReset /></PageTransition>} />
-        <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
         <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
         <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
         <Route path="/customize" element={<PageTransition><CustomizeExperience /></PageTransition>} />

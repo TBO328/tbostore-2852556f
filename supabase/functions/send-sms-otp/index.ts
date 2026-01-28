@@ -97,8 +97,21 @@ serve(async (req) => {
 
     if (!twilioResponse.ok) {
       const errorData = await twilioResponse.json();
-      console.error('Twilio error:', errorData);
-      throw new Error('Failed to send SMS');
+      console.error('Twilio error:', JSON.stringify(errorData));
+      
+      // Provide more helpful error messages
+      let errorMessage = 'Failed to send SMS';
+      if (errorData?.code === 21608) {
+        errorMessage = 'This phone number is not verified in Twilio. Please verify it first or upgrade to a paid account.';
+      } else if (errorData?.code === 21211) {
+        errorMessage = 'Invalid phone number format';
+      } else if (errorData?.code === 21614) {
+        errorMessage = 'This phone number cannot receive SMS';
+      } else if (errorData?.message) {
+        errorMessage = errorData.message;
+      }
+      
+      throw new Error(errorMessage);
     }
 
     console.log(`SMS sent successfully to ${cleanPhone}`);
