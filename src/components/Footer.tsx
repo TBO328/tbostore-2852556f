@@ -26,14 +26,15 @@ const Footer: React.FC = () => {
 
   return (
     <>
-      {/* Wave Separator - Above Footer */}
-      <div className="w-full h-32 md:h-48 relative bg-background">
+      {/* Wave Background - Behind content, seamless */}
+      <div className="w-full h-64 md:h-80 -mt-32 md:-mt-40 relative pointer-events-none">
         <img 
           src={footerWave} 
           alt="" 
-          className="w-full h-full object-cover"
-          style={{ transform: 'scaleY(-1)' }}
+          className="w-full h-full object-cover opacity-60"
         />
+        {/* Gradient overlay to blend edges */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-card" />
       </div>
 
       <footer className="bg-card border-t border-border relative overflow-hidden">
