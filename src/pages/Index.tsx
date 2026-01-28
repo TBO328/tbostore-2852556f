@@ -72,19 +72,39 @@ const Index: React.FC = () => {
 
           <div className="container mx-auto px-4 relative z-10 pt-20">
             <div className="max-w-4xl mx-auto text-center">
+              {/* Animated Welcome Badge */}
               <AnimatedSection>
                 <motion.div 
                   initial={{ scale: 0.9, opacity: 0, y: 20 }} 
                   animate={{ scale: 1, opacity: 1, y: 0 }} 
                   transition={{ delay: 0.2, duration: 0.6 }} 
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary/10 backdrop-blur-md rounded-full border border-primary/30 mb-8 shadow-lg shadow-primary/10"
+                  className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 backdrop-blur-md rounded-full border border-primary/40 mb-8 shadow-lg shadow-primary/20"
                 >
-                  <motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 2, repeat: Infinity }}>
+                  <motion.div 
+                    animate={{ 
+                      scale: [1, 1.2, 1],
+                      rotate: [0, 180, 360],
+                    }} 
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  >
                     <Sparkles className="w-5 h-5 text-primary" />
                   </motion.div>
-                  <span className="text-sm font-medium text-primary">
-                    {getText('hero', 'premiumBadge', language === 'en' ? 'Premium Quality Products' : 'منتجات عالية الجودة')}
-                  </span>
+                  <motion.span 
+                    className="text-sm font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent bg-[length:200%_auto]"
+                    animate={{ backgroundPosition: ['0%', '100%', '0%'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  >
+                    {language === 'en' ? '✨ Welcome to TBO Store ✨' : '✨ أهلاً بكم في TBO Store ✨'}
+                  </motion.span>
+                  <motion.div 
+                    animate={{ 
+                      scale: [1, 1.2, 1],
+                      rotate: [360, 180, 0],
+                    }} 
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <Sparkles className="w-5 h-5 text-secondary" />
+                  </motion.div>
                 </motion.div>
               </AnimatedSection>
 

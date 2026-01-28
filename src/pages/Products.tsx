@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+import { Sparkles } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShoppingBag, Filter } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import StreamerPackages from '@/components/StreamerPackages';
 import { useCategories } from '@/hooks/useCategories';
@@ -148,41 +149,137 @@ const Products: React.FC = () => {
     >
       <Navbar />
       <main className="pt-20">
-        {/* Hero Section with Parallax */}
-        <section className="py-16 md:py-24 bg-gradient-hero relative overflow-hidden">
+        {/* Hero Section with Enhanced Animations */}
+        <section className="py-20 md:py-28 bg-gradient-hero relative overflow-hidden">
+          {/* Animated Background Grid */}
+          <div className="absolute inset-0 opacity-20">
+            <motion.div 
+              className="absolute inset-0"
+              animate={{ 
+                backgroundPosition: ['0% 0%', '100% 100%'],
+              }}
+              transition={{ duration: 20, repeat: Infinity, repeatType: "reverse", ease: "linear" }}
+              style={{
+                backgroundImage: `
+                  linear-gradient(to right, hsl(var(--neon-cyan) / 0.15) 1px, transparent 1px),
+                  linear-gradient(to bottom, hsl(var(--neon-cyan) / 0.15) 1px, transparent 1px)
+                `,
+                backgroundSize: '60px 60px'
+              }}
+            />
+          </div>
+
           {/* Parallax Background Elements */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <motion.div 
-              className="absolute top-1/4 left-1/4 w-64 h-64 bg-neon-cyan/10 rounded-full blur-3xl"
+              className="absolute top-1/4 left-1/4 w-80 h-80 bg-neon-cyan/15 rounded-full blur-3xl"
               style={{ x: parallaxX1, y: parallaxY1 }}
+              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.div 
-              className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-magenta/10 rounded-full blur-3xl"
+              className="absolute bottom-1/4 right-1/4 w-[450px] h-[450px] bg-neon-magenta/15 rounded-full blur-3xl"
               style={{ x: parallaxX2, y: parallaxY2 }}
+              animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.5, 0.3] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
             />
             <motion.div 
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-primary/5 rounded-full blur-3xl"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl"
               style={{ x: parallaxX3, y: parallaxY3 }}
+              animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
             />
           </div>
           
           <div className="container mx-auto px-4 relative z-10">
             <AnimatedSection>
-              <div className="text-center max-w-3xl mx-auto">
-                <h1 className="font-display text-4xl md:text-6xl font-bold text-foreground mb-6">
-                  {language === 'en' ? 'Our ' : 'مجموعة '}
-                  <span className="text-gradient-neon glow-text-cyan">
-                    {language === 'en' ? 'Products' : 'منتجاتنا'}
+              <div className="text-center max-w-4xl mx-auto">
+                {/* Animated Badge */}
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="inline-flex items-center gap-2 px-5 py-2 bg-primary/10 backdrop-blur-md rounded-full border border-primary/30 mb-6"
+                >
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Sparkles className="w-4 h-4 text-primary" />
+                  </motion.div>
+                  <span className="text-sm font-medium text-primary">
+                    {language === 'en' ? 'Explore & Discover' : 'استكشف واكتشف'}
                   </span>
-                </h1>
-                <p className="text-lg text-muted-foreground">
+                </motion.div>
+
+                {/* Main Title with Stagger Animation */}
+                <motion.h1 
+                  className="font-display text-5xl md:text-7xl font-bold text-foreground mb-6"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                >
+                  <motion.span 
+                    className="block"
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                  >
+                    {language === 'en' ? 'Our Amazing' : 'مجموعة'}
+                  </motion.span>
+                  <motion.span 
+                    className="text-gradient-neon glow-text-cyan block mt-2"
+                    initial={{ opacity: 0, x: 30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5, duration: 0.5 }}
+                  >
+                    {language === 'en' ? 'Products' : 'منتجاتنا المميزة'}
+                  </motion.span>
+                </motion.h1>
+
+                {/* Subtitle with Typewriter Effect */}
+                <motion.p 
+                  className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.7, duration: 0.6 }}
+                >
                   {language === 'en'
-                    ? 'Discover our curated collection of premium products designed for the modern lifestyle.'
-                    : 'اكتشف مجموعتنا المختارة من المنتجات الفاخرة المصممة لنمط الحياة العصري.'}
-                </p>
+                    ? 'Discover our handpicked collection of premium digital products designed for creators and streamers.'
+                    : 'اكتشف مجموعتنا المختارة من المنتجات الرقمية المميزة المصممة للمبدعين والمذيعين.'}
+                </motion.p>
+
+                {/* Animated Stats Bar */}
+                <motion.div 
+                  className="flex justify-center gap-8 mt-10"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 }}
+                >
+                  {[
+                    { value: '100+', label: language === 'en' ? 'Products' : 'منتج' },
+                    { value: '5K+', label: language === 'en' ? 'Sold' : 'مبيعات' },
+                    { value: '4.9★', label: language === 'en' ? 'Rating' : 'تقييم' },
+                  ].map((stat, index) => (
+                    <motion.div 
+                      key={index}
+                      className="text-center"
+                      whileHover={{ scale: 1.1, y: -5 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <div className="font-display text-2xl md:text-3xl font-bold text-primary glow-text-cyan">
+                        {stat.value}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
+                    </motion.div>
+                  ))}
+                </motion.div>
               </div>
             </AnimatedSection>
           </div>
+
+          {/* Bottom Wave */}
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
         </section>
 
         {/* Products Section with Parallax */}
@@ -230,10 +327,12 @@ const Products: React.FC = () => {
               </div>
             ) : (
               <>
-                {/* Streamer Packages - Show for selected category or All */}
-                <AnimatedSection delay={0.2}>
-                  <StreamerPackages categoryFilter={activeCategory === 'All' ? null : activeCategory} />
-                </AnimatedSection>
+                {/* Streamer Packages - Show only for specific categories, NOT for All */}
+                {activeCategory !== 'All' && (
+                  <AnimatedSection delay={0.2}>
+                    <StreamerPackages categoryFilter={activeCategory} />
+                  </AnimatedSection>
+                )}
 
                 {/* Products Grid */}
                 <motion.div 
