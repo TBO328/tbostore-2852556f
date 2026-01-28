@@ -31,6 +31,11 @@ const menuItems = [{
   labelEn: 'Orders',
   labelAr: 'الطلبات'
 }, {
+  id: 'payments',
+  icon: Ticket,
+  labelEn: 'Payments',
+  labelAr: 'المدفوعات'
+}, {
   id: 'products',
   icon: Package,
   labelEn: 'Products',

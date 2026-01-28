@@ -20,6 +20,7 @@ import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
 import PointsRedemptionSection from '@/components/PointsRedemptionSection';
 import CartItem3D from '@/components/CartItem3D';
+import ReceiptUploadDialog from '@/components/ReceiptUploadDialog';
 import stcPayLogo from '@/assets/stc-pay-logo.png';
 import useLoyaltyPoints from '@/hooks/useLoyaltyPoints';
 
@@ -58,6 +59,11 @@ const Cart: React.FC = () => {
   // Points redemption state
   const [redeemedPoints, setRedeemedPoints] = useState(0);
   const [pointsDiscount, setPointsDiscount] = useState(0);
+
+  // Receipt upload dialog state
+  const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
+  const [lastOrderNumber, setLastOrderNumber] = useState('');
+  const [lastOrderId, setLastOrderId] = useState('');
 
   useEffect(() => {
     fetchPaymentSettings();
@@ -261,7 +267,7 @@ const Cart: React.FC = () => {
       }
 
       // Insert order with validated data
-      const { error } = await supabase.from('orders').insert([{
+      const { data: insertedOrder, error } = await supabase.from('orders').insert([{
         order_number: orderNumber,
         customer_name: orderData.customer_name.trim(),
         customer_phone: orderData.customer_phone.trim(),
@@ -271,7 +277,7 @@ const Cart: React.FC = () => {
         total_amount: orderData.total_amount,
         status: 'pending',
         notes: notes || null,
-      }]);
+      }]).select('id').single();
 
       if (error) throw error;
 
@@ -296,13 +302,19 @@ const Cart: React.FC = () => {
         console.error('Failed to send admin notification:', notifyError);
       }
 
-      // Send WhatsApp message with receipt request for bank transfer/STC Pay
-      const needsReceipt = paymentMethod === 'stc_pay' || paymentMethod === 'bank_transfer';
-      sendWhatsAppMessage(orderNumber, needsReceipt);
-
-      // Show success
-      setOrderSuccess(orderNumber);
       clearCart();
+
+      // Check if manual payment needs receipt upload
+      const needsReceipt = paymentMethod === 'stc_pay' || paymentMethod === 'bank_transfer';
+      if (needsReceipt && insertedOrder) {
+        // Store order info and open receipt dialog
+        setLastOrderNumber(orderNumber);
+        setLastOrderId(insertedOrder.id);
+        setReceiptDialogOpen(true);
+      } else {
+        // For Stripe or other methods, just show success
+        setOrderSuccess(orderNumber);
+      }
 
       toast({
         title: t('orderSuccess'),
@@ -762,6 +774,18 @@ const Cart: React.FC = () => {
       </main>
 
       <Footer />
+
+      {/* Receipt Upload Dialog for manual payments */}
+      <ReceiptUploadDialog
+        open={receiptDialogOpen}
+        onOpenChange={setReceiptDialogOpen}
+        orderNumber={lastOrderNumber}
+        orderId={lastOrderId}
+        paymentMethod={paymentMethod}
+        onComplete={() => {
+          setOrderSuccess(lastOrderNumber);
+        }}
+      />
     </div>
   );
 };
