@@ -204,15 +204,15 @@ const Products: React.FC = () => {
               style={{ x: parallaxX3, y: parallaxY3 }}
             />
             
-            {/* Glowing Orbs */}
+            {/* Glowing Orbs - Reduced blur for cleaner look */}
             <motion.div 
-              className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-cyan/20 rounded-full blur-[100px]"
-              animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.5, 0.3] }}
+              className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-cyan/10 rounded-full blur-3xl"
+              animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.3, 0.2] }}
               transition={{ duration: 6, repeat: Infinity }}
             />
             <motion.div 
-              className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-neon-magenta/15 rounded-full blur-[120px]"
-              animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] }}
+              className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-neon-magenta/10 rounded-full blur-3xl"
+              animate={{ scale: [1.1, 1, 1.1], opacity: [0.15, 0.25, 0.15] }}
               transition={{ duration: 8, repeat: Infinity, delay: 1 }}
             />
           </div>
@@ -265,16 +265,16 @@ const Products: React.FC = () => {
 
         {/* Products Section */}
         <section className="py-20 bg-background relative overflow-hidden">
-          {/* Subtle Background */}
+          {/* Subtle Background - Reduced blur */}
           <div className="absolute inset-0 pointer-events-none">
             <motion.div 
-              className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[150px]"
-              animate={{ x: [0, 50, 0], y: [0, -30, 0] }}
+              className="absolute top-0 left-1/4 w-[400px] h-[400px] bg-primary/5 rounded-full blur-3xl"
+              animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
               transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.div 
-              className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-secondary/3 rounded-full blur-[120px]"
-              animate={{ x: [0, -40, 0], y: [0, 40, 0] }}
+              className="absolute bottom-0 right-1/4 w-[350px] h-[350px] bg-secondary/5 rounded-full blur-3xl"
+              animate={{ x: [0, -25, 0], y: [0, 25, 0] }}
               transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
             />
           </div>
