@@ -9,6 +9,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
+import PasswordStrengthMeter from '@/components/PasswordStrengthMeter';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
 
 type Step = 'email' | 'otp' | 'newPassword' | 'success';
@@ -385,6 +386,7 @@ const RequestPasswordReset: React.FC = () => {
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                <PasswordStrengthMeter password={newPassword} />
               </div>
 
               <div className="space-y-2">
