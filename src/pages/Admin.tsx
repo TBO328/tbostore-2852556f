@@ -126,6 +126,10 @@ const Admin: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  
+  // Multiple images support
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
+  const [uploadingAdditionalImage, setUploadingAdditionalImage] = useState(false);
 
   // Available categories - now with state for dynamic categories
   const [availableCategories, setAvailableCategories] = useState([
@@ -256,6 +260,35 @@ const Admin: React.FC = () => {
     }
   };
 
+  // Handle additional image upload
+  const handleAdditionalImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingAdditionalImage(true);
+    try {
+      const uploadedUrl = await uploadProductImage(file);
+      if (uploadedUrl) {
+        setAdditionalImages(prev => [...prev, uploadedUrl]);
+        toast({ title: language === 'en' ? 'Image added!' : 'تمت إضافة الصورة!' });
+      }
+    } catch (error) {
+      toast({
+        title: language === 'en' ? 'Error uploading image' : 'خطأ في رفع الصورة',
+        variant: 'destructive'
+      });
+    } finally {
+      setUploadingAdditionalImage(false);
+      // Reset input
+      e.target.value = '';
+    }
+  };
+
+  // Remove additional image
+  const removeAdditionalImage = (index: number) => {
+    setAdditionalImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   // Product handlers
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -273,6 +306,11 @@ const Admin: React.FC = () => {
         }
       }
 
+      // Combine main image with additional images
+      const allImages: string[] = [];
+      if (imageUrl) allImages.push(imageUrl);
+      allImages.push(...additionalImages.filter(img => img && img !== imageUrl));
+
       const productData = {
         name_en: productForm.name_en,
         name_ar: productForm.name_ar,
@@ -282,6 +320,7 @@ const Admin: React.FC = () => {
         original_price: productForm.original_price ? parseFloat(productForm.original_price) : null,
         category: productForm.category,
         image_url: imageUrl || null,
+        images: allImages,
         in_stock: productForm.in_stock
       };
 
@@ -324,6 +363,7 @@ const Admin: React.FC = () => {
     });
     setImageFile(null);
     setImagePreview(null);
+    setAdditionalImages([]);
   };
 
   const editProduct = (product: Product) => {
@@ -341,6 +381,9 @@ const Admin: React.FC = () => {
     });
     setImagePreview(product.image_url || null);
     setImageFile(null);
+    // Load additional images from database
+    const productImages = (product as unknown as { images?: string[] }).images || [];
+    setAdditionalImages(productImages.filter(img => img !== product.image_url));
     setProductDialogOpen(true);
   };
 
@@ -659,6 +702,58 @@ const Admin: React.FC = () => {
                           <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                         </label>
                       )}
+                    </div>
+
+                    {/* Additional Images Section */}
+                    <div className="space-y-3">
+                      <Label>{language === 'en' ? 'Additional Images' : 'صور إضافية'}</Label>
+                      
+                      {/* Display existing additional images */}
+                      {additionalImages.length > 0 && (
+                        <div className="grid grid-cols-4 gap-2">
+                          {additionalImages.map((img, index) => (
+                            <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-border group">
+                              <img src={img} alt={`Additional ${index + 1}`} className="w-full h-full object-cover" />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-1 right-1 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => removeAdditionalImage(index)}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Upload button for additional images */}
+                      <label className={`flex items-center justify-center gap-2 w-full h-16 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 transition-colors ${uploadingAdditionalImage ? 'opacity-50 pointer-events-none' : ''}`}>
+                        {uploadingAdditionalImage ? (
+                          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                        ) : (
+                          <Plus className="w-5 h-5 text-muted-foreground" />
+                        )}
+                        <span className="text-sm text-muted-foreground">
+                          {uploadingAdditionalImage 
+                            ? (language === 'en' ? 'Uploading...' : 'جاري الرفع...')
+                            : (language === 'en' ? 'Add more images' : 'إضافة صور أخرى')}
+                        </span>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={handleAdditionalImageUpload}
+                          disabled={uploadingAdditionalImage}
+                        />
+                      </label>
+                      
+                      <p className="text-xs text-muted-foreground">
+                        {language === 'en' 
+                          ? `${additionalImages.length} additional image(s) • Max recommended: 5`
+                          : `${additionalImages.length} صورة إضافية • الحد الأقصى المقترح: 5`}
+                      </p>
                     </div>
 
                     <div className="flex items-center gap-2">

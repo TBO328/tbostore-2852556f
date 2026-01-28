@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Heart, ArrowLeft, Plus, Minus, Check, Loader2 } from 'lucide-react';
+import { ShoppingCart, Heart, ArrowLeft, Plus, Minus, Check, Loader2, Star, Shield, Truck, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
@@ -10,6 +10,7 @@ import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
 import ProductCard from '@/components/ProductCard';
 import PriceDisplay from '@/components/PriceDisplay';
+import ProductImageGallery from '@/components/ProductImageGallery';
 import DesignOptionsForm, { DesignOptions } from '@/components/DesignOptionsForm';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,8 +24,9 @@ const ProductDetail: React.FC = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
   const [designOptions, setDesignOptions] = useState<DesignOptions | null>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
   const [product, setProduct] = useState<Product | null>(null);
+  const [productImages, setProductImages] = useState<string[]>([]);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,6 +38,7 @@ const ProductDetail: React.FC = () => {
       const localProduct = localProducts.find(p => p.id === Number(id));
       if (localProduct) {
         setProduct(localProduct);
+        setProductImages([localProduct.image]);
         setRelatedProducts(localProducts.filter(p => p.id !== Number(id) && p.category === localProduct.category).slice(0, 4));
         setLoading(false);
         return;
@@ -54,13 +57,26 @@ const ProductDetail: React.FC = () => {
         return;
       }
 
+      // Handle images array
+      const images: string[] = [];
+      if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+        images.push(...data.images.filter((img: string) => img));
+      }
+      if (images.length === 0 && data.image_url) {
+        images.push(data.image_url);
+      }
+      if (images.length === 0) {
+        images.push('https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400');
+      }
+      setProductImages(images);
+
       const dbProduct: Product = {
         id: data.id,
         name: data.name_en,
         nameAr: data.name_ar,
         price: Number(data.price),
         originalPrice: data.original_price ? Number(data.original_price) : undefined,
-        image: data.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
+        image: images[0],
         category: data.category,
         categoryAr: data.category,
         description: data.description_en || '',
@@ -158,6 +174,24 @@ const ProductDetail: React.FC = () => {
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
+  const features = [
+    {
+      icon: Truck,
+      title: language === 'ar' ? 'توصيل فوري' : 'Instant Delivery',
+      description: language === 'ar' ? 'استلم منتجك مباشرة' : 'Get your product instantly',
+    },
+    {
+      icon: Shield,
+      title: language === 'ar' ? 'ضمان الجودة' : 'Quality Guarantee',
+      description: language === 'ar' ? 'منتجات أصلية 100%' : '100% authentic products',
+    },
+    {
+      icon: RefreshCw,
+      title: language === 'ar' ? 'دعم متواصل' : '24/7 Support',
+      description: language === 'ar' ? 'نحن هنا لمساعدتك' : 'We\'re here to help',
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -165,149 +199,222 @@ const ProductDetail: React.FC = () => {
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
           {/* Back Button */}
-          <Link to="/products" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-8">
-            <ArrowLeft className="w-4 h-4" />
-            <span>{t('products')}</span>
-          </Link>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Link to="/products" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-8 group">
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span>{t('products')}</span>
+            </Link>
+          </motion.div>
 
           {/* Product Details */}
-          <div className="grid lg:grid-cols-2 gap-12">
-            {/* Product Image */}
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
+            {/* Product Image Gallery */}
             <AnimatedSection>
-              <div className="relative rounded-2xl overflow-hidden bg-gradient-card border border-border">
-                {/* Badges */}
-                <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
-                  {product.isNew && (
-                    <span className="px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full shadow-neon-cyan">
-                      NEW
-                    </span>
-                  )}
-                  {product.isBestSeller && (
-                    <span className="px-3 py-1 bg-secondary text-secondary-foreground text-xs font-bold rounded-full shadow-neon-magenta">
-                      BEST
-                    </span>
-                  )}
-                  {discount > 0 && (
-                    <span className="px-3 py-1 bg-destructive text-destructive-foreground text-xs font-bold rounded-full">
-                      -{discount}%
-                    </span>
-                  )}
-                </div>
-
-                {/* Like Button */}
-                <button
-                  onClick={() => setIsLiked(!isLiked)}
-                  className={`absolute top-4 right-4 z-20 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                    isLiked ? 'bg-secondary text-secondary-foreground shadow-neon-magenta' : 'bg-muted text-muted-foreground hover:bg-secondary hover:text-secondary-foreground'
-                  }`}
-                >
-                  <Heart className={`w-6 h-6 ${isLiked ? 'fill-current' : ''}`} />
-                </button>
-
-                <motion.img
-                  ref={imageRef}
-                  src={product.image}
-                  alt={language === 'ar' ? product.nameAr : product.name}
-                  className="w-full aspect-square object-cover"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.3 }}
+              <div ref={imageRef}>
+                <ProductImageGallery
+                  images={productImages}
+                  productName={language === 'ar' ? product.nameAr : product.name}
+                  discount={discount}
+                  isNew={product.isNew}
+                  isBestSeller={product.isBestSeller}
                 />
-
-                {/* Neon Glow Effect */}
-                <div className="absolute inset-0 pointer-events-none" style={{
-                  background: 'radial-gradient(ellipse at center bottom, hsl(var(--neon-cyan) / 0.15), transparent 60%)',
-                }} />
               </div>
             </AnimatedSection>
 
             {/* Product Info */}
             <AnimatedSection delay={0.2}>
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {/* Category */}
-                <span className="text-sm text-primary font-medium uppercase tracking-wider">
+                <motion.span 
+                  className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
                   {language === 'ar' ? product.categoryAr : product.category}
-                </span>
+                </motion.span>
 
                 {/* Name */}
-                <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
+                <motion.h1 
+                  className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
                   {language === 'ar' ? product.nameAr : product.name}
-                </h1>
+                </motion.h1>
+
+                {/* Rating */}
+                <motion.div 
+                  className="flex items-center gap-3"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-5 h-5 ${
+                          i < Math.floor(product.rating || 5)
+                            ? 'text-yellow-400 fill-yellow-400'
+                            : 'text-muted'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-muted-foreground">
+                    ({product.rating || 5}.0) • {product.reviewsCount || 0} {language === 'ar' ? 'تقييم' : 'reviews'}
+                  </span>
+                </motion.div>
 
                 {/* Price */}
-                <PriceDisplay 
-                  price={product.price} 
-                  originalPrice={product.originalPrice} 
-                  size="xl" 
-                  className="glow-text-cyan"
-                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <PriceDisplay 
+                    price={product.price} 
+                    originalPrice={product.originalPrice} 
+                    size="xl" 
+                    className="glow-text-cyan"
+                  />
+                </motion.div>
 
                 {/* Stock Status */}
-                <div className="flex items-center gap-2">
+                <motion.div 
+                  className="flex items-center gap-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                >
                   <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
                   <span className="text-green-500 font-medium">{t('inStock')}</span>
-                </div>
+                </motion.div>
 
-                {/* Description */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-foreground">{t('productDescription')}</h3>
-                  <p className="text-muted-foreground leading-relaxed">
+                {/* Description Card */}
+                <motion.div 
+                  className="p-6 rounded-2xl bg-gradient-card border border-border space-y-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  <h3 className="font-display font-semibold text-lg text-foreground flex items-center gap-2">
+                    <span className="w-1.5 h-6 bg-primary rounded-full" />
+                    {t('productDescription')}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed text-base">
                     {language === 'ar' ? product.descriptionAr : product.description}
                   </p>
-                </div>
+                </motion.div>
 
                 {/* Design Options Form - Only for Designs category */}
                 {product.category === 'Designs' && (
-                  <DesignOptionsForm onOptionsChange={setDesignOptions} />
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.9 }}
+                  >
+                    <DesignOptionsForm onOptionsChange={setDesignOptions} />
+                  </motion.div>
                 )}
 
-                {/* Quantity Selector */}
-                <div className="flex items-center gap-4">
-                  <span className="text-foreground font-medium">{t('quantity')}:</span>
-                  <div className="flex items-center gap-3 bg-muted rounded-lg p-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="w-10 h-10"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </Button>
-                    <span className="w-12 text-center font-bold text-foreground">{quantity}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="w-10 h-10"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Add to Cart Button */}
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                {/* Quantity & Add to Cart */}
+                <motion.div 
+                  className="space-y-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1 }}
                 >
-                  <Button
-                    variant="neon"
-                    size="lg"
-                    onClick={handleAddToCart}
-                    className="w-full text-lg py-6"
-                    disabled={isAdded}
-                  >
-                    {isAdded ? (
-                      <>
-                        <Check className="w-5 h-5 mr-2" />
-                        {t('addedToCart')}
-                      </>
-                    ) : (
-                      <span className="flex items-center">
-                        <ShoppingCart className="w-5 h-5 mr-2" />
-                        {t('addToCart')} - <PriceDisplay price={product.price * quantity} size="md" showOriginal={false} />
-                      </span>
-                    )}
-                  </Button>
+                  {/* Quantity Selector */}
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-muted/50 border border-border">
+                    <span className="text-foreground font-medium">{t('quantity')}</span>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="w-10 h-10 rounded-full"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </Button>
+                      <span className="w-12 text-center font-bold text-lg text-foreground">{quantity}</span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setQuantity(quantity + 1)}
+                        className="w-10 h-10 rounded-full"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-4">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex-1"
+                    >
+                      <Button
+                        variant="neon"
+                        size="lg"
+                        onClick={handleAddToCart}
+                        className="w-full text-lg py-7 rounded-xl"
+                        disabled={isAdded}
+                      >
+                        {isAdded ? (
+                          <>
+                            <Check className="w-5 h-5 mr-2" />
+                            {t('addedToCart')}
+                          </>
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            <ShoppingCart className="w-5 h-5" />
+                            {t('addToCart')}
+                            <span className="mx-2">•</span>
+                            <PriceDisplay price={product.price * quantity} size="md" showOriginal={false} />
+                          </span>
+                        )}
+                      </Button>
+                    </motion.div>
+
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setIsLiked(!isLiked)}
+                      className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-300 border ${
+                        isLiked 
+                          ? 'bg-secondary text-secondary-foreground border-secondary shadow-neon-magenta' 
+                          : 'bg-muted text-muted-foreground border-border hover:border-secondary hover:text-secondary'
+                      }`}
+                    >
+                      <Heart className={`w-6 h-6 ${isLiked ? 'fill-current' : ''}`} />
+                    </motion.button>
+                  </div>
+                </motion.div>
+
+                {/* Features */}
+                <motion.div 
+                  className="grid grid-cols-3 gap-4 pt-6 border-t border-border"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.1 }}
+                >
+                  {features.map((feature, index) => (
+                    <div key={index} className="text-center space-y-2">
+                      <div className="w-12 h-12 mx-auto rounded-xl bg-primary/10 flex items-center justify-center">
+                        <feature.icon className="w-6 h-6 text-primary" />
+                      </div>
+                      <p className="text-xs font-medium text-foreground">{feature.title}</p>
+                    </div>
+                  ))}
                 </motion.div>
               </div>
             </AnimatedSection>
@@ -315,11 +422,14 @@ const ProductDetail: React.FC = () => {
 
           {/* Related Products */}
           {relatedProducts.length > 0 && (
-            <section className="mt-20">
+            <section className="mt-24">
               <AnimatedSection>
-                <h2 className="font-display text-2xl font-bold text-foreground mb-8">
-                  {t('relatedProducts')}
-                </h2>
+                <div className="flex items-center gap-4 mb-10">
+                  <div className="w-1.5 h-10 bg-gradient-to-b from-primary to-secondary rounded-full" />
+                  <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+                    {t('relatedProducts')}
+                  </h2>
+                </div>
               </AnimatedSection>
               
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
