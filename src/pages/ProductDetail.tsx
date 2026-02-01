@@ -94,7 +94,12 @@ const ProductDetail: React.FC = () => {
         reviewsCount: data.reviews_count || 0,
         inStock: data.in_stock !== false,
         has_pricing_options: data.has_pricing_options ?? false,
-        pricing_options: Array.isArray(data.pricing_options) ? (data.pricing_options as unknown as PricingOption[]) : null,
+        pricing_options: Array.isArray(data.pricing_options) 
+          ? (data.pricing_options as unknown as PricingOption[]).map(opt => ({
+              ...opt,
+              price: Number(opt.price) // Ensure price is a number
+            }))
+          : null,
       };
 
       setProduct(dbProduct);
@@ -165,7 +170,7 @@ const ProductDetail: React.FC = () => {
   }
 
   // Get the current price based on selected pricing option
-  const currentPrice = selectedPricingOption ? selectedPricingOption.price : product.price;
+  const currentPrice = selectedPricingOption ? Number(selectedPricingOption.price) : product.price;
 
   const handleAddToCart = () => {
     if (imageRef.current && cartIconRef.current) {
