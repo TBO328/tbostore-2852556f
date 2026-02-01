@@ -12,9 +12,15 @@ import ProductCard from '@/components/ProductCard';
 import PriceDisplay from '@/components/PriceDisplay';
 import ProductImageGallery from '@/components/ProductImageGallery';
 import DesignOptionsForm, { DesignOptions } from '@/components/DesignOptionsForm';
+import PricingOptionsSelector, { PricingOption } from '@/components/PricingOptionsSelector';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { products as localProducts, Product } from '@/data/products';
+
+interface ExtendedProduct extends Product {
+  has_pricing_options?: boolean;
+  pricing_options?: PricingOption[] | null;
+}
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,10 +31,13 @@ const ProductDetail: React.FC = () => {
   const [isAdded, setIsAdded] = useState(false);
   const [designOptions, setDesignOptions] = useState<DesignOptions | null>(null);
   const imageRef = useRef<HTMLDivElement>(null);
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<ExtendedProduct | null>(null);
   const [productImages, setProductImages] = useState<string[]>([]);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Pricing options state
+  const [selectedPricingOption, setSelectedPricingOption] = useState<PricingOption | null>(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -70,7 +79,7 @@ const ProductDetail: React.FC = () => {
       }
       setProductImages(images);
 
-      const dbProduct: Product = {
+      const dbProduct: ExtendedProduct = {
         id: data.id,
         name: data.name_en,
         nameAr: data.name_ar,
@@ -84,9 +93,18 @@ const ProductDetail: React.FC = () => {
         rating: Number(data.rating) || 5,
         reviewsCount: data.reviews_count || 0,
         inStock: data.in_stock !== false,
+        has_pricing_options: data.has_pricing_options ?? false,
+        pricing_options: Array.isArray(data.pricing_options) ? (data.pricing_options as unknown as PricingOption[]) : null,
       };
 
       setProduct(dbProduct);
+      
+      // Auto-select first pricing option if available
+      if (dbProduct.has_pricing_options && dbProduct.pricing_options && dbProduct.pricing_options.length > 0) {
+        setSelectedPricingOption(dbProduct.pricing_options[0]);
+      } else {
+        setSelectedPricingOption(null);
+      }
 
       // Fetch related products from database
       const { data: relatedData } = await supabase
@@ -146,6 +164,9 @@ const ProductDetail: React.FC = () => {
     );
   }
 
+  // Get the current price based on selected pricing option
+  const currentPrice = selectedPricingOption ? selectedPricingOption.price : product.price;
+
   const handleAddToCart = () => {
     if (imageRef.current && cartIconRef.current) {
       const imageRect = imageRef.current.getBoundingClientRect();
@@ -155,12 +176,17 @@ const ProductDetail: React.FC = () => {
       );
     }
 
+    // Include selected pricing option in cart item name
+    const optionLabel = selectedPricingOption 
+      ? ` (${language === 'ar' ? selectedPricingOption.label_ar : selectedPricingOption.label_en})`
+      : '';
+
     for (let i = 0; i < quantity; i++) {
       addToCart({
-        id: product.id,
-        name: product.name,
-        nameAr: product.nameAr,
-        price: product.price,
+        id: selectedPricingOption ? `${product.id}-${selectedPricingOption.id}` : product.id,
+        name: product.name + optionLabel,
+        nameAr: product.nameAr + optionLabel,
+        price: currentPrice,
         image: product.image,
       });
     }
@@ -279,11 +305,35 @@ const ProductDetail: React.FC = () => {
                   transition={{ delay: 0.6 }}
                 >
                   <PriceDisplay 
-                    price={product.price} 
-                    originalPrice={product.originalPrice} 
+                    price={currentPrice} 
+                    originalPrice={!selectedPricingOption ? product.originalPrice : undefined} 
                     size="xl" 
                     className="glow-text-cyan"
                   />
+                </motion.div>
+
+                {/* Pricing Options Selector */}
+                {product.has_pricing_options && product.pricing_options && product.pricing_options.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.65 }}
+                  >
+                    <PricingOptionsSelector
+                      options={product.pricing_options}
+                      selectedId={selectedPricingOption?.id || null}
+                      onSelect={setSelectedPricingOption}
+                    />
+                  </motion.div>
+                )}
+                <motion.div 
+                  className="flex items-center gap-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-green-500 font-medium">{t('inStock')}</span>
                 </motion.div>
 
                 {/* Stock Status */}
