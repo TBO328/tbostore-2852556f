@@ -32,6 +32,7 @@ import PackagesManagement from '@/components/admin/PackagesManagement';
 import LoyaltyManagement from '@/components/admin/LoyaltyManagement';
 import PaymentsManagement from '@/components/admin/PaymentsManagement';
 import FingerprintLock from '@/components/admin/FingerprintLock';
+import PricingOptionsEditor, { PricingOption } from '@/components/admin/PricingOptionsEditor';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -126,6 +127,10 @@ const Admin: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  
+  // Pricing options state
+  const [hasPricingOptions, setHasPricingOptions] = useState(false);
+  const [pricingOptions, setPricingOptions] = useState<PricingOption[]>([]);
   
   // Multiple images support
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
@@ -311,6 +316,16 @@ const Admin: React.FC = () => {
       if (imageUrl) allImages.push(imageUrl);
       allImages.push(...additionalImages.filter(img => img && img !== imageUrl));
 
+      // Prepare pricing options for database
+      const pricingOptionsData = hasPricingOptions && pricingOptions.length > 0
+        ? pricingOptions.map(opt => ({
+            id: opt.id,
+            label_en: opt.label_en,
+            label_ar: opt.label_ar,
+            price: opt.price
+          }))
+        : null;
+
       const productData = {
         name_en: productForm.name_en,
         name_ar: productForm.name_ar,
@@ -321,7 +336,9 @@ const Admin: React.FC = () => {
         category: productForm.category,
         image_url: imageUrl || null,
         images: allImages,
-        in_stock: productForm.in_stock
+        in_stock: productForm.in_stock,
+        has_pricing_options: hasPricingOptions && pricingOptions.length > 0,
+        pricing_options: pricingOptionsData
       };
 
       if (editingProduct) {
@@ -364,6 +381,8 @@ const Admin: React.FC = () => {
     setImageFile(null);
     setImagePreview(null);
     setAdditionalImages([]);
+    setHasPricingOptions(false);
+    setPricingOptions([]);
   };
 
   const editProduct = (product: Product) => {
@@ -384,6 +403,15 @@ const Admin: React.FC = () => {
     // Load additional images from database
     const productImages = (product as unknown as { images?: string[] }).images || [];
     setAdditionalImages(productImages.filter(img => img !== product.image_url));
+    
+    // Load pricing options
+    const extendedProduct = product as unknown as { 
+      has_pricing_options?: boolean; 
+      pricing_options?: PricingOption[] | null 
+    };
+    setHasPricingOptions(extendedProduct.has_pricing_options ?? false);
+    setPricingOptions(extendedProduct.pricing_options || []);
+    
     setProductDialogOpen(true);
   };
 
@@ -755,6 +783,14 @@ const Admin: React.FC = () => {
                           : `${additionalImages.length} صورة إضافية • الحد الأقصى المقترح: 5`}
                       </p>
                     </div>
+
+                    {/* Pricing Options Editor */}
+                    <PricingOptionsEditor
+                      enabled={hasPricingOptions}
+                      onEnabledChange={setHasPricingOptions}
+                      options={pricingOptions}
+                      onOptionsChange={setPricingOptions}
+                    />
 
                     <div className="flex items-center gap-2">
                       <Switch checked={productForm.in_stock} onCheckedChange={checked => setProductForm({ ...productForm, in_stock: checked })} />
