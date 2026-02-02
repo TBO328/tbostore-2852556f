@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShoppingBag, Package, Star, Users, Handshake, Ticket, Settings, 
   FileText, Home, LogOut, Palette, Sparkles, MousePointer, Calendar, 
-  Coins, LayoutDashboard, X, ChevronRight
+  Coins, LayoutDashboard, X, ChevronRight, Tag
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -59,6 +59,13 @@ const menuItems = [
     labelEn: 'Products',
     labelAr: 'المنتجات',
     color: 'text-green-500'
+  },
+  {
+    id: 'categories',
+    icon: Tag,
+    labelEn: 'Categories',
+    labelAr: 'الفئات',
+    color: 'text-emerald-500'
   },
   {
     id: 'packages',

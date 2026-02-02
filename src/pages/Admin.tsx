@@ -33,6 +33,7 @@ import LoyaltyManagement from '@/components/admin/LoyaltyManagement';
 import PaymentsManagement from '@/components/admin/PaymentsManagement';
 import FingerprintLock from '@/components/admin/FingerprintLock';
 import PricingOptionsEditor, { PricingOption } from '@/components/admin/PricingOptionsEditor';
+import CategoriesManagement from '@/components/admin/CategoriesManagement';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -572,6 +573,9 @@ const Admin: React.FC = () => {
       
       case 'payments':
         return <PaymentsManagement />;
+      
+      case 'categories':
+        return <CategoriesManagement />;
       
       case 'products':
         return (
