@@ -315,6 +315,11 @@ const ProductDetail: React.FC = () => {
                     size="xl" 
                     className="glow-text-cyan"
                   />
+                  {selectedPricingOption && (
+                    <span className="text-sm text-muted-foreground mt-1">
+                      {language === 'ar' ? selectedPricingOption.label_ar : selectedPricingOption.label_en}
+                    </span>
+                  )}
                 </motion.div>
 
                 {/* Pricing Options Selector */}

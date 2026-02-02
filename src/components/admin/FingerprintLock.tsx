@@ -16,7 +16,7 @@ const FingerprintLock: React.FC<FingerprintLockProps> = ({ onUnlock }) => {
   const holdTimeout = useRef<NodeJS.Timeout | null>(null);
   const progressInterval = useRef<NodeJS.Timeout | null>(null);
 
-  const HOLD_DURATION = 4000; // 4 seconds
+  const HOLD_DURATION = 2000; // 2 seconds (faster unlock)
 
   const handleStart = () => {
     setIsHolding(true);
@@ -234,7 +234,7 @@ const FingerprintLock: React.FC<FingerprintLockProps> = ({ onUnlock }) => {
               ? (language === 'ar' ? '✓ تم التحقق بنجاح' : '✓ Verified successfully')
               : isScanning 
                 ? (language === 'ar' ? `جاري المسح... ${Math.round(progress)}%` : `Scanning... ${Math.round(progress)}%`)
-                : (language === 'ar' ? '4 ثواني للتحقق' : '4 seconds to verify')
+            : (language === 'ar' ? '2 ثانية للتحقق' : '2 seconds to verify')
             }
           </motion.p>
         </div>

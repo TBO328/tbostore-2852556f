@@ -136,13 +136,8 @@ const Admin: React.FC = () => {
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [uploadingAdditionalImage, setUploadingAdditionalImage] = useState(false);
 
-  // Available categories - now with state for dynamic categories
-  const [availableCategories, setAvailableCategories] = useState([
-    { value: 'Subscriptions', labelEn: 'Subscriptions', labelAr: 'اشتراكات' },
-    { value: 'Designs', labelEn: 'Designs', labelAr: 'تصاميم' },
-    { value: 'Engagement', labelEn: 'Engagement', labelAr: 'تفاعل' },
-    { value: 'Discord', labelEn: 'Discord', labelAr: 'ديسكورد' },
-  ]);
+  // Available categories - loaded from database
+  const [availableCategories, setAvailableCategories] = useState<{value: string; labelEn: string; labelAr: string}[]>([]);
   
   // Category dialog state
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
@@ -193,11 +188,12 @@ const Admin: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [productsRes, couponsRes, ordersRes, settingsRes] = await Promise.all([
+      const [productsRes, couponsRes, ordersRes, settingsRes, categoriesRes] = await Promise.all([
         supabase.from('products').select('*').order('created_at', { ascending: false }),
         supabase.from('coupons').select('*').order('created_at', { ascending: false }),
         supabase.from('orders').select('*').order('created_at', { ascending: false }),
-        supabase.from('payment_settings').select('*')
+        supabase.from('payment_settings').select('*'),
+        supabase.from('categories').select('*').eq('is_active', true).order('display_order', { ascending: true })
       ]);
 
       if (productsRes.data) setProducts(productsRes.data);
@@ -222,6 +218,15 @@ const Admin: React.FC = () => {
           }
         });
         setPaymentSettings(settings);
+      }
+      // Load categories from database
+      if (categoriesRes.data && categoriesRes.data.length > 0) {
+        const dbCats = categoriesRes.data.map(c => ({
+          value: c.value,
+          labelEn: c.label_en,
+          labelAr: c.label_ar
+        }));
+        setAvailableCategories(dbCats);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -618,15 +623,32 @@ const Admin: React.FC = () => {
                       </div>
                       <Button 
                         className="w-full"
-                        onClick={() => {
+                        onClick={async () => {
                           if (newCategory.value && newCategory.labelEn && newCategory.labelAr) {
-                            const updatedCategories = [...availableCategories, newCategory];
-                            setAvailableCategories(updatedCategories);
-                            // Save to localStorage for syncing with products page
-                            localStorage.setItem('tbo_categories', JSON.stringify(updatedCategories));
-                            setNewCategory({ value: '', labelEn: '', labelAr: '' });
-                            setCategoryDialogOpen(false);
-                            toast({ title: language === 'en' ? 'Category added!' : 'تمت إضافة الفئة!' });
+                            try {
+                              // Save to database
+                              const { error } = await supabase.from('categories').insert({
+                                value: newCategory.value,
+                                label_en: newCategory.labelEn,
+                                label_ar: newCategory.labelAr,
+                                display_order: availableCategories.length + 1,
+                                is_active: true
+                              });
+                              if (error) throw error;
+                              
+                              // Update local state
+                              const updatedCategories = [...availableCategories, newCategory];
+                              setAvailableCategories(updatedCategories);
+                              setNewCategory({ value: '', labelEn: '', labelAr: '' });
+                              setCategoryDialogOpen(false);
+                              toast({ title: language === 'en' ? 'Category added!' : 'تمت إضافة الفئة!' });
+                            } catch (error) {
+                              console.error('Error adding category:', error);
+                              toast({ 
+                                title: language === 'en' ? 'Error adding category' : 'خطأ في إضافة الفئة',
+                                variant: 'destructive'
+                              });
+                            }
                           }
                         }}
                         disabled={!newCategory.value || !newCategory.labelEn || !newCategory.labelAr}
