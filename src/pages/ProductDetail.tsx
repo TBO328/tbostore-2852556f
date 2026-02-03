@@ -13,6 +13,7 @@ import PriceDisplay from '@/components/PriceDisplay';
 import ProductImageGallery from '@/components/ProductImageGallery';
 import DesignOptionsForm, { DesignOptions } from '@/components/DesignOptionsForm';
 import PricingOptionsSelector, { PricingOption } from '@/components/PricingOptionsSelector';
+import ProductPointsBadge from '@/components/ProductPointsBadge';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { products as localProducts, Product } from '@/data/products';
@@ -96,8 +97,10 @@ const ProductDetail: React.FC = () => {
         has_pricing_options: data.has_pricing_options ?? false,
         pricing_options: Array.isArray(data.pricing_options) 
           ? (data.pricing_options as unknown as PricingOption[]).map(opt => ({
-              ...opt,
-              price: Number(opt.price) // Ensure price is a number
+              id: opt.id || String(Math.random()),
+              label_en: opt.label_en || '',
+              label_ar: opt.label_ar || '',
+              price: parseFloat(String(opt.price)) || 0 // Force parse to ensure numeric value
             }))
           : null,
       };
@@ -170,7 +173,9 @@ const ProductDetail: React.FC = () => {
   }
 
   // Get the current price based on selected pricing option
-  const currentPrice = selectedPricingOption ? Number(selectedPricingOption.price) : product.price;
+  const currentPrice = selectedPricingOption 
+    ? parseFloat(String(selectedPricingOption.price)) || 0 
+    : product.price;
 
   const handleAddToCart = () => {
     if (imageRef.current && cartIconRef.current) {
@@ -308,6 +313,7 @@ const ProductDetail: React.FC = () => {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.6 }}
+                  className="space-y-2"
                 >
                   <PriceDisplay 
                     price={currentPrice} 
@@ -316,10 +322,12 @@ const ProductDetail: React.FC = () => {
                     className="glow-text-cyan"
                   />
                   {selectedPricingOption && (
-                    <span className="text-sm text-muted-foreground mt-1">
+                    <span className="text-sm text-muted-foreground block">
                       {language === 'ar' ? selectedPricingOption.label_ar : selectedPricingOption.label_en}
                     </span>
                   )}
+                  {/* Loyalty Points Badge - updates based on selected price */}
+                  <ProductPointsBadge price={currentPrice} size="md" />
                 </motion.div>
 
                 {/* Pricing Options Selector */}
