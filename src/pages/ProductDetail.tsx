@@ -447,7 +447,7 @@ const ProductDetail: React.FC = () => {
                             <ShoppingCart className="w-5 h-5" />
                             {t('addToCart')}
                             <span className="mx-2">•</span>
-                            <PriceDisplay price={product.price * quantity} size="md" showOriginal={false} />
+                            <PriceDisplay price={currentPrice * quantity} size="md" showOriginal={false} />
                           </span>
                         )}
                       </Button>
