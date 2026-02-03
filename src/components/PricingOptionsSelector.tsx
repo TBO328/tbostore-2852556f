@@ -30,7 +30,14 @@ const PricingOptionsSelector: React.FC<PricingOptionsSelectorProps> = ({
 
   const symbolFilter = theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)';
 
-  const formatPrice = (priceInSAR: number) => {
+  const formatPrice = (priceValue: number | string) => {
+    // Ensure price is a number
+    const priceInSAR = typeof priceValue === 'string' ? parseFloat(priceValue) : priceValue;
+    
+    if (isNaN(priceInSAR)) {
+      return <span>--</span>;
+    }
+    
     if (currency === 'SAR') {
       return (
         <span className="flex items-center gap-1">
