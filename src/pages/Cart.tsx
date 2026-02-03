@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, MessageCircle, Building2, Copy, Check, Loader2, Tag, X, CreditCard } from 'lucide-react';
+import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, MessageCircle, Building2, Copy, Check, Loader2, Tag, X, CreditCard, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
@@ -21,8 +20,10 @@ import AnimatedSection from '@/components/AnimatedSection';
 import PointsRedemptionSection from '@/components/PointsRedemptionSection';
 import CartItem3D from '@/components/CartItem3D';
 import ReceiptUploadDialog from '@/components/ReceiptUploadDialog';
+import PhoneInput from '@/components/PhoneInput';
 import stcPayLogo from '@/assets/stc-pay-logo.png';
 import useLoyaltyPoints from '@/hooks/useLoyaltyPoints';
+import useRankDiscount from '@/hooks/useRankDiscount';
 
 const WHATSAPP_NUMBER = '905510070277';
 
@@ -40,10 +41,11 @@ const Cart: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { redeemPoints } = useLoyaltyPoints();
+  const { rankDiscount } = useRankDiscount();
 
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [customerAddress, setCustomerAddress] = useState('');
+  const [fullPhoneNumber, setFullPhoneNumber] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'stc_pay' | 'bank_transfer'>('stripe');
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -143,12 +145,19 @@ const Cart: React.FC = () => {
     return (getTotalPrice() * appliedCoupon.discount) / 100;
   };
 
+  const getRankDiscountAmount = () => {
+    if (!rankDiscount || rankDiscount.discount_percent === 0) return 0;
+    // Apply rank discount after coupon discount
+    const afterCoupon = getTotalPrice() - getDiscountAmount();
+    return (afterCoupon * rankDiscount.discount_percent) / 100;
+  };
+
   const getPointsDiscount = () => {
     return pointsDiscount;
   };
 
   const getFinalTotal = () => {
-    return Math.max(0, getTotalPrice() - getDiscountAmount() - getPointsDiscount());
+    return Math.max(0, getTotalPrice() - getDiscountAmount() - getRankDiscountAmount() - getPointsDiscount());
   };
 
   const handlePointsRedemption = (points: number, discount: number) => {
@@ -157,7 +166,7 @@ const Cart: React.FC = () => {
   };
 
   const handleStripeCheckout = async () => {
-    if (!customerName.trim() || !customerPhone.trim() || !customerAddress.trim()) {
+    if (!customerName.trim() || !fullPhoneNumber.trim()) {
       toast({
         title: t('pleaseEnterInfo'),
         variant: 'destructive',
@@ -179,10 +188,11 @@ const Cart: React.FC = () => {
             customization: item.customization || undefined,
           })),
           customerName: customerName.trim(),
-          customerPhone: customerPhone.trim(),
-          customerAddress: customerAddress.trim(),
+          customerPhone: fullPhoneNumber.trim(),
+          customerAddress: '',
           couponCode: appliedCoupon?.code || null,
           couponDiscount: appliedCoupon?.discount || 0,
+          rankDiscount: rankDiscount?.discount_percent || 0,
           successUrl: `${window.location.origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
           cancelUrl: `${window.location.origin}/cart`,
         },
@@ -227,8 +237,8 @@ const Cart: React.FC = () => {
 
     const orderData = {
       customer_name: customerName,
-      customer_phone: customerPhone,
-      customer_address: customerAddress,
+      customer_phone: fullPhoneNumber,
+      customer_address: '',
       items: orderItems,
       payment_method: paymentMethod as 'stripe' | 'stc_pay' | 'bank_transfer',
       total_amount: getFinalTotal(),
@@ -347,8 +357,8 @@ const Cart: React.FC = () => {
       : '';
     
     const message = language === 'ar' 
-      ? `🛒 طلب جديد\n\n📋 رقم الطلب: ${orderNumber}\n\n👤 الاسم: ${customerName}\n📱 الجوال: ${customerPhone}\n📍 العنوان: ${customerAddress}\n\n🛍️ المنتجات:\n${itemsList}\n\n💳 طريقة الدفع: ${paymentMethodText}\n💰 الإجمالي: ${formatPrice(getTotalPrice())}${receiptMessage}`
-      : `🛒 New Order\n\n📋 Order #: ${orderNumber}\n\n👤 Name: ${customerName}\n📱 Phone: ${customerPhone}\n📍 Address: ${customerAddress}\n\n🛍️ Items:\n${itemsList}\n\n💳 Payment: ${paymentMethodText}\n💰 Total: ${formatPrice(getTotalPrice())}${receiptMessage}`;
+      ? `🛒 طلب جديد\n\n📋 رقم الطلب: ${orderNumber}\n\n👤 الاسم: ${customerName}\n📱 الجوال: ${fullPhoneNumber}\n\n🛍️ المنتجات:\n${itemsList}\n\n💳 طريقة الدفع: ${paymentMethodText}\n💰 الإجمالي: ${formatPrice(getTotalPrice())}${receiptMessage}`
+      : `🛒 New Order\n\n📋 Order #: ${orderNumber}\n\n👤 Name: ${customerName}\n📱 Phone: ${fullPhoneNumber}\n\n🛍️ Items:\n${itemsList}\n\n💳 Payment: ${paymentMethodText}\n💰 Total: ${formatPrice(getTotalPrice())}${receiptMessage}`;
     
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');
@@ -477,24 +487,13 @@ const Cart: React.FC = () => {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="phone">{t('phoneNumber')} *</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
+                        <PhoneInput
                           value={customerPhone}
-                          onChange={(e) => setCustomerPhone(e.target.value)}
-                          placeholder={language === 'ar' ? '05xxxxxxxx' : '05xxxxxxxx'}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="address">{t('address')} *</Label>
-                        <Textarea
-                          id="address"
-                          value={customerAddress}
-                          onChange={(e) => setCustomerAddress(e.target.value)}
-                          placeholder={language === 'ar' ? 'أدخل عنوانك بالتفصيل' : 'Enter your full address'}
-                          rows={3}
-                          required
+                          onChange={(value, fullNumber) => {
+                            setCustomerPhone(value);
+                            setFullPhoneNumber(fullNumber);
+                          }}
+                          placeholder={language === 'ar' ? '5xxxxxxxx' : '5xxxxxxxx'}
                         />
                       </div>
                     </div>
@@ -711,6 +710,19 @@ const Cart: React.FC = () => {
                         </span>
                         <span className="text-green-500">
                           -{formatPrice(getDiscountAmount())}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Rank Discount */}
+                    {rankDiscount && rankDiscount.discount_percent > 0 && (
+                      <div className="flex justify-between items-center text-sm mb-2">
+                        <span className="text-yellow-500 flex items-center gap-1">
+                          <Crown className="w-3 h-3" />
+                          {language === 'ar' ? rankDiscount.rank_name_ar : rankDiscount.rank_name_en} ({rankDiscount.discount_percent}%)
+                        </span>
+                        <span className="text-yellow-500">
+                          -{formatPrice(getRankDiscountAmount())}
                         </span>
                       </div>
                     )}

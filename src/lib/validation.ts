@@ -13,8 +13,9 @@ export const orderSchema = z.object({
     .regex(/^[\d\s\-+()]+$/, 'Invalid phone format'),
   customer_address: z.string()
     .trim()
-    .min(10, 'Address must be at least 10 characters')
-    .max(500, 'Address must be less than 500 characters'),
+    .max(500, 'Address must be less than 500 characters')
+    .optional()
+    .default(''),
   items: z.array(z.object({
     id: z.union([z.string(), z.number()]),
     name: z.string(),

@@ -468,6 +468,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_blacklisted: boolean | null
+          rank_id: string | null
           updated_at: string
           user_id: string
         }
@@ -478,6 +479,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_blacklisted?: boolean | null
+          rank_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -488,8 +490,65 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_blacklisted?: boolean | null
+          rank_id?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_rank_id_fkey"
+            columns: ["rank_id"]
+            isOneToOne: false
+            referencedRelation: "ranks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ranks: {
+        Row: {
+          badge_color: string | null
+          created_at: string
+          description_ar: string | null
+          description_en: string | null
+          discount_percent: number
+          display_order: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name_ar: string
+          name_en: string
+          properties: Json | null
+          updated_at: string
+        }
+        Insert: {
+          badge_color?: string | null
+          created_at?: string
+          description_ar?: string | null
+          description_en?: string | null
+          discount_percent?: number
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name_ar: string
+          name_en: string
+          properties?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          badge_color?: string | null
+          created_at?: string
+          description_ar?: string | null
+          description_en?: string | null
+          discount_percent?: number
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name_ar?: string
+          name_en?: string
+          properties?: Json | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -638,6 +697,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      assign_user_rank: {
+        Args: { p_rank_id: string; p_target_user_id: string }
+        Returns: boolean
+      }
       calculate_points_from_amount: {
         Args: { amount: number }
         Returns: number
@@ -696,6 +759,14 @@ export type Database = {
         }[]
       }
       get_user_points: { Args: { p_user_id: string }; Returns: number }
+      get_user_rank_discount: {
+        Args: { p_user_id: string }
+        Returns: {
+          discount_percent: number
+          rank_name_ar: string
+          rank_name_en: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
