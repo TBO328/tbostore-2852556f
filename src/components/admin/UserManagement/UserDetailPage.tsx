@@ -764,7 +764,6 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
           </div>
         </div>
       </div>
-      </div>
 
       {/* Edit Profile */}
       <div className="bg-card border border-border rounded-xl p-6">
