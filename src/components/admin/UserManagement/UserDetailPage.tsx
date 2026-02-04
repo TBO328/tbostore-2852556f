@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   ArrowLeft, ArrowRight, User, Mail, Calendar, Shield, ShieldOff, 
   Ban, Coins, Plus, Minus, Ticket, Trash2, Loader2, Save,
-  Copy, Check, Upload, KeyRound, Eye, EyeOff, Send
+  Copy, Check, Upload, KeyRound, Eye, EyeOff, Send, Crown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   InputOTP,
   InputOTPGroup,
@@ -38,6 +39,15 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 
+interface Rank {
+  id: string;
+  name_en: string;
+  name_ar: string;
+  badge_color: string | null;
+  icon: string | null;
+  discount_percent: number;
+}
+
 interface UserDetails {
   user_id: string;
   email: string;
@@ -50,6 +60,8 @@ interface UserDetails {
   loyalty_points: number;
   total_earned: number;
   total_redeemed: number;
+  rank_id?: string | null;
+  rank?: Rank | null;
 }
 
 interface PersonalCoupon {
