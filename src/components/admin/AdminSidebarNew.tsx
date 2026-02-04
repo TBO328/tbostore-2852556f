@@ -62,7 +62,7 @@ const menuItems = [
   },
   {
     id: 'chats',
-    icon: Package,
+    icon: MessageCircle,
     labelEn: 'Chats',
     labelAr: 'الدردشات',
     color: 'text-cyan-500'
