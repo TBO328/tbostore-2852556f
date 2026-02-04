@@ -580,6 +580,12 @@ const Admin: React.FC = () => {
       case 'categories':
         return <CategoriesManagement />;
       
+      case 'expenses':
+        return <ExpensesManagement language={language} totalRevenue={totalRevenue} />;
+      
+      case 'chats':
+        return <ChatsManagement language={language} />;
+      
       case 'products':
         return (
           <div>
