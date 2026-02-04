@@ -707,8 +707,63 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
                 </div>
               </div>
             </div>
+
+            {/* User Rank */}
+            <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">
+                    {language === 'en' ? 'Rank' : 'الرتبة'}
+                  </span>
+                </div>
+                <Select value={selectedRankId || 'none'} onValueChange={handleRankChange}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder={language === 'en' ? 'Select rank' : 'اختر الرتبة'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">
+                      {language === 'en' ? 'No Rank' : 'بدون رتبة'}
+                    </SelectItem>
+                    {ranks.map((rank) => (
+                      <SelectItem key={rank.id} value={rank.id}>
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: rank.badge_color || '#FFD700' }}
+                          />
+                          {language === 'ar' ? rank.name_ar : rank.name_en}
+                          <span className="text-xs text-muted-foreground">({rank.discount_percent}%)</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {selectedRankId && (
+                <div className="mt-2 flex items-center gap-2">
+                  {(() => {
+                    const currentRank = ranks.find(r => r.id === selectedRankId);
+                    if (!currentRank) return null;
+                    return (
+                      <Badge 
+                        style={{ 
+                          backgroundColor: `${currentRank.badge_color}20`, 
+                          color: currentRank.badge_color || '#FFD700' 
+                        }}
+                      >
+                        <Crown className="w-3 h-3 mr-1" />
+                        {language === 'ar' ? currentRank.name_ar : currentRank.name_en}
+                        <span className="ml-1">({currentRank.discount_percent}% {language === 'en' ? 'off' : 'خصم'})</span>
+                      </Badge>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
           </div>
         </div>
+      </div>
       </div>
 
       {/* Edit Profile */}

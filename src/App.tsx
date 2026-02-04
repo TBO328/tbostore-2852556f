@@ -89,6 +89,7 @@ const App = () => (
                     <AnimatedRoutes />
                     <VisualEditorOverlay />
                     <AISupportButton />
+                    <CustomerChat />
                   </VisualEditorProvider>
                 </CartProvider>
               </LanguageProvider>
