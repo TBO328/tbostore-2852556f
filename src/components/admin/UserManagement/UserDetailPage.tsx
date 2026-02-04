@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   ArrowLeft, ArrowRight, User, Mail, Calendar, Shield, ShieldOff, 
   Ban, Coins, Plus, Minus, Ticket, Trash2, Loader2, Save,
-  Copy, Check, Upload, KeyRound, Eye, EyeOff, Send
+  Copy, Check, Upload, KeyRound, Eye, EyeOff, Send, Crown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   InputOTP,
   InputOTPGroup,
@@ -38,6 +39,15 @@ import {
 } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 
+interface Rank {
+  id: string;
+  name_en: string;
+  name_ar: string;
+  badge_color: string | null;
+  icon: string | null;
+  discount_percent: number;
+}
+
 interface UserDetails {
   user_id: string;
   email: string;
@@ -50,6 +60,8 @@ interface UserDetails {
   loyalty_points: number;
   total_earned: number;
   total_redeemed: number;
+  rank_id?: string | null;
+  rank?: Rank | null;
 }
 
 interface PersonalCoupon {
@@ -72,6 +84,7 @@ interface UserDetailPageProps {
 export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId }: UserDetailPageProps) => {
   const [user, setUser] = useState<UserDetails | null>(null);
   const [coupons, setCoupons] = useState<PersonalCoupon[]>([]);
+  const [ranks, setRanks] = useState<Rank[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -80,6 +93,7 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
   const [fullName, setFullName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [selectedRankId, setSelectedRankId] = useState<string | null>(null);
   
   // Points adjustment
   const [pointsDialog, setPointsDialog] = useState(false);
@@ -112,9 +126,11 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
     try {
       setLoading(true);
       
-      const [userResult, couponsResult] = await Promise.all([
+      const [userResult, couponsResult, ranksResult, profileResult] = await Promise.all([
         supabase.rpc('get_user_details_for_admin', { p_user_id: userId }),
-        supabase.rpc('get_user_personal_coupons', { p_user_id: userId })
+        supabase.rpc('get_user_personal_coupons', { p_user_id: userId }),
+        supabase.from('ranks').select('*').eq('is_active', true).order('display_order'),
+        supabase.from('profiles').select('rank_id').eq('user_id', userId).single()
       ]);
       
       if (userResult.error) throw userResult.error;
@@ -127,6 +143,14 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
       
       if (!couponsResult.error) {
         setCoupons(couponsResult.data || []);
+      }
+      
+      if (!ranksResult.error) {
+        setRanks(ranksResult.data || []);
+      }
+      
+      if (!profileResult.error && profileResult.data) {
+        setSelectedRankId(profileResult.data.rank_id);
       }
     } catch (error) {
       console.error('Error fetching user:', error);
@@ -143,6 +167,29 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
   useEffect(() => {
     fetchUserDetails();
   }, [userId]);
+
+  const handleRankChange = async (rankId: string) => {
+    try {
+      const { error } = await supabase.rpc('assign_user_rank', {
+        p_target_user_id: userId,
+        p_rank_id: rankId === 'none' ? null : rankId
+      });
+      
+      if (error) throw error;
+      
+      setSelectedRankId(rankId === 'none' ? null : rankId);
+      toast({
+        title: language === 'en' ? 'Success' : 'تم بنجاح',
+        description: language === 'en' ? 'Rank updated' : 'تم تحديث الرتبة',
+      });
+    } catch (error) {
+      console.error('Error updating rank:', error);
+      toast({
+        title: language === 'en' ? 'Error' : 'خطأ',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -659,6 +706,60 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* User Rank */}
+            <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">
+                    {language === 'en' ? 'Rank' : 'الرتبة'}
+                  </span>
+                </div>
+                <Select value={selectedRankId || 'none'} onValueChange={handleRankChange}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder={language === 'en' ? 'Select rank' : 'اختر الرتبة'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">
+                      {language === 'en' ? 'No Rank' : 'بدون رتبة'}
+                    </SelectItem>
+                    {ranks.map((rank) => (
+                      <SelectItem key={rank.id} value={rank.id}>
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: rank.badge_color || '#FFD700' }}
+                          />
+                          {language === 'ar' ? rank.name_ar : rank.name_en}
+                          <span className="text-xs text-muted-foreground">({rank.discount_percent}%)</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {selectedRankId && (
+                <div className="mt-2 flex items-center gap-2">
+                  {(() => {
+                    const currentRank = ranks.find(r => r.id === selectedRankId);
+                    if (!currentRank) return null;
+                    return (
+                      <Badge 
+                        style={{ 
+                          backgroundColor: `${currentRank.badge_color}20`, 
+                          color: currentRank.badge_color || '#FFD700' 
+                        }}
+                      >
+                        <Crown className="w-3 h-3 mr-1" />
+                        {language === 'ar' ? currentRank.name_ar : currentRank.name_en}
+                        <span className="ml-1">({currentRank.discount_percent}% {language === 'en' ? 'off' : 'خصم'})</span>
+                      </Badge>
+                    );
+                  })()}
+                </div>
+              )}
             </div>
           </div>
         </div>

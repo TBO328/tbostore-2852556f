@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShoppingBag, Package, Star, Users, Handshake, Ticket, Settings, 
   FileText, Home, LogOut, Palette, Sparkles, MousePointer, Calendar, 
-  Coins, LayoutDashboard, X, ChevronRight, Tag, Crown
+  Coins, LayoutDashboard, X, ChevronRight, Tag, Crown, MessageCircle
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -52,6 +52,20 @@ const menuItems = [
     labelEn: 'Orders',
     labelAr: 'الطلبات',
     color: 'text-blue-500'
+  },
+  {
+    id: 'expenses',
+    icon: Coins,
+    labelEn: 'Expenses',
+    labelAr: 'المصروفات',
+    color: 'text-red-500'
+  },
+  {
+    id: 'chats',
+    icon: MessageCircle,
+    labelEn: 'Chats',
+    labelAr: 'الدردشات',
+    color: 'text-cyan-500'
   },
   {
     id: 'products',

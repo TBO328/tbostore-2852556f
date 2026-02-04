@@ -35,6 +35,8 @@ import FingerprintLock from '@/components/admin/FingerprintLock';
 import PricingOptionsEditor, { PricingOption } from '@/components/admin/PricingOptionsEditor';
 import CategoriesManagement from '@/components/admin/CategoriesManagement';
 import RanksManagement from '@/components/admin/RanksManagement';
+import ExpensesManagement from '@/components/admin/ExpensesManagement';
+import ChatsManagement from '@/components/admin/ChatsManagement';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -577,6 +579,12 @@ const Admin: React.FC = () => {
       
       case 'categories':
         return <CategoriesManagement />;
+      
+      case 'expenses':
+        return <ExpensesManagement language={language} totalRevenue={totalRevenue} />;
+      
+      case 'chats':
+        return <ChatsManagement language={language} />;
       
       case 'products':
         return (
