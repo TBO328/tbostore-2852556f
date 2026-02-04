@@ -84,6 +84,7 @@ interface UserDetailPageProps {
 export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId }: UserDetailPageProps) => {
   const [user, setUser] = useState<UserDetails | null>(null);
   const [coupons, setCoupons] = useState<PersonalCoupon[]>([]);
+  const [ranks, setRanks] = useState<Rank[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -92,6 +93,7 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
   const [fullName, setFullName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [selectedRankId, setSelectedRankId] = useState<string | null>(null);
   
   // Points adjustment
   const [pointsDialog, setPointsDialog] = useState(false);
