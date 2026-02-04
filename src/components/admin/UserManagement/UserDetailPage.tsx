@@ -126,9 +126,11 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
     try {
       setLoading(true);
       
-      const [userResult, couponsResult] = await Promise.all([
+      const [userResult, couponsResult, ranksResult, profileResult] = await Promise.all([
         supabase.rpc('get_user_details_for_admin', { p_user_id: userId }),
-        supabase.rpc('get_user_personal_coupons', { p_user_id: userId })
+        supabase.rpc('get_user_personal_coupons', { p_user_id: userId }),
+        supabase.from('ranks').select('*').eq('is_active', true).order('display_order'),
+        supabase.from('profiles').select('rank_id').eq('user_id', userId).single()
       ]);
       
       if (userResult.error) throw userResult.error;
@@ -141,6 +143,14 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
       
       if (!couponsResult.error) {
         setCoupons(couponsResult.data || []);
+      }
+      
+      if (!ranksResult.error) {
+        setRanks(ranksResult.data || []);
+      }
+      
+      if (!profileResult.error && profileResult.data) {
+        setSelectedRankId(profileResult.data.rank_id);
       }
     } catch (error) {
       console.error('Error fetching user:', error);
@@ -157,6 +167,29 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
   useEffect(() => {
     fetchUserDetails();
   }, [userId]);
+
+  const handleRankChange = async (rankId: string) => {
+    try {
+      const { error } = await supabase.rpc('assign_user_rank', {
+        p_target_user_id: userId,
+        p_rank_id: rankId === 'none' ? null : rankId
+      });
+      
+      if (error) throw error;
+      
+      setSelectedRankId(rankId === 'none' ? null : rankId);
+      toast({
+        title: language === 'en' ? 'Success' : 'تم بنجاح',
+        description: language === 'en' ? 'Rank updated' : 'تم تحديث الرتبة',
+      });
+    } catch (error) {
+      console.error('Error updating rank:', error);
+      toast({
+        title: language === 'en' ? 'Error' : 'خطأ',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

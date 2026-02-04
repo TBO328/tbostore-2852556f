@@ -119,7 +119,12 @@ const ReviewsManagement: React.FC<ReviewsManagementProps> = ({ language, toast }
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-foreground">{review.customer_name}</h3>
+                  <div className="flex items-center gap-1">
+                    <h3 className="font-semibold text-foreground">{review.customer_name}</h3>
+                    {review.is_approved && (
+                      <Check className="w-4 h-4 text-green-500" />
+                    )}
+                  </div>
                   <div className="flex gap-0.5">
                     {[...Array(review.rating)].map((_, i) => (
                       <Star key={i} className="w-3 h-3 text-primary fill-primary" />
