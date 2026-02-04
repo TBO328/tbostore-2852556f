@@ -36,6 +36,7 @@ import VisualEditorOverlay from "./components/admin/VisualEditorOverlay";
 import Snowflakes from "./components/Snowflakes";
 import GlobalCursor from "./components/GlobalCursor";
 import ScreenshotProtection from "./components/ScreenshotProtection";
+import CustomerChat from "./components/CustomerChat";
 
 const queryClient = new QueryClient();
 
