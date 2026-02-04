@@ -54,6 +54,20 @@ const menuItems = [
     color: 'text-blue-500'
   },
   {
+    id: 'expenses',
+    icon: Coins,
+    labelEn: 'Expenses',
+    labelAr: 'المصروفات',
+    color: 'text-red-500'
+  },
+  {
+    id: 'chats',
+    icon: Package,
+    labelEn: 'Chats',
+    labelAr: 'الدردشات',
+    color: 'text-cyan-500'
+  },
+  {
     id: 'products',
     icon: Package,
     labelEn: 'Products',
