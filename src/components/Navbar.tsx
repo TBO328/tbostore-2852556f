@@ -347,7 +347,7 @@ const Navbar: React.FC = () => {
                 delay: index * 0.05
               }}>
                       <Link to={link.to} onClick={() => setIsMenuOpen(false)} className={`block px-4 py-3 rounded-lg transition-all duration-300 ${isActive(link.to) ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary hover:bg-muted'}`}>
-                        {t(link.key)}
+                        {'labelEn' in link ? (language === 'ar' ? link.labelAr : link.labelEn) : t(link.key)}
                       </Link>
                     </motion.div>)}
                   
