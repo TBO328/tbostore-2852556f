@@ -37,6 +37,7 @@ import CategoriesManagement from '@/components/admin/CategoriesManagement';
 import RanksManagement from '@/components/admin/RanksManagement';
 import ExpensesManagement from '@/components/admin/ExpensesManagement';
 import ChatsManagement from '@/components/admin/ChatsManagement';
+import PortfolioManagement from '@/components/admin/PortfolioManagement';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
 
