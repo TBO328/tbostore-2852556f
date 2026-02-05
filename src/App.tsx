@@ -30,6 +30,7 @@ import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
 import MyOrders from "./pages/MyOrders";
 import LoyaltyPoints from "./pages/LoyaltyPoints";
+import Portfolio from "./pages/Portfolio";
 import PageTransition from "./components/PageTransition";
 import AISupportButton from "./components/AISupportButton";
 import VisualEditorOverlay from "./components/admin/VisualEditorOverlay";
