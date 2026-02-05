@@ -131,6 +131,13 @@ const menuItems = [
     labelAr: 'الرتب',
     color: 'text-yellow-500'
   },
+  {
+    id: 'portfolio',
+    icon: Image,
+    labelEn: 'Our Works',
+    labelAr: 'أعمالنا',
+    color: 'text-rose-500'
+  },
   { type: 'divider', labelEn: 'Customization', labelAr: 'التخصيص' },
   {
     id: 'seasonal-themes',

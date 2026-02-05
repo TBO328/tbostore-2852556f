@@ -53,6 +53,7 @@ const AnimatedRoutes = () => {
         <Route path="/streamer-package/:id" element={<PageTransition><StreamerPackageDetail /></PageTransition>} />
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
         <Route path="/reviews" element={<PageTransition><Reviews /></PageTransition>} />
+        <Route path="/portfolio" element={<PageTransition><Portfolio /></PageTransition>} />
         <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
         <Route path="/cart" element={<PageTransition><Cart /></PageTransition>} />
         <Route path="/policies" element={<PageTransition><Policies /></PageTransition>} />
