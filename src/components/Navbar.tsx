@@ -228,7 +228,8 @@ const Navbar: React.FC = () => {
               {/* Loyalty Points Badge */}
               <LoyaltyPointsBadge />
 
-              {/* Admin Link */}
+              {/* User Rank Badge */}
+              <UserRankBadge size="sm" />
               {isAdmin && <Link to="/admin">
                   <motion.div whileHover={{
                 scale: 1.05
