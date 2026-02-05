@@ -12,6 +12,7 @@ import FlyingCartItem from '@/components/FlyingCartItem';
 import SearchDialog from '@/components/SearchDialog';
 import UserMenu from '@/components/UserMenu';
 import LoyaltyPointsBadge from '@/components/LoyaltyPointsBadge';
+import UserRankBadge from '@/components/UserRankBadge';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
 import sarSymbol from '@/assets/sar-symbol.png';
 const Navbar: React.FC = () => {
@@ -48,6 +49,11 @@ const Navbar: React.FC = () => {
   }, {
     key: 'products',
     to: '/products'
+  }, {
+    key: 'portfolio',
+    to: '/portfolio',
+    labelEn: 'Our Works',
+    labelAr: 'أعمالنا'
   }, {
     key: 'about',
     to: '/about'
@@ -114,7 +120,7 @@ const Navbar: React.FC = () => {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
               {navLinks.map(link => <Link key={link.key} to={link.to} className={`relative text-sm font-medium transition-colors duration-300 font-arabic ${isActive(link.to) ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
-                  {t(link.key)}
+                  {'labelEn' in link ? (language === 'ar' ? link.labelAr : link.labelEn) : t(link.key)}
                   {isActive(link.to) && <motion.div layoutId="navbar-indicator" className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full" transition={{
                 type: 'spring',
                 stiffness: 350,
@@ -221,6 +227,9 @@ const Navbar: React.FC = () => {
 
               {/* Loyalty Points Badge */}
               <LoyaltyPointsBadge />
+
+              {/* User Rank Badge */}
+              <UserRankBadge size="sm" />
 
               {/* Admin Link */}
               {isAdmin && <Link to="/admin">
@@ -338,7 +347,7 @@ const Navbar: React.FC = () => {
                 delay: index * 0.05
               }}>
                       <Link to={link.to} onClick={() => setIsMenuOpen(false)} className={`block px-4 py-3 rounded-lg transition-all duration-300 ${isActive(link.to) ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary hover:bg-muted'}`}>
-                        {t(link.key)}
+                        {'labelEn' in link ? (language === 'ar' ? link.labelAr : link.labelEn) : t(link.key)}
                       </Link>
                     </motion.div>)}
                   

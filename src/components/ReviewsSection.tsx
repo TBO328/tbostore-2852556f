@@ -232,8 +232,11 @@ const ReviewsSection: React.FC = () => {
                     whileHover={{ scale: 1.1 }}
                   />
                   <div>
-                    <div className="font-semibold text-foreground">
+                    <div className="font-semibold text-foreground flex items-center gap-2">
                       {currentReview?.customer_name}
+                      <svg className="w-4 h-4 text-green-500 fill-green-500" viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                      </svg>
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {language === 'en' ? 'Verified Buyer' : 'مشتري موثق'}

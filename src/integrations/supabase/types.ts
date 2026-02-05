@@ -96,6 +96,8 @@ export type Database = {
       }
       chat_messages: {
         Row: {
+          attachment_type: string | null
+          attachment_url: string | null
           conversation_id: string
           created_at: string
           id: string
@@ -105,6 +107,8 @@ export type Database = {
           sender_type: string
         }
         Insert: {
+          attachment_type?: string | null
+          attachment_url?: string | null
           conversation_id: string
           created_at?: string
           id?: string
@@ -114,6 +118,8 @@ export type Database = {
           sender_type: string
         }
         Update: {
+          attachment_type?: string | null
+          attachment_url?: string | null
           conversation_id?: string
           created_at?: string
           id?: string
@@ -515,6 +521,51 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_items: {
+        Row: {
+          created_at: string
+          description_ar: string | null
+          description_en: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          media_type: string
+          media_url: string
+          thumbnail_url: string | null
+          title_ar: string
+          title_en: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description_ar?: string | null
+          description_en?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          media_type?: string
+          media_url: string
+          thumbnail_url?: string | null
+          title_ar: string
+          title_en: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description_ar?: string | null
+          description_en?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          media_type?: string
+          media_url?: string
+          thumbnail_url?: string | null
+          title_ar?: string
+          title_en?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string
@@ -532,7 +583,9 @@ export type Database = {
           price: number
           pricing_options: Json | null
           rating: number | null
+          requires_email: boolean | null
           reviews_count: number | null
+          subscription_duration: string | null
           updated_at: string
         }
         Insert: {
@@ -551,7 +604,9 @@ export type Database = {
           price: number
           pricing_options?: Json | null
           rating?: number | null
+          requires_email?: boolean | null
           reviews_count?: number | null
+          subscription_duration?: string | null
           updated_at?: string
         }
         Update: {
@@ -570,7 +625,9 @@ export type Database = {
           price?: number
           pricing_options?: Json | null
           rating?: number | null
+          requires_email?: boolean | null
           reviews_count?: number | null
+          subscription_duration?: string | null
           updated_at?: string
         }
         Relationships: []
