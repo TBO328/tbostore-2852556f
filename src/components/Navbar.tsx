@@ -12,6 +12,7 @@ import FlyingCartItem from '@/components/FlyingCartItem';
 import SearchDialog from '@/components/SearchDialog';
 import UserMenu from '@/components/UserMenu';
 import LoyaltyPointsBadge from '@/components/LoyaltyPointsBadge';
+import UserRankBadge from '@/components/UserRankBadge';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
 import sarSymbol from '@/assets/sar-symbol.png';
 const Navbar: React.FC = () => {
