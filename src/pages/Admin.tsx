@@ -587,6 +587,9 @@ const Admin: React.FC = () => {
       case 'chats':
         return <ChatsManagement language={language} />;
       
+      case 'portfolio':
+        return <PortfolioManagement />;
+      
       case 'products':
         return (
           <div>
