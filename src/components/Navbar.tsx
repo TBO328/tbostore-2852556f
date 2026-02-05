@@ -50,6 +50,11 @@ const Navbar: React.FC = () => {
     key: 'products',
     to: '/products'
   }, {
+    key: 'portfolio',
+    to: '/portfolio',
+    labelEn: 'Our Works',
+    labelAr: 'أعمالنا'
+  }, {
     key: 'about',
     to: '/about'
   }, {
