@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { MessageCircle, Send, X, User, Clock, CheckCheck, Loader2 } from 'lucide-react';
+import { MessageCircle, Send, X, Clock, Loader2, Image, Mic, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import ChatMessageBubble from '@/components/chat/ChatMessageBubble';
 
 interface Conversation {
   id: string;
@@ -29,6 +30,8 @@ interface Message {
   message: string;
   is_read: boolean;
   created_at: string;
+  attachment_url: string | null;
+  attachment_type: string | null;
 }
 
 interface ChatsManagementProps {
@@ -43,7 +46,14 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchConversations = async () => {
     try {
@@ -51,7 +61,6 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
         .from('chat_conversations')
         .select('*')
         .order('last_message_at', { ascending: false });
-      
       if (error) throw error;
       setConversations(data || []);
     } catch (error) {
@@ -68,11 +77,9 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
         .select('*')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
-      
       if (error) throw error;
       setMessages(data || []);
 
-      // Mark messages as read
       await supabase
         .from('chat_messages')
         .update({ is_read: true })
@@ -86,46 +93,28 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
 
   useEffect(() => {
     fetchConversations();
-
-    // Subscribe to new conversations
-    const conversationsChannel = supabase
+    const channel = supabase
       .channel('admin-conversations')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'chat_conversations' },
-        () => fetchConversations()
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_conversations' }, () => fetchConversations())
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(conversationsChannel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation.id);
-
-      // Subscribe to new messages
-      const messagesChannel = supabase
+      const channel = supabase
         .channel(`admin-messages-${selectedConversation.id}`)
-        .on(
-          'postgres_changes',
-          { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'chat_messages',
-            filter: `conversation_id=eq.${selectedConversation.id}`
-          },
-          (payload) => {
-            setMessages(prev => [...prev, payload.new as Message]);
-          }
-        )
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `conversation_id=eq.${selectedConversation.id}`
+        }, (payload) => {
+          setMessages(prev => [...prev, payload.new as Message]);
+        })
         .subscribe();
-
-      return () => {
-        supabase.removeChannel(messagesChannel);
-      };
+      return () => { supabase.removeChannel(channel); };
     }
   }, [selectedConversation]);
 
@@ -133,8 +122,23 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation || !user) return;
+  useEffect(() => {
+    return () => { if (recordingTimerRef.current) clearInterval(recordingTimerRef.current); };
+  }, []);
+
+  const uploadFile = async (file: Blob, fileType: 'image' | 'voice'): Promise<string | null> => {
+    if (!user) return null;
+    const ext = fileType === 'voice' ? 'webm' : (file as File).name?.split('.').pop() || 'jpg';
+    const fileName = `${user.id}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('chat-attachments').upload(fileName, file);
+    if (error) { console.error('Upload error:', error); return null; }
+    const { data: urlData } = supabase.storage.from('chat-attachments').getPublicUrl(fileName);
+    return urlData.publicUrl;
+  };
+
+  const sendMessage = async (attachmentUrl?: string, attachmentType?: string) => {
+    if (!newMessage.trim() && !attachmentUrl) return;
+    if (!selectedConversation || !user) return;
 
     setSending(true);
     try {
@@ -142,12 +146,12 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
         conversation_id: selectedConversation.id,
         sender_id: user.id,
         sender_type: 'admin',
-        message: newMessage.trim()
+        message: newMessage.trim() || (attachmentType === 'voice' ? '🎤 رسالة صوتية' : '📷 صورة'),
+        attachment_url: attachmentUrl || null,
+        attachment_type: attachmentType || null
       });
-
       if (error) throw error;
 
-      // Update last_message_at
       await supabase
         .from('chat_conversations')
         .update({ last_message_at: new Date().toISOString() })
@@ -161,40 +165,77 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadFile(file, 'image');
+      if (url) await sendMessage(url, 'image');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setUploading(true);
+        try {
+          const url = await uploadFile(blob, 'voice');
+          if (url) await sendMessage(url, 'voice');
+        } finally { setUploading(false); }
+      };
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      recordingTimerRef.current = setInterval(() => setRecordingTime(p => p + 1), 1000);
+    } catch (error) { console.error('Microphone access denied:', error); }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      if (recordingTimerRef.current) { clearInterval(recordingTimerRef.current); recordingTimerRef.current = null; }
+    }
+  };
+
+  const cancelRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+      mediaRecorderRef.current = null;
+      audioChunksRef.current = [];
+      setIsRecording(false);
+      setRecordingTime(0);
+      if (recordingTimerRef.current) { clearInterval(recordingTimerRef.current); recordingTimerRef.current = null; }
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
 
   const closeConversation = async (conversationId: string) => {
     try {
-      await supabase
-        .from('chat_conversations')
-        .update({ status: 'closed' })
-        .eq('id', conversationId);
-      
+      await supabase.from('chat_conversations').update({ status: 'closed' }).eq('id', conversationId);
       fetchConversations();
-      if (selectedConversation?.id === conversationId) {
-        setSelectedConversation(null);
-      }
-    } catch (error) {
-      console.error('Error closing conversation:', error);
-    }
+      if (selectedConversation?.id === conversationId) setSelectedConversation(null);
+    } catch (error) { console.error('Error closing conversation:', error); }
   };
 
-  const getUnreadCount = (conversationId: string) => {
-    // This would need a separate query or join, simplified for now
-    return 0;
-  };
+  const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
+    return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }
 
   return (
@@ -202,65 +243,41 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
       {/* Conversations List */}
       <div className="w-full md:w-80 bg-card rounded-xl border border-border overflow-hidden flex flex-col">
         <div className="p-4 border-b border-border">
-          <h2 className="font-semibold text-foreground">
-            {language === 'en' ? 'Conversations' : 'المحادثات'}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {conversations.length} {language === 'en' ? 'chats' : 'محادثة'}
-          </p>
+          <h2 className="font-semibold text-foreground">{language === 'en' ? 'Conversations' : 'المحادثات'}</h2>
+          <p className="text-sm text-muted-foreground">{conversations.length} {language === 'en' ? 'chats' : 'محادثة'}</p>
         </div>
         <ScrollArea className="flex-1">
           {conversations.map((conv) => (
             <motion.button
               key={conv.id}
               onClick={() => setSelectedConversation(conv)}
-              className={`w-full p-4 text-left border-b border-border/50 hover:bg-muted/50 transition-colors ${
-                selectedConversation?.id === conv.id ? 'bg-primary/10' : ''
-              }`}
+              className={`w-full p-4 text-left border-b border-border/50 hover:bg-muted/50 transition-colors ${selectedConversation?.id === conv.id ? 'bg-primary/10' : ''}`}
               whileHover={{ x: 4 }}
             >
               <div className="flex items-start gap-3">
                 <Avatar className="w-10 h-10">
-                  <AvatarFallback className="bg-primary/20 text-primary">
-                    {conv.customer_name[0]?.toUpperCase()}
-                  </AvatarFallback>
+                  <AvatarFallback className="bg-primary/20 text-primary">{conv.customer_name[0]?.toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium text-foreground truncate">
-                      {conv.customer_name}
-                    </span>
+                    <span className="font-medium text-foreground truncate">{conv.customer_name}</span>
                     <Badge variant={conv.status === 'open' ? 'default' : 'secondary'} className="text-xs">
-                      {conv.status === 'open' 
-                        ? (language === 'en' ? 'Open' : 'مفتوح')
-                        : (language === 'en' ? 'Closed' : 'مغلق')}
+                      {conv.status === 'open' ? (language === 'en' ? 'Open' : 'مفتوح') : (language === 'en' ? 'Closed' : 'مغلق')}
                     </Badge>
                   </div>
-                  {conv.order_number && (
-                    <span className="text-xs text-muted-foreground">
-                      {language === 'en' ? 'Order' : 'طلب'}: {conv.order_number}
-                    </span>
-                  )}
+                  {conv.order_number && <span className="text-xs text-muted-foreground">{language === 'en' ? 'Order' : 'طلب'}: {conv.order_number}</span>}
                   <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                     <Clock className="w-3 h-3" />
-                    {new Date(conv.last_message_at).toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
+                    {new Date(conv.last_message_at).toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US', { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' })}
                   </div>
                 </div>
               </div>
             </motion.button>
           ))}
-
           {conversations.length === 0 && (
             <div className="p-8 text-center">
               <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-              <p className="text-muted-foreground">
-                {language === 'en' ? 'No conversations yet' : 'لا توجد محادثات بعد'}
-              </p>
+              <p className="text-muted-foreground">{language === 'en' ? 'No conversations yet' : 'لا توجد محادثات بعد'}</p>
             </div>
           )}
         </ScrollArea>
@@ -270,92 +287,54 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
       <div className="flex-1 bg-card rounded-xl border border-border overflow-hidden flex flex-col">
         {selectedConversation ? (
           <>
-            {/* Chat Header */}
             <div className="p-4 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Avatar className="w-10 h-10">
-                  <AvatarFallback className="bg-primary/20 text-primary">
-                    {selectedConversation.customer_name[0]?.toUpperCase()}
-                  </AvatarFallback>
+                  <AvatarFallback className="bg-primary/20 text-primary">{selectedConversation.customer_name[0]?.toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-semibold text-foreground">
-                    {selectedConversation.customer_name}
-                  </h3>
-                  {selectedConversation.order_number && (
-                    <span className="text-sm text-muted-foreground">
-                      {language === 'en' ? 'Order' : 'طلب'}: {selectedConversation.order_number}
-                    </span>
-                  )}
+                  <h3 className="font-semibold text-foreground">{selectedConversation.customer_name}</h3>
+                  {selectedConversation.order_number && <span className="text-sm text-muted-foreground">{language === 'en' ? 'Order' : 'طلب'}: {selectedConversation.order_number}</span>}
                 </div>
               </div>
               {selectedConversation.status === 'open' && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => closeConversation(selectedConversation.id)}
-                >
-                  <X className="w-4 h-4 mr-1" />
-                  {language === 'en' ? 'Close' : 'إغلاق'}
+                <Button variant="outline" size="sm" onClick={() => closeConversation(selectedConversation.id)}>
+                  <X className="w-4 h-4 mr-1" />{language === 'en' ? 'Close' : 'إغلاق'}
                 </Button>
               )}
             </div>
 
-            {/* Messages */}
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
                 {messages.map((msg) => (
-                  <motion.div
-                    key={msg.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${msg.sender_type === 'admin' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                        msg.sender_type === 'admin'
-                          ? 'bg-primary text-primary-foreground rounded-br-md'
-                          : 'bg-muted text-foreground rounded-bl-md'
-                      }`}
-                    >
-                      <p className="text-sm">{msg.message}</p>
-                      <div className={`flex items-center gap-1 mt-1 text-xs ${
-                        msg.sender_type === 'admin' ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                      }`}>
-                        {new Date(msg.created_at).toLocaleTimeString(language === 'ar' ? 'ar-SA' : 'en-US', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                        {msg.sender_type === 'admin' && msg.is_read && (
-                          <CheckCheck className="w-3 h-3" />
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
+                  <ChatMessageBubble key={msg.id} message={msg} language={language} isAdmin={true} />
                 ))}
                 <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
 
-            {/* Input */}
             {selectedConversation.status === 'open' && (
               <div className="p-4 border-t border-border">
-                <div className="flex gap-2">
-                  <Input
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder={language === 'en' ? 'Type a message...' : 'اكتب رسالة...'}
-                    className="flex-1"
-                  />
-                  <Button onClick={sendMessage} disabled={sending || !newMessage.trim()}>
-                    {sending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                {isRecording ? (
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" onClick={cancelRecording} className="text-destructive"><X className="w-4 h-4" /></Button>
+                    <div className="flex-1 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                      <span className="text-sm text-destructive font-medium">{formatTime(recordingTime)}</span>
+                    </div>
+                    <Button size="icon" onClick={stopRecording} className="bg-destructive hover:bg-destructive/90"><Square className="w-4 h-4" /></Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} disabled={uploading || sending}><Image className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={startRecording} disabled={uploading || sending}><Mic className="w-4 h-4" /></Button>
+                    <Input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyPress={handleKeyPress} placeholder={language === 'en' ? 'Type a message...' : 'اكتب رسالة...'} className="flex-1" />
+                    <Button onClick={() => sendMessage()} disabled={sending || uploading || !newMessage.trim()}>
+                      {sending || uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </>
@@ -363,9 +342,7 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <MessageCircle className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">
-                {language === 'en' ? 'Select a conversation to start chatting' : 'اختر محادثة للبدء'}
-              </p>
+              <p className="text-muted-foreground">{language === 'en' ? 'Select a conversation to start chatting' : 'اختر محادثة للبدء'}</p>
             </div>
           </div>
         )}
