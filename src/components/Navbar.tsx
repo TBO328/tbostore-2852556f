@@ -12,7 +12,7 @@ import FlyingCartItem from '@/components/FlyingCartItem';
 import SearchDialog from '@/components/SearchDialog';
 import UserMenu from '@/components/UserMenu';
 import LoyaltyPointsBadge from '@/components/LoyaltyPointsBadge';
-import UserRankBadge from '@/components/UserRankBadge';
+
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
 import sarSymbol from '@/assets/sar-symbol.png';
 const Navbar: React.FC = () => {
@@ -131,8 +131,8 @@ const Navbar: React.FC = () => {
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-2">
-              {/* Language Toggle */}
-              <div className="hidden sm:flex items-center gap-1.5">
+              {/* Language Toggle - hidden on mobile, available in mobile menu */}
+              <div className="hidden md:flex items-center gap-1.5">
                 <motion.button onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')} whileHover={{
                 scale: 1.05
               }} whileTap={{
@@ -194,7 +194,7 @@ const Navbar: React.FC = () => {
             }} whileTap={{
               scale: 0.95
             }}>
-                <Button variant="ghost" size="icon" onClick={toggleTheme} className="hidden sm:flex">
+                <Button variant="ghost" size="icon" onClick={toggleTheme} className="hidden md:flex">
                   <AnimatePresence mode="wait">
                     <motion.div key={theme} initial={{
                     rotate: -90,
@@ -225,11 +225,11 @@ const Navbar: React.FC = () => {
                 </Button>
               </motion.div>
 
-              {/* Loyalty Points Badge */}
-              <LoyaltyPointsBadge />
+              {/* Loyalty Points Badge - hidden on mobile */}
+              <div className="hidden sm:block">
+                <LoyaltyPointsBadge />
+              </div>
 
-              {/* User Rank Badge */}
-              <UserRankBadge size="sm" />
 
               {/* Admin Link */}
               {isAdmin && <Link to="/admin">
@@ -336,7 +336,7 @@ const Navbar: React.FC = () => {
           }} transition={{
             duration: 0.3
           }} className="md:hidden py-4 border-t border-border overflow-hidden">
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1">
                   {navLinks.map((link, index) => <motion.div key={link.key} initial={{
                 opacity: 0,
                 x: -20
@@ -351,7 +351,7 @@ const Navbar: React.FC = () => {
                       </Link>
                     </motion.div>)}
                   
-                  {/* Mobile Theme & Currency Toggle */}
+                  {/* Mobile Settings Row */}
                   <motion.div initial={{
                 opacity: 0,
                 x: -20
@@ -360,17 +360,22 @@ const Navbar: React.FC = () => {
                 x: 0
               }} transition={{
                 delay: navLinks.length * 0.05
-              }} className="flex items-center gap-4 px-4 py-3">
-                    <Button variant="ghost" size="sm" onClick={toggleTheme} className="flex items-center gap-2">
-                      {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                      {theme === 'dark' ? 'Light' : 'Dark'}
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setCurrency(currency === 'SAR' ? 'USD' : 'SAR')} className="flex items-center gap-2">
-                      {currency === 'SAR' ? <img src={sarSymbol} alt="SAR" className="w-4 h-4" style={{
-                    filter: theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)'
-                  }} /> : <DollarSign className="w-4 h-4" />}
-                      {currency}
-                    </Button>
+              }} className="flex items-center justify-between px-4 py-3 mt-2 border-t border-border">
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm" onClick={toggleTheme} className="flex items-center gap-2 h-8 px-3">
+                        {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                        <span className="text-xs">{theme === 'dark' ? 'Light' : 'Dark'}</span>
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')} className="h-8 px-3">
+                        <span className="text-xs font-arabic">{language === 'ar' ? 'English' : 'عربي'}</span>
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setCurrency(currency === 'SAR' ? 'USD' : 'SAR')} className="flex items-center gap-1 h-8 px-3">
+                        {currency === 'SAR' ? <img src={sarSymbol} alt="SAR" className="w-3.5 h-3.5" style={{
+                      filter: theme === 'light' ? 'brightness(0)' : 'brightness(0) invert(1)'
+                    }} /> : <DollarSign className="w-3.5 h-3.5" />}
+                        <span className="text-xs">{currency}</span>
+                      </Button>
+                    </div>
                   </motion.div>
                 </div>
               </motion.div>}

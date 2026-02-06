@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Camera, Loader2, LogOut, Key, Save } from 'lucide-react';
+import { User, Camera, Loader2, LogOut, Key, Save, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
+import UserRankBadge from '@/components/UserRankBadge';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -260,6 +261,15 @@ const Profile: React.FC = () => {
               <p className="text-xs md:text-sm text-muted-foreground mt-3 text-center">
                 {language === 'en' ? 'Click the camera to change your photo' : 'اضغط على الكاميرا لتغيير صورتك'}
               </p>
+            </div>
+
+            {/* User Rank Section */}
+            <div className="flex items-center justify-center gap-3 mb-6 p-4 rounded-xl bg-muted/50 border border-border">
+              <Crown className="w-5 h-5 text-primary" />
+              <span className="text-sm font-medium text-muted-foreground">
+                {language === 'en' ? 'Your Rank:' : 'رتبتك:'}
+              </span>
+              <UserRankBadge showLabel size="sm" />
             </div>
 
             {/* Profile Form */}

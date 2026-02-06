@@ -99,9 +99,9 @@ const Index: React.FC = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.2, duration: 0.8, type: "spring" }}
                 >
-                  <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-8">
+                  <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 md:mb-8 px-2">
                     <motion.span 
-                      className="text-foreground block mb-4"
+                      className="text-foreground block mb-2 md:mb-4"
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3, duration: 0.6 }}
@@ -126,7 +126,7 @@ const Index: React.FC = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8, duration: 0.6 }}
-                  className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed"
+                  className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed px-2"
                 >
                   {getText('hero', 'heroSubtitle', t('heroSubtitle'))}
                 </motion.p>
@@ -135,7 +135,7 @@ const Index: React.FC = () => {
               {/* CTA Buttons - Redesigned */}
               <AnimatedSection delay={0.4}>
                 <motion.div 
-                  className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
+                  className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-10 md:mb-16 px-4"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1 }}
@@ -144,7 +144,7 @@ const Index: React.FC = () => {
                     <motion.button
                       whileHover={{ scale: 1.05, y: -3 }}
                       whileTap={{ scale: 0.95 }}
-                      className="group relative px-10 py-4 bg-gradient-to-r from-primary to-secondary rounded-2xl text-primary-foreground font-bold text-lg overflow-hidden shadow-2xl shadow-primary/30"
+                      className="group relative px-8 sm:px-10 py-3 sm:py-4 bg-gradient-to-r from-primary to-secondary rounded-2xl text-primary-foreground font-bold text-base sm:text-lg overflow-hidden shadow-2xl shadow-primary/30 w-full sm:w-auto text-center"
                     >
                       <span className="relative z-10 flex items-center gap-3">
                         {t('shopNow')}
@@ -167,7 +167,7 @@ const Index: React.FC = () => {
                     <motion.button
                       whileHover={{ scale: 1.05, y: -3 }}
                       whileTap={{ scale: 0.95 }}
-                      className="px-10 py-4 border-2 border-primary/50 rounded-2xl text-foreground font-bold text-lg backdrop-blur-sm hover:border-primary hover:bg-primary/10 transition-all duration-300"
+                      className="px-8 sm:px-10 py-3 sm:py-4 border-2 border-primary/50 rounded-2xl text-foreground font-bold text-base sm:text-lg backdrop-blur-sm hover:border-primary hover:bg-primary/10 transition-all duration-300 w-full sm:w-auto text-center"
                     >
                       {t('exploreMore')}
                     </motion.button>
@@ -177,7 +177,7 @@ const Index: React.FC = () => {
 
               {/* Floating Stats Cards */}
               <AnimatedSection delay={0.5}>
-                <div className="flex flex-wrap justify-center gap-6">
+                <div className="grid grid-cols-3 gap-3 sm:flex sm:flex-wrap sm:justify-center sm:gap-6 px-2">
                   {[
                     { value: getText('hero', 'productsCount', '500+'), label: language === 'en' ? 'Products' : 'منتج', color: 'primary', delay: 0 },
                     { value: getText('hero', 'customersCount', '10K+'), label: language === 'en' ? 'Customers' : 'عميل', color: 'secondary', delay: 0.1 },
@@ -194,10 +194,10 @@ const Index: React.FC = () => {
                         rotateY: 5,
                         boxShadow: `0 20px 40px -10px hsl(var(--${stat.color}) / 0.4)`
                       }}
-                      className={`relative px-8 py-5 rounded-2xl bg-gradient-to-br from-${stat.color}/10 to-${stat.color}/5 border border-${stat.color}/20 backdrop-blur-md cursor-pointer group`}
+                      className={`relative px-4 sm:px-8 py-3 sm:py-5 rounded-2xl bg-gradient-to-br from-${stat.color}/10 to-${stat.color}/5 border border-${stat.color}/20 backdrop-blur-md cursor-pointer group`}
                       style={{ perspective: '1000px' }}
                     >
-                      <div className={`font-display text-3xl md:text-4xl font-black text-${stat.color}`}>
+                      <div className={`font-display text-xl sm:text-3xl md:text-4xl font-black text-${stat.color}`}>
                         {stat.value}
                       </div>
                       <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
@@ -217,7 +217,7 @@ const Index: React.FC = () => {
         </section>
 
         {/* Features Strip - Premium Design */}
-        <section className="py-16 bg-gradient-to-b from-background via-card/30 to-background relative overflow-hidden">
+        <section className="py-10 md:py-16 bg-gradient-to-b from-background via-card/30 to-background relative overflow-hidden">
           {/* Background decorations */}
           <div className="absolute inset-0">
             <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
@@ -225,7 +225,7 @@ const Index: React.FC = () => {
           </div>
           
           <div className="container mx-auto px-4 relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-8 max-w-5xl mx-auto">
               {[
                 { 
                   icon: Shield, 
@@ -268,29 +268,28 @@ const Index: React.FC = () => {
                       {/* Glow effect on hover */}
                       <div className={`absolute inset-0 bg-${feature.color}/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
                       
-                      <div className="relative bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm rounded-2xl p-8 border border-border/50 group-hover:border-primary/30 transition-all duration-500">
+                      <div className="relative bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm rounded-2xl p-5 sm:p-8 border border-border/50 group-hover:border-primary/30 transition-all duration-500 flex sm:flex-col items-center sm:items-stretch gap-4 sm:gap-0">
                         {/* Icon container with animation */}
                         <motion.div 
-                          className={`w-16 h-16 rounded-xl bg-gradient-to-br from-${feature.color}/20 to-${feature.color}/5 flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-500`}
+                          className={`w-12 h-12 sm:w-16 sm:h-16 shrink-0 rounded-xl bg-gradient-to-br from-${feature.color}/20 to-${feature.color}/5 flex items-center justify-center sm:mb-6 sm:mx-auto group-hover:scale-110 transition-transform duration-500`}
                           whileHover={{ rotate: [0, -5, 5, 0] }}
                           transition={{ duration: 0.5 }}
                         >
-                          <Icon className={`w-8 h-8 text-${feature.color}`} />
+                          <Icon className={`w-6 h-6 sm:w-8 sm:h-8 text-${feature.color}`} />
                         </motion.div>
                         
                         {/* Title */}
-                        <h3 className="font-display text-xl font-bold text-foreground text-center mb-2">
-                          {language === 'en' ? feature.titleEn : feature.titleAr}
-                        </h3>
-                        
-                        {/* Description */}
-                        <p className="text-muted-foreground text-center text-sm">
-                          {language === 'en' ? feature.descEn : feature.descAr}
-                        </p>
-                        
-                        {/* Bottom accent line */}
+                        <div className="flex-1 sm:text-center">
+                          <h3 className="font-display text-base sm:text-xl font-bold text-foreground mb-1 sm:mb-2">
+                            {language === 'en' ? feature.titleEn : feature.titleAr}
+                          </h3>
+                          <p className="text-muted-foreground text-xs sm:text-sm">
+                            {language === 'en' ? feature.descEn : feature.descAr}
+                          </p>
+                        </div>
+                        {/* Bottom accent line - hidden on mobile */}
                         <motion.div 
-                          className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-1 bg-gradient-to-r from-transparent via-${feature.color} to-transparent rounded-full`}
+                          className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-1 bg-gradient-to-r from-transparent via-${feature.color} to-transparent rounded-full hidden sm:block`}
                           initial={{ width: 0, opacity: 0 }}
                           whileInView={{ width: '60%', opacity: 1 }}
                           viewport={{ once: true }}
@@ -306,25 +305,25 @@ const Index: React.FC = () => {
         </section>
 
         {/* Featured Products Preview */}
-        <section className="py-20 md:py-32 bg-background relative overflow-hidden">
+        <section className="py-12 md:py-32 bg-background relative overflow-hidden">
           <div className="absolute top-1/2 left-0 w-72 h-72 bg-neon-cyan/5 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-neon-magenta/5 rounded-full blur-3xl" />
 
           <div className="container mx-auto px-4 relative z-10">
             <AnimatedSection>
               <div className="text-center mb-12">
-                <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
+                <h2 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold text-foreground mb-3 md:mb-4">
                   {getText('products_section', 'featuredProducts', t('featuredProducts'))}
                 </h2>
-                <p className="text-muted-foreground max-w-2xl mx-auto">
+                <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto px-2">
                   {getText('products_section', 'featuredDescription', language === 'en' ? 'Discover our handpicked selection of premium products.' : 'اكتشف مجموعتنا المختارة من المنتجات الفاخرة.')}
                 </p>
               </div>
             </AnimatedSection>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8 md:mb-12">
               {productsLoading ? (
-                <div className="col-span-4 flex justify-center py-12">
+                <div className="col-span-2 sm:col-span-2 lg:col-span-4 flex justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 </div>
               ) : (
@@ -354,7 +353,7 @@ const Index: React.FC = () => {
         </section>
 
         {/* About Preview */}
-        <section className="py-20 md:py-32 bg-gradient-hero relative overflow-hidden">
+        <section className="py-12 md:py-32 bg-gradient-hero relative overflow-hidden">
           <div className="absolute inset-0 opacity-30">
             <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-neon-cyan/50 to-transparent" />
             <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-transparent via-neon-magenta/50 to-transparent" />
@@ -363,12 +362,12 @@ const Index: React.FC = () => {
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-3xl mx-auto text-center">
               <AnimatedSection>
-                <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-6">
+                <h2 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold text-foreground mb-4 md:mb-6">
                   {getText('about', 'aboutTitle', t('aboutTitle'))}
                 </h2>
               </AnimatedSection>
               <AnimatedSection delay={0.1}>
-                <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                <p className="text-sm sm:text-lg text-muted-foreground mb-6 md:mb-8 leading-relaxed px-2">
                   {getText('about', 'aboutDescription', t('aboutDescription'))}
                 </p>
               </AnimatedSection>
@@ -394,22 +393,22 @@ const Index: React.FC = () => {
         <PartnersStrip />
 
         {/* Reviews Preview */}
-        <section className="py-20 md:py-32 bg-background relative overflow-hidden">
+        <section className="py-12 md:py-32 bg-background relative overflow-hidden">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-neon-purple/5 rounded-full blur-3xl" />
 
           <div className="container mx-auto px-4 relative z-10">
             <AnimatedSection>
               <div className="text-center mb-12">
-                <h2 className="font-display text-3xl md:text-5xl font-bold text-foreground mb-4">
+                <h2 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold text-foreground mb-3 md:mb-4">
                   {getText('reviews_section', 'customerReviews', t('customerReviews'))}
                 </h2>
-                <p className="text-muted-foreground">
+                <p className="text-sm sm:text-base text-muted-foreground px-2">
                   {getText('reviews_section', 'reviewsDescription', language === 'en' ? 'What our customers say about us.' : 'ماذا يقول عملاؤنا عنا.')}
                 </p>
               </div>
             </AnimatedSection>
 
-            <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 mb-8 md:mb-12">
               {reviewsLoading ? (
                 <div className="col-span-3 flex justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -417,7 +416,7 @@ const Index: React.FC = () => {
               ) : displayReviews.length > 0 ? (
                 displayReviews.map((review, index) => (
                   <AnimatedSection key={review.id} delay={index * 0.1}>
-                    <motion.div whileHover={{ y: -5 }} className="bg-gradient-card rounded-2xl p-6 border border-border">
+                    <motion.div whileHover={{ y: -5 }} className="bg-gradient-card rounded-2xl p-4 sm:p-6 border border-border">
                       <div className="flex gap-1 mb-4">
                         {[...Array(review.rating)].map((_, i) => (
                           <Star key={i} className="w-5 h-5 text-primary fill-primary" />
