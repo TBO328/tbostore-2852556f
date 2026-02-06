@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Send, X, Loader2, CheckCheck, Minimize2 } from 'lucide-react';
+import { MessageCircle, Send, Minimize2, Loader2, CheckCheck, Image, Mic, Square, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import ChatMessageBubble from '@/components/chat/ChatMessageBubble';
 
 interface Message {
   id: string;
@@ -16,6 +17,8 @@ interface Message {
   message: string;
   is_read: boolean;
   created_at: string;
+  attachment_url: string | null;
+  attachment_type: string | null;
 }
 
 interface Conversation {
@@ -36,15 +39,19 @@ const CustomerChat: React.FC = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Check if user has any conversations
   const fetchOrCreateConversation = async () => {
     if (!user) return;
-
     setLoading(true);
     try {
-      // Check for existing open conversation
       const { data: existing, error: fetchError } = await supabase
         .from('chat_conversations')
         .select('*')
@@ -58,8 +65,7 @@ const CustomerChat: React.FC = () => {
         setConversation(existing);
         fetchMessages(existing.id);
       }
-    } catch (error) {
-      // No existing conversation, will create on first message
+    } catch {
       console.log('No existing conversation');
     } finally {
       setLoading(false);
@@ -77,7 +83,6 @@ const CustomerChat: React.FC = () => {
       if (error) throw error;
       setMessages(data || []);
 
-      // Mark admin messages as read
       await supabase
         .from('chat_messages')
         .update({ is_read: true })
@@ -91,9 +96,7 @@ const CustomerChat: React.FC = () => {
 
   const createConversation = async (): Promise<Conversation | null> => {
     if (!user) return null;
-
     try {
-      // Get user profile for name
       const { data: profile } = await supabase
         .from('profiles')
         .select('full_name')
@@ -120,14 +123,34 @@ const CustomerChat: React.FC = () => {
     }
   };
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !user) return;
+  const uploadFile = async (file: Blob, fileType: 'image' | 'voice'): Promise<string | null> => {
+    if (!user) return null;
+    const ext = fileType === 'voice' ? 'webm' : (file as File).name?.split('.').pop() || 'jpg';
+    const fileName = `${user.id}/${Date.now()}.${ext}`;
+
+    const { error } = await supabase.storage
+      .from('chat-attachments')
+      .upload(fileName, file);
+
+    if (error) {
+      console.error('Upload error:', error);
+      return null;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('chat-attachments')
+      .getPublicUrl(fileName);
+
+    return urlData.publicUrl;
+  };
+
+  const sendMessage = async (attachmentUrl?: string, attachmentType?: string) => {
+    if (!user) return;
+    if (!newMessage.trim() && !attachmentUrl) return;
 
     setSending(true);
     try {
       let conv = conversation;
-      
-      // Create conversation if needed
       if (!conv) {
         conv = await createConversation();
         if (!conv) throw new Error('Failed to create conversation');
@@ -137,12 +160,13 @@ const CustomerChat: React.FC = () => {
         conversation_id: conv.id,
         sender_id: user.id,
         sender_type: 'user',
-        message: newMessage.trim()
+        message: newMessage.trim() || (attachmentType === 'voice' ? '🎤 رسالة صوتية' : '📷 صورة'),
+        attachment_url: attachmentUrl || null,
+        attachment_type: attachmentType || null
       });
 
       if (error) throw error;
 
-      // Update last_message_at
       await supabase
         .from('chat_conversations')
         .update({ last_message_at: new Date().toISOString() })
@@ -156,6 +180,79 @@ const CustomerChat: React.FC = () => {
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const url = await uploadFile(file, 'image');
+      if (url) await sendMessage(url, 'image');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(track => track.stop());
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setUploading(true);
+        try {
+          const url = await uploadFile(audioBlob, 'voice');
+          if (url) await sendMessage(url, 'voice');
+        } finally {
+          setUploading(false);
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    } catch (error) {
+      console.error('Microphone access denied:', error);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+      }
+    }
+  };
+
+  const cancelRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+      mediaRecorderRef.current = null;
+      audioChunksRef.current = [];
+      setIsRecording(false);
+      setRecordingTime(0);
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+      }
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -164,33 +261,24 @@ const CustomerChat: React.FC = () => {
   };
 
   useEffect(() => {
-    if (isOpen && user) {
-      fetchOrCreateConversation();
-    }
+    if (isOpen && user) fetchOrCreateConversation();
   }, [isOpen, user]);
 
   useEffect(() => {
     if (conversation) {
-      // Subscribe to new messages
       const channel = supabase
         .channel(`customer-messages-${conversation.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'chat_messages',
-            filter: `conversation_id=eq.${conversation.id}`
-          },
-          (payload) => {
-            setMessages(prev => [...prev, payload.new as Message]);
-          }
-        )
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `conversation_id=eq.${conversation.id}`
+        }, (payload) => {
+          setMessages(prev => [...prev, payload.new as Message]);
+        })
         .subscribe();
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
+      return () => { supabase.removeChannel(channel); };
     }
   }, [conversation]);
 
@@ -198,12 +286,22 @@ const CustomerChat: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Don't show for non-authenticated users
+  useEffect(() => {
+    return () => {
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+    };
+  }, []);
+
   if (!user) return null;
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
 
   return (
     <>
-      {/* Chat Button */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
@@ -218,7 +316,6 @@ const CustomerChat: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -242,12 +339,7 @@ const CustomerChat: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsOpen(false)}
-                className="text-primary-foreground hover:bg-primary-foreground/20"
-              >
+              <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-primary-foreground hover:bg-primary-foreground/20">
                 <Minimize2 className="w-5 h-5" />
               </Button>
             </div>
@@ -262,41 +354,13 @@ const CustomerChat: React.FC = () => {
                 <div className="text-center py-8">
                   <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
                   <p className="text-sm text-muted-foreground">
-                    {language === 'en' 
-                      ? 'Send us a message and we\'ll get back to you!' 
-                      : 'أرسل لنا رسالة وسنرد عليك!'}
+                    {language === 'en' ? 'Send us a message and we\'ll get back to you!' : 'أرسل لنا رسالة وسنرد عليك!'}
                   </p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {messages.map((msg) => (
-                    <motion.div
-                      key={msg.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`flex ${msg.sender_type === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-                          msg.sender_type === 'user'
-                            ? 'bg-primary text-primary-foreground rounded-br-md'
-                            : 'bg-muted text-foreground rounded-bl-md'
-                        }`}
-                      >
-                        <p className="text-sm">{msg.message}</p>
-                        <div className={`flex items-center gap-1 mt-1 text-xs ${
-                          msg.sender_type === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                        }`}>
-                          {new Date(msg.created_at).toLocaleTimeString(language === 'ar' ? 'ar-SA' : 'en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                          {msg.sender_type === 'user' && msg.is_read && (
-                            <CheckCheck className="w-3 h-3" />
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
+                    <ChatMessageBubble key={msg.id} message={msg} language={language} isAdmin={false} />
                   ))}
                   <div ref={messagesEndRef} />
                 </div>
@@ -304,23 +368,43 @@ const CustomerChat: React.FC = () => {
             </ScrollArea>
 
             {/* Input */}
-            <div className="p-4 border-t border-border">
-              <div className="flex gap-2">
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={language === 'en' ? 'Type a message...' : 'اكتب رسالة...'}
-                  className="flex-1"
-                />
-                <Button onClick={sendMessage} disabled={sending || !newMessage.trim()} size="icon">
-                  {sending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
+            <div className="p-3 border-t border-border">
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+
+              {isRecording ? (
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" onClick={cancelRecording} className="text-destructive">
+                    <X className="w-4 h-4" />
+                  </Button>
+                  <div className="flex-1 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                    <span className="text-sm text-destructive font-medium">{formatTime(recordingTime)}</span>
+                  </div>
+                  <Button size="icon" onClick={stopRecording} className="bg-destructive hover:bg-destructive/90">
+                    <Square className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-1.5 items-center">
+                  <Button variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} disabled={uploading || sending} className="shrink-0">
+                    <Image className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={startRecording} disabled={uploading || sending} className="shrink-0">
+                    <Mic className="w-4 h-4" />
+                  </Button>
+                  <Input
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder={language === 'en' ? 'Message...' : 'رسالة...'}
+                    className="flex-1 h-9 text-sm"
+                    disabled={uploading}
+                  />
+                  <Button onClick={() => sendMessage()} disabled={sending || uploading || !newMessage.trim()} size="icon" className="shrink-0 h-9 w-9">
+                    {sending || uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  </Button>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
