@@ -20,7 +20,7 @@ const CheckoutSchema = z.object({
   items: z.array(CheckoutItemSchema).min(1).max(50),
   customerName: z.string().trim().min(2).max(100),
   customerPhone: z.string().trim().min(8).max(20),
-  customerAddress: z.string().trim().min(5).max(500),
+  customerAddress: z.string().trim().max(500).optional().default(''),
   couponCode: z.string().max(50).optional().nullable(),
   couponDiscount: z.number().int().min(0).max(100).optional(),
   successUrl: z.string().url(),
