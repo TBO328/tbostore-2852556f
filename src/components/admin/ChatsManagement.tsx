@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { MessageCircle, Send, X, Clock, Loader2, Image, Mic, Square } from 'lucide-react';
+import { MessageCircle, Send, X, Clock, Loader2, Image, Mic, Square, Archive, Inbox, ArchiveRestore } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +49,7 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
   const [uploading, setUploading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [activeTab, setActiveTab] = useState<'active' | 'archive'>('active');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -232,6 +233,18 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
     } catch (error) { console.error('Error closing conversation:', error); }
   };
 
+  const restoreConversation = async (conversationId: string) => {
+    try {
+      await supabase.from('chat_conversations').update({ status: 'open' }).eq('id', conversationId);
+      fetchConversations();
+      if (selectedConversation?.id === conversationId) setSelectedConversation(null);
+    } catch (error) { console.error('Error restoring conversation:', error); }
+  };
+
+  const activeConversations = conversations.filter(c => c.status === 'open');
+  const archivedConversations = conversations.filter(c => c.status === 'closed');
+  const displayedConversations = activeTab === 'active' ? activeConversations : archivedConversations;
+
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
   if (loading) {
@@ -244,10 +257,40 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
       <div className="w-full md:w-80 bg-card rounded-xl border border-border overflow-hidden flex flex-col">
         <div className="p-4 border-b border-border">
           <h2 className="font-semibold text-foreground">{language === 'en' ? 'Conversations' : 'المحادثات'}</h2>
-          <p className="text-sm text-muted-foreground">{conversations.length} {language === 'en' ? 'chats' : 'محادثة'}</p>
+          {/* Tabs */}
+          <div className="flex gap-1 mt-3 bg-muted rounded-lg p-1">
+            <button
+              onClick={() => { setActiveTab('active'); setSelectedConversation(null); }}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium transition-all ${
+                activeTab === 'active' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Inbox className="w-3.5 h-3.5" />
+              {language === 'en' ? 'Active' : 'نشط'}
+              {activeConversations.length > 0 && (
+                <span className="bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
+                  {activeConversations.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => { setActiveTab('archive'); setSelectedConversation(null); }}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md text-xs font-medium transition-all ${
+                activeTab === 'archive' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Archive className="w-3.5 h-3.5" />
+              {language === 'en' ? 'Archive' : 'الأرشيف'}
+              {archivedConversations.length > 0 && (
+                <span className="bg-muted-foreground/30 text-muted-foreground rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
+                  {archivedConversations.length}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
         <ScrollArea className="flex-1">
-          {conversations.map((conv) => (
+          {displayedConversations.map((conv) => (
             <motion.button
               key={conv.id}
               onClick={() => setSelectedConversation(conv)}
@@ -261,9 +304,9 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-medium text-foreground truncate">{conv.customer_name}</span>
-                    <Badge variant={conv.status === 'open' ? 'default' : 'secondary'} className="text-xs">
-                      {conv.status === 'open' ? (language === 'en' ? 'Open' : 'مفتوح') : (language === 'en' ? 'Closed' : 'مغلق')}
-                    </Badge>
+                    {activeTab === 'archive' && (
+                      <Archive className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                    )}
                   </div>
                   {conv.order_number && <span className="text-xs text-muted-foreground">{language === 'en' ? 'Order' : 'طلب'}: {conv.order_number}</span>}
                   <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
@@ -274,10 +317,19 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
               </div>
             </motion.button>
           ))}
-          {conversations.length === 0 && (
+          {displayedConversations.length === 0 && (
             <div className="p-8 text-center">
-              <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-              <p className="text-muted-foreground">{language === 'en' ? 'No conversations yet' : 'لا توجد محادثات بعد'}</p>
+              {activeTab === 'archive' ? (
+                <>
+                  <Archive className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+                  <p className="text-muted-foreground">{language === 'en' ? 'No archived chats' : 'لا توجد دردشات مؤرشفة'}</p>
+                </>
+              ) : (
+                <>
+                  <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+                  <p className="text-muted-foreground">{language === 'en' ? 'No active conversations' : 'لا توجد محادثات نشطة'}</p>
+                </>
+              )}
             </div>
           )}
         </ScrollArea>
@@ -297,9 +349,13 @@ const ChatsManagement: React.FC<ChatsManagementProps> = ({ language }) => {
                   {selectedConversation.order_number && <span className="text-sm text-muted-foreground">{language === 'en' ? 'Order' : 'طلب'}: {selectedConversation.order_number}</span>}
                 </div>
               </div>
-              {selectedConversation.status === 'open' && (
+              {selectedConversation.status === 'open' ? (
                 <Button variant="outline" size="sm" onClick={() => closeConversation(selectedConversation.id)}>
-                  <X className="w-4 h-4 mr-1" />{language === 'en' ? 'Close' : 'إغلاق'}
+                  <Archive className="w-4 h-4 mr-1" />{language === 'en' ? 'Archive' : 'أرشفة'}
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" onClick={() => restoreConversation(selectedConversation.id)} className="text-primary border-primary/30 hover:bg-primary/10">
+                  <ArchiveRestore className="w-4 h-4 mr-1" />{language === 'en' ? 'Restore' : 'استعادة'}
                 </Button>
               )}
             </div>
