@@ -529,6 +529,7 @@ export type Database = {
           display_order: number | null
           id: string
           is_active: boolean | null
+          media_files: Json | null
           media_type: string
           media_url: string
           thumbnail_url: string | null
@@ -543,6 +544,7 @@ export type Database = {
           display_order?: number | null
           id?: string
           is_active?: boolean | null
+          media_files?: Json | null
           media_type?: string
           media_url: string
           thumbnail_url?: string | null
@@ -557,6 +559,7 @@ export type Database = {
           display_order?: number | null
           id?: string
           is_active?: boolean | null
+          media_files?: Json | null
           media_type?: string
           media_url?: string
           thumbnail_url?: string | null
