@@ -31,6 +31,7 @@ import NotFound from "./pages/NotFound";
 import MyOrders from "./pages/MyOrders";
 import LoyaltyPoints from "./pages/LoyaltyPoints";
 import Portfolio from "./pages/Portfolio";
+import PortfolioDetail from "./pages/PortfolioDetail";
 import PageTransition from "./components/PageTransition";
 import AISupportButton from "./components/AISupportButton";
 import VisualEditorOverlay from "./components/admin/VisualEditorOverlay";
@@ -55,6 +56,7 @@ const AnimatedRoutes = () => {
         <Route path="/about" element={<PageTransition><About /></PageTransition>} />
         <Route path="/reviews" element={<PageTransition><Reviews /></PageTransition>} />
         <Route path="/portfolio" element={<PageTransition><Portfolio /></PageTransition>} />
+        <Route path="/portfolio/:id" element={<PageTransition><PortfolioDetail /></PageTransition>} />
         <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
         <Route path="/cart" element={<PageTransition><Cart /></PageTransition>} />
         <Route path="/policies" element={<PageTransition><Policies /></PageTransition>} />

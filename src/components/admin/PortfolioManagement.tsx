@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Edit, Trash2, Image, Video, FileImage, Loader2, GripVertical, Eye, EyeOff } from 'lucide-react';
+import { Plus, Edit, Trash2, Image, Video, FileImage, Loader2, GripVertical, Eye, EyeOff, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -62,8 +62,10 @@ const PortfolioManagement: React.FC = () => {
   const [editingItem, setEditingItem] = useState<PortfolioItem | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  
+  const [uploadingThumb, setUploadingThumb] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const thumbInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     title_en: '',
@@ -132,22 +134,23 @@ const PortfolioManagement: React.FC = () => {
     setDialogOpen(true);
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'media' | 'thumbnail') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
-    
+    if (type === 'media') setUploading(true);
+    else setUploadingThumb(true);
+
     const fileExt = file.name.split('.').pop()?.toLowerCase();
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `portfolio/${fileName}`;
 
-    // Determine media type
-    let mediaType = 'image';
-    if (file.type.startsWith('video/')) {
-      mediaType = 'video';
-    } else if (fileExt === 'gif') {
-      mediaType = 'gif';
+    // Determine media type (only for main media)
+    let mediaType = formData.media_type;
+    if (type === 'media') {
+      mediaType = 'image';
+      if (file.type.startsWith('video/')) mediaType = 'video';
+      else if (fileExt === 'gif') mediaType = 'gif';
     }
 
     const { error: uploadError } = await supabase.storage
@@ -160,19 +163,27 @@ const PortfolioManagement: React.FC = () => {
         description: language === 'ar' ? 'فشل رفع الملف' : 'Failed to upload file',
         variant: 'destructive',
       });
-      setUploading(false);
+      if (type === 'media') setUploading(false);
+      else setUploadingThumb(false);
       return;
     }
 
     const { data: urlData } = supabase.storage.from('products').getPublicUrl(filePath);
-    
-    setFormData(prev => ({
-      ...prev,
-      media_url: urlData.publicUrl,
-      media_type: mediaType,
-    }));
-    
-    setUploading(false);
+
+    if (type === 'media') {
+      setFormData(prev => ({
+        ...prev,
+        media_url: urlData.publicUrl,
+        media_type: mediaType,
+      }));
+      setUploading(false);
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        thumbnail_url: urlData.publicUrl,
+      }));
+      setUploadingThumb(false);
+    }
   };
 
   const handleSave = async () => {
@@ -343,34 +354,65 @@ const PortfolioManagement: React.FC = () => {
             </DialogHeader>
 
             <div className="space-y-4 py-4">
-              {/* Media Upload */}
+              {/* Thumbnail Upload */}
               <div className="space-y-2">
-                <Label>{language === 'ar' ? 'الملف (صورة/فيديو/GIF)' : 'Media (Image/Video/GIF)'}</Label>
+                <Label className="font-semibold">
+                  {language === 'ar' ? '📷 الصورة المصغرة (Thumbnail)' : '📷 Thumbnail Image'}
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {language === 'ar' ? 'تظهر في قائمة الأعمال كمعاينة' : 'Shown in portfolio grid as preview'}
+                </p>
+                <input
+                  ref={thumbInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileUpload(e, 'thumbnail')}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => thumbInputRef.current?.click()}
+                  disabled={uploadingThumb}
+                  className="w-full"
+                >
+                  {uploadingThumb ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Image className="w-4 h-4 mr-2" />}
+                  {language === 'ar' ? 'رفع صورة مصغرة' : 'Upload Thumbnail'}
+                </Button>
+                {formData.thumbnail_url && (
+                  <div className="mt-2 rounded-lg overflow-hidden border border-border">
+                    <img src={formData.thumbnail_url} className="w-full h-40 object-cover" alt="Thumbnail" />
+                  </div>
+                )}
+              </div>
+
+              {/* Main Media Upload */}
+              <div className="space-y-2">
+                <Label className="font-semibold">
+                  {language === 'ar' ? '🎬 العمل الكامل (صورة/فيديو/GIF)' : '🎬 Full Work (Image/Video/GIF)'}
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {language === 'ar' ? 'يظهر داخل صفحة العمل التفصيلية' : 'Shown inside the work detail page'}
+                </p>
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept="image/*,video/*,.gif"
-                  onChange={handleFileUpload}
+                  onChange={(e) => handleFileUpload(e, 'media')}
                   className="hidden"
                 />
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    className="flex-1"
-                  >
-                    {uploading ? (
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    ) : (
-                      <Image className="w-4 h-4 mr-2" />
-                    )}
-                    {language === 'ar' ? 'رفع ملف' : 'Upload File'}
-                  </Button>
-                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="w-full"
+                >
+                  {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Video className="w-4 h-4 mr-2" />}
+                  {language === 'ar' ? 'رفع العمل الكامل' : 'Upload Full Work'}
+                </Button>
                 {formData.media_url && (
-                  <div className="mt-2 rounded-lg overflow-hidden border">
+                  <div className="mt-2 rounded-lg overflow-hidden border border-border">
                     <AspectRatio ratio={16 / 9}>
                       {formData.media_type === 'video' ? (
                         <video src={formData.media_url} className="object-cover w-full h-full" controls />
@@ -505,6 +547,14 @@ const PortfolioManagement: React.FC = () => {
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2 mt-3">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title={language === 'ar' ? 'معاينة الصفحة' : 'Preview Page'}
+                    onClick={() => window.open(`/portfolio/${item.id}`, '_blank')}
+                  >
+                    <ExternalLink className="w-4 h-4 text-primary" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"
