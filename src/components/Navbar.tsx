@@ -112,7 +112,7 @@ const Navbar: React.FC = () => {
                 damping: 17
               }} />
               </div>
-              <span className="font-display text-xl md:text-2xl font-bold text-foreground">
+              <span className="hidden md:inline font-display text-xl md:text-2xl font-bold text-foreground">
                 TBO <span className="text-primary glow-text-cyan">STORE</span>
               </span>
             </Link>
