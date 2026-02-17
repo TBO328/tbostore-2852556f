@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   ArrowLeft, ArrowRight, User, Mail, Calendar, Shield, ShieldOff, 
   Ban, Coins, Plus, Minus, Ticket, Trash2, Loader2, Save,
-  Copy, Check, Upload, KeyRound, Eye, EyeOff, Send, Crown
+  Copy, Check, Upload, KeyRound, Eye, EyeOff, Send, Crown, ShoppingCart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -121,7 +121,11 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
   const [showPassword, setShowPassword] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
-
+  
+  // Cart viewing
+  const [cartDialog, setCartDialog] = useState(false);
+  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [cartLoading, setCartLoading] = useState(false);
   const fetchUserDetails = async () => {
     try {
       setLoading(true);
@@ -576,6 +580,28 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
     setNewPassword('');
   };
 
+  const fetchUserCart = async () => {
+    setCartLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('user_carts')
+        .select('*')
+        .eq('user_id', userId);
+      if (error) throw error;
+      setCartItems(data || []);
+      setCartDialog(true);
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+      toast({
+        title: language === 'en' ? 'Error' : 'خطأ',
+        description: language === 'en' ? 'Failed to load cart' : 'فشل في تحميل السلة',
+        variant: 'destructive',
+      });
+    } finally {
+      setCartLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -820,7 +846,7 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
       </div>
 
       {/* Actions Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Admin Toggle */}
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center justify-between">
@@ -910,6 +936,27 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
             >
               <KeyRound className="w-4 h-4 mr-1" />
               {language === 'en' ? 'Reset' : 'إعادة'}
+            </Button>
+          </div>
+        </div>
+
+        {/* View Cart */}
+        <div className="bg-card border border-border rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5 text-primary" />
+              <span className="font-medium text-sm">
+                {language === 'en' ? 'Cart' : 'السلة'}
+              </span>
+            </div>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={fetchUserCart}
+              disabled={cartLoading}
+            >
+              {cartLoading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Eye className="w-4 h-4 mr-1" />}
+              {language === 'en' ? 'View' : 'عرض'}
             </Button>
           </div>
         </div>
@@ -1276,6 +1323,70 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
               {language === 'en' ? 'Close' : 'إغلاق'}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Cart Dialog */}
+      <Dialog open={cartDialog} onOpenChange={setCartDialog}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5" />
+              {language === 'en' ? 'User Cart' : 'سلة المستخدم'}
+            </DialogTitle>
+            <DialogDescription>
+              {language === 'en' 
+                ? `${user?.full_name || user?.email}'s cart items`
+                : `عناصر سلة ${user?.full_name || user?.email}`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {cartItems.length === 0 ? (
+            <div className="text-center py-8">
+              <ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+              <p className="text-muted-foreground">
+                {language === 'en' ? 'Cart is empty' : 'السلة فارغة'}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {cartItems.map((item) => (
+                <div key={item.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border border-border">
+                  {item.product_image && (
+                    <img 
+                      src={item.product_image} 
+                      alt={item.product_name} 
+                      className="w-14 h-14 rounded-lg object-cover border border-border"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">
+                      {language === 'ar' ? item.product_name_ar : item.product_name}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="secondary" className="text-xs">
+                        {language === 'en' ? 'Qty' : 'الكمية'}: {item.quantity}
+                      </Badge>
+                      <span className="text-sm font-semibold text-primary">
+                        {item.product_price} {language === 'en' ? 'SAR' : 'ر.س'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-sm font-bold">
+                      {(Number(item.product_price) * item.quantity).toFixed(2)} {language === 'en' ? 'SAR' : 'ر.س'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              <Separator />
+              <div className="flex justify-between items-center pt-2 font-bold">
+                <span>{language === 'en' ? 'Total' : 'الإجمالي'}</span>
+                <span className="text-primary">
+                  {cartItems.reduce((sum: number, item: any) => sum + Number(item.product_price) * item.quantity, 0).toFixed(2)} {language === 'en' ? 'SAR' : 'ر.س'}
+                </span>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </motion.div>

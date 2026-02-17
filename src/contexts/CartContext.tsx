@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useRef, useCallback, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface CartItemCustomization {
   hasLogo?: boolean;
@@ -40,7 +41,73 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [items, setItems] = useState<CartItem[]>([]);
   const [flyingItem, setFlyingItem] = useState<{ x: number; y: number; image: string } | null>(null);
   const [isShaking, setIsShaking] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const cartIconRef = useRef<HTMLDivElement>(null);
+  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Listen for auth state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUserId(session?.user?.id || null);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserId(session?.user?.id || null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Load cart from DB when user logs in
+  useEffect(() => {
+    if (!userId) return;
+    const loadCart = async () => {
+      const { data } = await supabase
+        .from('user_carts')
+        .select('*')
+        .eq('user_id', userId);
+      if (data && data.length > 0) {
+        const dbItems: CartItem[] = data.map(item => ({
+          id: item.product_id,
+          name: item.product_name,
+          nameAr: item.product_name_ar,
+          price: Number(item.product_price),
+          image: item.product_image || '',
+          quantity: item.quantity,
+          customization: item.customization as CartItemCustomization | undefined,
+        }));
+        setItems(dbItems);
+      }
+    };
+    loadCart();
+  }, [userId]);
+
+  // Sync cart to DB (debounced)
+  const syncCartToDB = useCallback((cartItems: CartItem[], uid: string) => {
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    syncTimeoutRef.current = setTimeout(async () => {
+      // Delete all and re-insert
+      await supabase.from('user_carts').delete().eq('user_id', uid);
+      if (cartItems.length > 0) {
+        const rows = cartItems.map(item => ({
+          user_id: uid,
+          product_id: String(item.id),
+          product_name: item.name,
+          product_name_ar: item.nameAr,
+          product_price: item.price,
+          product_image: item.image,
+          quantity: item.quantity,
+          customization: item.customization as any,
+        }));
+        await supabase.from('user_carts').insert(rows);
+      }
+    }, 1000);
+  }, []);
+
+  // Watch items changes and sync
+  useEffect(() => {
+    if (userId) {
+      syncCartToDB(items, userId);
+    }
+  }, [items, userId, syncCartToDB]);
 
   const addToCart = useCallback((product: Omit<CartItem, 'quantity'>) => {
     setItems(prev => {
