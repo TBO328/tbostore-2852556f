@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Almarai:wght@300;400;700;800&display=swap');
 
-/* Cairo font is loaded via index.html for Arabic RTL support */
+/* Almarai font is loaded via index.html for Arabic/English support */
 
 @layer base {
   :root {
@@ -57,8 +57,8 @@
 
     /* Fonts */
     --font-display: 'Orbitron', sans-serif;
-    --font-body: 'Inter', sans-serif;
-    --font-arabic: 'Cairo', sans-serif;
+    --font-body: 'Almarai', sans-serif;
+    --font-arabic: 'Almarai', sans-serif;
 
     --sidebar-background: 195 35% 12%;
     --sidebar-foreground: 195 20% 95%;

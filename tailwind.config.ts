@@ -15,19 +15,19 @@ export default {
   	extend: {
 		fontFamily: {
 			cairo: [
-				'Cairo',
+				'Almarai',
 				'sans-serif'
 			],
 			display: [
-				'Cairo',
+				'Almarai',
 				'sans-serif'
 			],
 			body: [
-				'Cairo',
+				'Almarai',
 				'sans-serif'
 			],
 			arabic: [
-				'Cairo',
+				'Almarai',
 				'sans-serif'
 			],
   			sans: [
