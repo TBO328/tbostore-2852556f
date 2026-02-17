@@ -38,6 +38,7 @@ import Snowflakes from "./components/Snowflakes";
 import GlobalCursor from "./components/GlobalCursor";
 import ScreenshotProtection from "./components/ScreenshotProtection";
 import CustomerChat from "./components/CustomerChat";
+import SplashScreen from "./components/SplashScreen";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +89,7 @@ const App = () => (
                     <Snowflakes />
                     <GlobalCursor />
                     <ScreenshotProtection />
+                    <SplashScreen />
                     <AnimatedRoutes />
                     <VisualEditorOverlay />
                     <AISupportButton />
