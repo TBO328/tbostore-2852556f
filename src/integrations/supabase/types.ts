@@ -983,6 +983,7 @@ export type Database = {
       get_user_details_for_admin: {
         Args: { p_user_id: string }
         Returns: {
+          auth_phone: string
           avatar_url: string
           blacklist_reason: string
           created_at: string
