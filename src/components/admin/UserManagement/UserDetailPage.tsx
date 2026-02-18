@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   ArrowLeft, ArrowRight, User, Mail, Calendar, Shield, ShieldOff, 
   Ban, Coins, Plus, Minus, Ticket, Trash2, Loader2, Save,
-  Copy, Check, Upload, KeyRound, Eye, EyeOff, Send, Crown, ShoppingCart
+  Copy, Check, Upload, KeyRound, Eye, EyeOff, Send, Crown, ShoppingCart, Phone, MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -126,6 +126,12 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
   const [cartDialog, setCartDialog] = useState(false);
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [cartLoading, setCartLoading] = useState(false);
+  
+  // WhatsApp
+  const [whatsappDialog, setWhatsappDialog] = useState(false);
+  const [whatsappMessage, setWhatsappMessage] = useState('');
+  const [userPhone, setUserPhone] = useState<string | null>(null);
+
   const fetchUserDetails = async () => {
     try {
       setLoading(true);
@@ -134,7 +140,7 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
         supabase.rpc('get_user_details_for_admin', { p_user_id: userId }),
         supabase.rpc('get_user_personal_coupons', { p_user_id: userId }),
         supabase.from('ranks').select('*').eq('is_active', true).order('display_order'),
-        supabase.from('profiles').select('rank_id').eq('user_id', userId).single()
+        supabase.from('profiles').select('rank_id, phone_number').eq('user_id', userId).single()
       ]);
       
       if (userResult.error) throw userResult.error;
@@ -155,6 +161,7 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
       
       if (!profileResult.error && profileResult.data) {
         setSelectedRankId(profileResult.data.rank_id);
+        setUserPhone((profileResult.data as any).phone_number || null);
       }
     } catch (error) {
       console.error('Error fetching user:', error);
@@ -960,6 +967,39 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
             </Button>
           </div>
         </div>
+
+        {/* WhatsApp */}
+        <div className="bg-card border border-border rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-green-500" />
+              <span className="font-medium text-sm">
+                {language === 'en' ? 'WhatsApp' : 'واتساب'}
+              </span>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-green-500/30 text-green-500 hover:bg-green-500/10"
+              onClick={() => {
+                setWhatsappMessage('');
+                setWhatsappDialog(true);
+              }}
+              disabled={!userPhone}
+            >
+              <Phone className="w-4 h-4 mr-1" />
+              {language === 'en' ? 'Message' : 'رسالة'}
+            </Button>
+          </div>
+          {!userPhone && (
+            <p className="text-xs text-muted-foreground mt-2">
+              {language === 'en' ? 'User has no phone number' : 'المستخدم لم يضف رقم جوال'}
+            </p>
+          )}
+          {userPhone && (
+            <p className="text-xs text-green-500 mt-2 font-mono">{userPhone}</p>
+          )}
+        </div>
       </div>
 
       {/* Personal Coupons List */}
@@ -1387,6 +1427,66 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* WhatsApp Dialog */}
+      <Dialog open={whatsappDialog} onOpenChange={setWhatsappDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-green-500" />
+              {language === 'en' ? 'Send WhatsApp Message' : 'إرسال رسالة واتساب'}
+            </DialogTitle>
+            <DialogDescription>
+              {language === 'en' 
+                ? `Send a message to ${user?.full_name || user?.email} on WhatsApp`
+                : `إرسال رسالة إلى ${user?.full_name || user?.email} على واتساب`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm text-muted-foreground">
+                {language === 'en' ? 'Phone Number' : 'رقم الجوال'}
+              </Label>
+              <div className="flex items-center gap-2 mt-1 p-2 bg-muted rounded-lg">
+                <Phone className="w-4 h-4 text-green-500" />
+                <span className="font-mono text-sm">{userPhone}</span>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="wa-message">
+                {language === 'en' ? 'Message' : 'الرسالة'}
+              </Label>
+              <textarea
+                id="wa-message"
+                className="mt-1 w-full min-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                placeholder={language === 'en' ? 'Type your message here...' : 'اكتب رسالتك هنا...'}
+                value={whatsappMessage}
+                onChange={(e) => setWhatsappMessage(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setWhatsappDialog(false)}>
+              {language === 'en' ? 'Cancel' : 'إلغاء'}
+            </Button>
+            <Button
+              className="bg-green-600 hover:bg-green-700 text-white"
+              disabled={!whatsappMessage.trim() || !userPhone}
+              onClick={() => {
+                const phone = userPhone!.replace(/\D/g, '');
+                const url = `https://wa.me/${phone}?text=${encodeURIComponent(whatsappMessage)}`;
+                window.open(url, '_blank');
+                setWhatsappDialog(false);
+              }}
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              {language === 'en' ? 'Open in WhatsApp' : 'فتح في واتساب'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </motion.div>
