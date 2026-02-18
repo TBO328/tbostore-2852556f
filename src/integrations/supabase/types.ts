@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      abandoned_cart_coupons: {
+        Row: {
+          coupon_code: string
+          coupon_id: string
+          created_at: string
+          id: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          coupon_code: string
+          coupon_id: string
+          created_at?: string
+          id?: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          coupon_code?: string
+          coupon_id?: string
+          created_at?: string
+          id?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -813,6 +840,7 @@ export type Database = {
       }
       user_carts: {
         Row: {
+          abandoned_coupon_sent_at: string | null
           created_at: string
           customization: Json | null
           id: string
@@ -826,6 +854,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          abandoned_coupon_sent_at?: string | null
           created_at?: string
           customization?: Json | null
           id?: string
@@ -839,6 +868,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          abandoned_coupon_sent_at?: string | null
           created_at?: string
           customization?: Json | null
           id?: string
