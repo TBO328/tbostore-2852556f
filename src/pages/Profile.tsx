@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, Camera, Loader2, LogOut, Key, Save, Crown } from 'lucide-react';
+import { User, Camera, Loader2, LogOut, Key, Save, Crown, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,6 +27,7 @@ const Profile: React.FC = () => {
 
   const [fullName, setFullName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -43,7 +44,7 @@ const Profile: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('full_name, avatar_url')
+        .select('full_name, avatar_url, phone_number')
         .eq('user_id', user.id)
         .single();
 
@@ -54,6 +55,7 @@ const Profile: React.FC = () => {
       if (data) {
         setFullName(data.full_name || '');
         setAvatarUrl(data.avatar_url);
+        setPhoneNumber((data as any).phone_number || '');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -73,8 +75,9 @@ const Profile: React.FC = () => {
           user_id: user.id,
           full_name: fullName,
           avatar_url: avatarUrl,
+          phone_number: phoneNumber || null,
           updated_at: new Date().toISOString(),
-        }, {
+        } as any, {
           onConflict: 'user_id'
         });
 
@@ -301,6 +304,28 @@ const Profile: React.FC = () => {
                   placeholder={language === 'en' ? 'Enter your name' : 'أدخل اسمك'}
                   className="text-sm"
                 />
+              </div>
+
+              {/* Phone Number */}
+              <div className="space-y-2">
+                <Label htmlFor="phoneNumber" className="text-sm flex items-center gap-2">
+                  <Phone className="w-3.5 h-3.5" />
+                  {language === 'en' ? 'Phone Number (WhatsApp)' : 'رقم الجوال (واتساب)'}
+                </Label>
+                <Input
+                  id="phoneNumber"
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value.replace(/[^\d+]/g, ''))}
+                  placeholder={language === 'en' ? 'e.g. +966501234567' : 'مثال: 966501234567+'}
+                  className="text-sm"
+                  dir="ltr"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {language === 'en' 
+                    ? 'Add your number so we can reach you on WhatsApp' 
+                    : 'أضف رقمك حتى نتمكن من التواصل معك على واتساب'}
+                </p>
               </div>
 
               {/* Save Button */}

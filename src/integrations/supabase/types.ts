@@ -670,6 +670,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_blacklisted: boolean | null
+          phone_number: string | null
           rank_id: string | null
           updated_at: string
           user_id: string
@@ -681,6 +682,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_blacklisted?: boolean | null
+          phone_number?: string | null
           rank_id?: string | null
           updated_at?: string
           user_id: string
@@ -692,6 +694,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_blacklisted?: boolean | null
+          phone_number?: string | null
           rank_id?: string | null
           updated_at?: string
           user_id?: string
