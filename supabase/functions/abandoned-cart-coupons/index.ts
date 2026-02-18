@@ -28,13 +28,13 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     // Find all users with carts abandoned for 24+ hours that haven't received a coupon yet
-    const cutoffTime = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const cutoff24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
     // Get distinct user_ids with abandoned carts
     const { data: abandonedCarts, error: cartsError } = await supabase
       .from('user_carts')
       .select('user_id, updated_at, abandoned_coupon_sent_at')
-      .lt('updated_at', cutoffTime)
+      .lt('updated_at', cutoff24h)
       .is('abandoned_coupon_sent_at', null);
 
     if (cartsError) {
@@ -50,13 +50,19 @@ serve(async (req) => {
       });
     }
 
-    // Get unique user_ids
-    const uniqueUserIds = [...new Set(abandonedCarts.map(c => c.user_id))];
-    console.log(`Found ${uniqueUserIds.length} users with abandoned carts`);
+    // Get unique user_ids with their oldest cart update time
+    const userCartMap = new Map<string, string>();
+    for (const cart of abandonedCarts) {
+      const existing = userCartMap.get(cart.user_id);
+      if (!existing || cart.updated_at < existing) {
+        userCartMap.set(cart.user_id, cart.updated_at);
+      }
+    }
+    console.log(`Found ${userCartMap.size} users with abandoned carts`);
 
     let processedCount = 0;
 
-    for (const userId of uniqueUserIds) {
+    for (const [userId, oldestUpdatedAt] of userCartMap.entries()) {
       try {
         // Get user email from auth
         const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
@@ -85,15 +91,21 @@ serve(async (req) => {
           attempts++;
         }
 
+        // Calculate how long the cart has been abandoned
+        const abandonedHours = (Date.now() - new Date(oldestUpdatedAt).getTime()) / (1000 * 60 * 60);
+
+        // Tiered discount: 48h+ → 5%, 24-48h → 3%
+        const discountPercent = abandonedHours >= 48 ? 5 : 3;
+
         // Set expiry to 48 hours from now
         const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
 
-        // Create personal coupon (10% discount)
+        // Create personal coupon with tiered discount
         const { data: coupon, error: couponError } = await supabase
           .from('coupons')
           .insert({
             code: couponCode,
-            discount_percent: 10,
+            discount_percent: discountPercent,
             user_id: userId,
             is_personal: true,
             is_active: true,
@@ -139,7 +151,7 @@ serve(async (req) => {
                 <div style="background: #d4af37; color: #000; font-size: 28px; font-weight: bold; padding: 12px 24px; border-radius: 8px; letter-spacing: 4px; display: inline-block;">
                   ${couponCode}
                 </div>
-                <p style="color: #d4af37; margin: 12px 0 0; font-size: 20px; font-weight: bold;">خصم 10% على طلبك! 🎉</p>
+                <p style="color: #d4af37; margin: 12px 0 0; font-size: 20px; font-weight: bold;">خصم ${discountPercent}% على طلبك! 🎉</p>
                 <p style="color: #666; margin: 8px 0 0; font-size: 13px;">⏰ الكود صالح لـ 48 ساعة فقط</p>
               </div>
 
@@ -167,7 +179,7 @@ serve(async (req) => {
           body: JSON.stringify({
             from: 'TBO Store <onboarding@resend.dev>',
             to: [userEmail],
-            subject: '🛒 نسيت سلتك! هدية خصم 10% تنتظرك - TBO Store',
+            subject: `🛒 نسيت سلتك! هدية خصم ${discountPercent}% تنتظرك - TBO Store`,
             html: emailHtml,
           }),
         });
