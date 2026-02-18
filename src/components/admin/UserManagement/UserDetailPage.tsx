@@ -62,6 +62,7 @@ interface UserDetails {
   total_redeemed: number;
   rank_id?: string | null;
   rank?: Rank | null;
+  auth_phone?: string | null;
 }
 
 interface PersonalCoupon {
@@ -145,10 +146,17 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
       
       if (userResult.error) throw userResult.error;
       if (userResult.data && userResult.data.length > 0) {
-        const userData = userResult.data[0];
+        const userData = userResult.data[0] as any;
         setUser(userData);
         setFullName(userData.full_name || '');
         setAvatarUrl(userData.avatar_url || '');
+        
+        // Set phone from profile first, fallback to auth phone (for phone-registered users)
+        const profilePhone = profileResult.data && !profileResult.error 
+          ? (profileResult.data as any).phone_number 
+          : null;
+        const authPhone = userData.auth_phone || null;
+        setUserPhone(profilePhone || authPhone || null);
       }
       
       if (!couponsResult.error) {
@@ -161,7 +169,6 @@ export const UserDetailPage = ({ userId, language, onBack, toast, currentUserId 
       
       if (!profileResult.error && profileResult.data) {
         setSelectedRankId(profileResult.data.rank_id);
-        setUserPhone((profileResult.data as any).phone_number || null);
       }
     } catch (error) {
       console.error('Error fetching user:', error);
