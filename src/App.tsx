@@ -14,7 +14,7 @@ import Index from "./pages/Index";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import StreamerPackageDetail from "./pages/StreamerPackageDetail";
-import About from "./pages/About";
+
 import Reviews from "./pages/Reviews";
 import Contact from "./pages/Contact";
 import Cart from "./pages/Cart";
@@ -53,7 +53,7 @@ const AnimatedRoutes = () => {
         <Route path="/products" element={<PageTransition><Products /></PageTransition>} />
         <Route path="/product/:id" element={<PageTransition><ProductDetail /></PageTransition>} />
         <Route path="/streamer-package/:id" element={<PageTransition><StreamerPackageDetail /></PageTransition>} />
-        <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+        
         <Route path="/reviews" element={<PageTransition><Reviews /></PageTransition>} />
         <Route path="/portfolio" element={<PageTransition><Portfolio /></PageTransition>} />
         <Route path="/portfolio/:id" element={<PageTransition><PortfolioDetail /></PageTransition>} />

@@ -55,9 +55,6 @@ const Navbar: React.FC = () => {
     labelEn: 'Our Works',
     labelAr: 'أعمالنا'
   }, {
-    key: 'about',
-    to: '/about'
-  }, {
     key: 'reviews',
     to: '/reviews'
   }, {
