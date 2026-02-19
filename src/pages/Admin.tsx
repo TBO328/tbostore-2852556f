@@ -25,6 +25,7 @@ import PagesManagement from '@/components/admin/PagesManagement';
 import OrdersManagement from '@/components/admin/OrdersManagement';
 import AdminSidebarNew from '@/components/admin/AdminSidebarNew';
 import AdminDashboard from '@/components/admin/AdminDashboard';
+import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
 import IconsManagement from '@/components/admin/IconsManagement';
 import AIAssistant from '@/components/admin/AIAssistant';
 import SeasonalThemesManagement from '@/components/admin/SeasonalThemesManagement';
@@ -898,6 +899,9 @@ const Admin: React.FC = () => {
 
       case 'reviews':
         return <ReviewsManagement language={language} toast={toast} />;
+
+      case 'analytics':
+        return <AnalyticsDashboard />;
 
       case 'packages':
         return <PackagesManagement />;
