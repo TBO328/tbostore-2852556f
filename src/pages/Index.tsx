@@ -352,43 +352,6 @@ const Index: React.FC = () => {
           </div>
         </section>
 
-        {/* About Preview */}
-        <section className="py-12 md:py-32 bg-gradient-hero relative overflow-hidden">
-          <div className="absolute inset-0 opacity-30">
-            <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-neon-cyan/50 to-transparent" />
-            <div className="absolute top-0 right-1/4 w-px h-full bg-gradient-to-b from-transparent via-neon-magenta/50 to-transparent" />
-          </div>
-
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="max-w-3xl mx-auto text-center">
-              <AnimatedSection>
-                <h2 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold text-foreground mb-4 md:mb-6">
-                  {getText('about', 'aboutTitle', t('aboutTitle'))}
-                </h2>
-              </AnimatedSection>
-              <AnimatedSection delay={0.1}>
-                <p className="text-sm sm:text-lg text-muted-foreground mb-6 md:mb-8 leading-relaxed px-2">
-                  {getText('about', 'aboutDescription', t('aboutDescription'))}
-                </p>
-              </AnimatedSection>
-              <AnimatedSection delay={0.2}>
-                <motion.div whileHover={{
-                scale: 1.05
-              }} whileTap={{
-                scale: 0.95
-              }}>
-                  <Link to="/about">
-                    <Button variant="neon" size="lg" className="group">
-                      {getText('about', 'learnMore', language === 'en' ? 'Learn More' : 'اعرف المزيد')}
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </Link>
-                </motion.div>
-              </AnimatedSection>
-            </div>
-          </div>
-        </section>
-
         {/* Partners Strip */}
         <PartnersStrip />
 
