@@ -27,6 +27,8 @@ interface DisplayProduct {
   isBestSeller?: boolean;
   description: string;
   descriptionAr: string;
+  rating?: number;
+  reviewsCount?: number;
 }
 
 const Products: React.FC = () => {
@@ -89,6 +91,8 @@ const Products: React.FC = () => {
           isBestSeller: false,
           description: p.description_en || '',
           descriptionAr: p.description_ar || '',
+          rating: Number(p.rating) || 0,
+          reviewsCount: p.reviews_count || 0,
         }));
         setProducts(mappedProducts);
       } else {
@@ -149,118 +153,150 @@ const Products: React.FC = () => {
     >
       <Navbar />
       <main className="pt-20">
-        {/* Epic Hero Section */}
-        <section className="py-24 md:py-32 relative overflow-hidden">
-          {/* Animated Mesh Gradient Background */}
-          <div className="absolute inset-0 bg-gradient-hero">
-            <motion.div 
+        {/* Elegant Hero Section */}
+        <section className="py-28 md:py-36 relative overflow-hidden">
+          {/* Refined Background */}
+          <div className="absolute inset-0">
+            <div 
               className="absolute inset-0"
               style={{
                 background: `
-                  radial-gradient(circle at 20% 20%, hsl(var(--neon-cyan) / 0.15) 0%, transparent 50%),
-                  radial-gradient(circle at 80% 80%, hsl(var(--neon-magenta) / 0.15) 0%, transparent 50%),
-                  radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.1) 0%, transparent 60%)
+                  radial-gradient(ellipse 80% 60% at 50% 0%, hsl(var(--primary) / 0.08) 0%, transparent 70%),
+                  radial-gradient(ellipse 60% 50% at 80% 100%, hsl(var(--secondary) / 0.06) 0%, transparent 60%)
                 `
               }}
-              animate={{
-                scale: [1, 1.1, 1],
-              }}
-              transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            />
+            {/* Subtle animated grain texture */}
+            <motion.div 
+              className="absolute inset-0 opacity-[0.015]"
+              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }}
             />
           </div>
 
-          {/* Floating Geometric Shapes */}
+          {/* Elegant floating elements */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <motion.div 
-              className="absolute top-20 left-[10%] w-32 h-32 border border-primary/30 rounded-full"
-              animate={{ 
-                y: [0, -30, 0],
-                rotate: [0, 360],
-                scale: [1, 1.1, 1]
-              }}
-              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-              style={{ x: parallaxX1, y: parallaxY1 }}
+            {/* Thin line accents */}
+            <motion.div
+              className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent"
+              animate={{ opacity: [0.3, 0.6, 0.3] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             />
-            <motion.div 
-              className="absolute bottom-32 right-[15%] w-24 h-24 border border-secondary/30"
-              style={{ 
-                borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
-                x: parallaxX2, 
-                y: parallaxY2 
-              }}
-              animate={{ 
-                rotate: [0, -360],
-                borderRadius: ['30% 70% 70% 30% / 30% 30% 70% 70%', '70% 30% 30% 70% / 70% 70% 30% 30%', '30% 70% 70% 30% / 30% 30% 70% 70%']
-              }}
-              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.div 
-              className="absolute top-1/3 right-[20%] w-20 h-20 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl backdrop-blur-sm"
-              animate={{ 
-                y: [0, 20, 0],
-                rotate: [45, 90, 45]
-              }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              style={{ x: parallaxX3, y: parallaxY3 }}
+            <motion.div
+              className="absolute bottom-1/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-secondary/15 to-transparent"
+              animate={{ opacity: [0.2, 0.5, 0.2] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
             />
             
-            {/* Glowing Orbs - Reduced blur for cleaner look */}
+            {/* Floating diamond shapes */}
+            <motion.div
+              className="absolute top-16 right-[12%] w-3 h-3 rotate-45 border border-primary/30"
+              animate={{ y: [0, -15, 0], opacity: [0.4, 0.8, 0.4] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              style={{ x: parallaxX1 }}
+            />
+            <motion.div
+              className="absolute bottom-24 left-[8%] w-2 h-2 rotate-45 bg-secondary/30"
+              animate={{ y: [0, 12, 0], opacity: [0.3, 0.7, 0.3] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              style={{ x: parallaxX2 }}
+            />
+            <motion.div
+              className="absolute top-1/2 left-[18%] w-4 h-4 rotate-45 border border-primary/15"
+              animate={{ y: [0, -10, 0], rotate: [45, 90, 45] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              style={{ x: parallaxX3 }}
+            />
+            
+            {/* Soft glow orbs */}
             <motion.div 
-              className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-cyan/10 rounded-full blur-3xl"
-              animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.3, 0.2] }}
-              transition={{ duration: 6, repeat: Infinity }}
+              className="absolute top-1/3 left-1/3 w-64 h-64 bg-primary/5 rounded-full blur-[100px]"
+              animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }}
+              transition={{ duration: 8, repeat: Infinity }}
             />
             <motion.div 
-              className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-neon-magenta/10 rounded-full blur-3xl"
-              animate={{ scale: [1.1, 1, 1.1], opacity: [0.15, 0.25, 0.15] }}
-              transition={{ duration: 8, repeat: Infinity, delay: 1 }}
+              className="absolute bottom-1/4 right-1/3 w-72 h-72 bg-secondary/5 rounded-full blur-[100px]"
+              animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.4, 0.2] }}
+              transition={{ duration: 10, repeat: Infinity, delay: 2 }}
             />
           </div>
           
           <div className="container mx-auto px-4 relative z-10">
-            <div className="text-center max-w-4xl mx-auto">
-              {/* Animated Title with Split Effect */}
+            <div className="text-center max-w-3xl mx-auto">
+              {/* Decorative top element */}
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
+                className="flex items-center justify-center gap-3 mb-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.6 }}
               >
-                <motion.h1 
-                  className="font-display text-5xl md:text-6xl lg:text-7xl font-bold mb-8"
-                >
-                  <motion.span 
-                    className="block text-foreground mb-2"
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2, duration: 0.6 }}
-                  >
-                    {language === 'en' ? 'Our' : 'منتجاتنا'}
-                  </motion.span>
-                  <motion.span 
-                    className="block text-gradient-neon glow-text-cyan"
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 0.6 }}
-                  >
-                    {language === 'en' ? 'Products' : 'المميزة'}
-                  </motion.span>
-                </motion.h1>
+                <div className="w-8 h-px bg-gradient-to-r from-transparent to-primary/60" />
+                <Sparkles className="w-4 h-4 text-primary/60" />
+                <span className="text-xs font-semibold tracking-[0.3em] uppercase text-primary/70">
+                  {language === 'en' ? 'Premium Collection' : 'مجموعة مميزة'}
+                </span>
+                <Sparkles className="w-4 h-4 text-primary/60" />
+                <div className="w-8 h-px bg-gradient-to-l from-transparent to-primary/60" />
               </motion.div>
+
+              {/* Title */}
+              <motion.h1 
+                className="font-display text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-[1.1]"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.7 }}
+              >
+                <span className="text-foreground">
+                  {language === 'en' ? 'Explore Our ' : 'استكشف '}
+                </span>
+                <span className="relative inline-block">
+                  <span className="text-gradient-neon">
+                    {language === 'en' ? 'Products' : 'منتجاتنا'}
+                  </span>
+                  <motion.div
+                    className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary rounded-full"
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ delay: 0.8, duration: 0.6, ease: "easeOut" }}
+                  />
+                </span>
+              </motion.h1>
 
               {/* Subtitle */}
               <motion.p 
-                className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
-                initial={{ opacity: 0, y: 30 }}
+                className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed"
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.6 }}
+                transition={{ delay: 0.5, duration: 0.6 }}
               >
                 {language === 'en'
-                  ? 'Discover premium digital products crafted for creators'
-                  : 'اكتشف منتجات رقمية مميزة صممت للمبدعين'}
+                  ? 'Handpicked digital products designed to elevate your creative journey'
+                  : 'منتجات رقمية مختارة بعناية لتعزيز رحلتك الإبداعية'}
               </motion.p>
+
+              {/* Stats bar */}
+              <motion.div
+                className="flex items-center justify-center gap-8 mt-10"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7, duration: 0.5 }}
+              >
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-foreground">{products.length}+</p>
+                  <p className="text-xs text-muted-foreground">{language === 'en' ? 'Products' : 'منتج'}</p>
+                </div>
+                <div className="w-px h-8 bg-border" />
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-foreground">{allCategories.length - 1}</p>
+                  <p className="text-xs text-muted-foreground">{language === 'en' ? 'Categories' : 'فئة'}</p>
+                </div>
+                <div className="w-px h-8 bg-border" />
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-primary">⭐</p>
+                  <p className="text-xs text-muted-foreground">{language === 'en' ? 'Top Quality' : 'جودة عالية'}</p>
+                </div>
+              </motion.div>
             </div>
           </div>
-
         </section>
 
         {/* Products Section */}

@@ -288,10 +288,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
             {[1, 2, 3, 4, 5].map((star) => (
               <Star 
                 key={star} 
-                className={`w-4 h-4 ${star <= 4 ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/30'}`}
+                className={`w-4 h-4 ${star <= Math.floor(product.rating || 0) ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/30'}`}
               />
             ))}
-            <span className="text-xs text-muted-foreground ml-1">(4.0)</span>
+            <span className="text-xs text-muted-foreground ml-1">
+              ({(product.rating || 0).toFixed(1)}) • {product.reviewsCount || 0}
+            </span>
           </div>
 
           {/* Price */}
