@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Heart, ArrowLeft, Plus, Minus, Check, Loader2, Star, Shield, Truck, RefreshCw } from 'lucide-react';
@@ -15,6 +15,7 @@ import DesignOptionsForm, { DesignOptions } from '@/components/DesignOptionsForm
 import PricingOptionsSelector, { PricingOption } from '@/components/PricingOptionsSelector';
 import ProductPointsBadge from '@/components/ProductPointsBadge';
 import { toast } from 'sonner';
+import ProductReviews from '@/components/ProductReviews';
 import { supabase } from '@/integrations/supabase/client';
 import { products as localProducts, Product } from '@/data/products';
 
@@ -39,6 +40,13 @@ const ProductDetail: React.FC = () => {
   
   // Pricing options state
   const [selectedPricingOption, setSelectedPricingOption] = useState<PricingOption | null>(null);
+  const [liveRating, setLiveRating] = useState<number | null>(null);
+  const [liveReviewsCount, setLiveReviewsCount] = useState<number | null>(null);
+
+  const handleRatingUpdate = useCallback((avgRating: number, count: number) => {
+    setLiveRating(avgRating);
+    setLiveReviewsCount(count);
+  }, []);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -296,7 +304,7 @@ const ProductDetail: React.FC = () => {
                       <Star
                         key={i}
                         className={`w-5 h-5 ${
-                          i < Math.floor(product.rating || 5)
+                          i < Math.floor(liveRating ?? product.rating ?? 5)
                             ? 'text-yellow-400 fill-yellow-400'
                             : 'text-muted'
                         }`}
@@ -304,7 +312,7 @@ const ProductDetail: React.FC = () => {
                     ))}
                   </div>
                   <span className="text-muted-foreground">
-                    ({product.rating || 5}.0) • {product.reviewsCount || 0} {language === 'ar' ? 'تقييم' : 'reviews'}
+                    ({(liveRating ?? product.rating ?? 5).toFixed(1)}) • {liveReviewsCount ?? product.reviewsCount ?? 0} {language === 'ar' ? 'تقييم' : 'reviews'}
                   </span>
                 </motion.div>
 
@@ -344,16 +352,6 @@ const ProductDetail: React.FC = () => {
                     />
                   </motion.div>
                 )}
-                <motion.div 
-                  className="flex items-center gap-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.7 }}
-                >
-                  <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-green-500 font-medium">{t('inStock')}</span>
-                </motion.div>
-
                 {/* Stock Status */}
                 <motion.div 
                   className="flex items-center gap-2"
@@ -487,6 +485,15 @@ const ProductDetail: React.FC = () => {
               </div>
             </AnimatedSection>
           </div>
+
+          {/* Product Reviews */}
+          {typeof product.id === 'string' && product.id.includes('-') && (
+            <section className="mt-24">
+              <AnimatedSection>
+                <ProductReviews productId={product.id as string} onRatingUpdate={handleRatingUpdate} />
+              </AnimatedSection>
+            </section>
+          )}
 
           {/* Related Products */}
           {relatedProducts.length > 0 && (
