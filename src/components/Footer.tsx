@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Instagram } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCategories } from '@/hooks/useCategories';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
 import footerWave from '@/assets/footer-wave.png';
 
 const Footer: React.FC = () => {
   const { t, language } = useLanguage();
+  const { categories: dbCategories } = useCategories();
 
   const quickLinks = [
     { label: { en: 'Home', ar: 'الرئيسية' }, to: '/' },
@@ -17,12 +19,10 @@ const Footer: React.FC = () => {
     { label: { en: 'Contact', ar: 'اتصل بنا' }, to: '/contact' },
   ];
 
-  const categories = [
-    { label: { en: 'Subscriptions', ar: 'اشتراكات' }, to: '/products' },
-    { label: { en: 'Designs', ar: 'تصاميم' }, to: '/products' },
-    { label: { en: 'Engagement', ar: 'تفاعل' }, to: '/products' },
-    { label: { en: 'Discord', ar: 'ديسكورد' }, to: '/products' },
-  ];
+  const categories = dbCategories.map(cat => ({
+    label: { en: cat.label_en, ar: cat.label_ar },
+    to: '/products',
+  }));
 
   return (
     <>
