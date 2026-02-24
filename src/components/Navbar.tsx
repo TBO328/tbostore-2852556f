@@ -98,7 +98,9 @@ const Navbar: React.FC = () => {
               <div className="relative">
                 {/* Animated glow ring */}
                 <motion.div 
-                  className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/40 to-secondary/40 blur-lg scale-[1.8] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/40 to-secondary/40 blur-lg scale-[1.8]"
+                  animate={{ opacity: [0.5, 0.8, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                 />
                 <motion.img src={tboStoreLogo} alt="TBO Store" className="relative h-10 md:h-12 w-auto" whileHover={{
                 scale: 1.1,
