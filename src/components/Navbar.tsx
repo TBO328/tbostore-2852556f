@@ -90,17 +90,19 @@ const Navbar: React.FC = () => {
       {/* Search Dialog */}
       <SearchDialog isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/60 backdrop-blur-2xl border-b border-border/40 shadow-sm shadow-primary/5">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-3 group">
               <div className="relative">
-                {/* Neon glow background for light mode */}
-                <div className="absolute inset-0 bg-primary/30 dark:bg-transparent rounded-full blur-xl scale-150 opacity-80" />
-                <motion.img src={tboStoreLogo} alt="TBO Store" className="relative h-10 md:h-12 w-auto drop-shadow-[0_0_8px_hsl(var(--primary))]" whileHover={{
+                {/* Animated glow ring */}
+                <motion.div 
+                  className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/40 to-secondary/40 blur-lg scale-[1.8] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                />
+                <motion.img src={tboStoreLogo} alt="TBO Store" className="relative h-10 md:h-12 w-auto" whileHover={{
                 scale: 1.1,
-                filter: 'drop-shadow(0 0 12px hsl(var(--primary)))'
+                rotate: [0, -5, 5, 0],
               }} whileTap={{
                 scale: 0.95
               }} transition={{
@@ -109,20 +111,23 @@ const Navbar: React.FC = () => {
                 damping: 17
               }} />
               </div>
-              <span className="hidden md:inline font-display text-xl md:text-2xl font-bold text-foreground">
-                TBO <span className="text-primary glow-text-cyan">STORE</span>
-              </span>
+              <div className="hidden md:flex flex-col">
+                <span className="font-display text-xl md:text-2xl font-bold text-foreground leading-none">
+                  TBO <span className="text-primary">STORE</span>
+                </span>
+                <span className="text-[10px] text-muted-foreground tracking-[0.2em] uppercase">Digital Products</span>
+              </div>
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
-              {navLinks.map(link => <Link key={link.key} to={link.to} className={`relative text-sm font-medium transition-colors duration-300 font-arabic ${isActive(link.to) ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
-                  {'labelEn' in link ? (language === 'ar' ? link.labelAr : link.labelEn) : t(link.key)}
-                  {isActive(link.to) && <motion.div layoutId="navbar-indicator" className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full" transition={{
+            <div className="hidden md:flex items-center gap-1 bg-muted/30 rounded-2xl px-2 py-1.5 border border-border/30">
+              {navLinks.map(link => <Link key={link.key} to={link.to} className={`relative px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 font-arabic ${isActive(link.to) ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                  {isActive(link.to) && <motion.div layoutId="navbar-pill" className="absolute inset-0 bg-gradient-to-r from-primary to-secondary rounded-xl shadow-lg shadow-primary/25" transition={{
                 type: 'spring',
                 stiffness: 350,
                 damping: 30
               }} />}
+                  <span className="relative z-10">{'labelEn' in link ? (language === 'ar' ? link.labelAr : link.labelEn) : t(link.key)}</span>
                 </Link>)}
             </div>
 

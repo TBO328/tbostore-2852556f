@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from '@/components/ProductCard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
@@ -38,28 +37,6 @@ const Products: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { categories: dbCategories, loading: categoriesLoading } = useCategories();
   
-  // Parallax effect state
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  // Smooth spring animations for parallax
-  const parallaxX1 = useSpring(useTransform(mouseX, [0, 1], [-30, 30]), { stiffness: 100, damping: 30 });
-  const parallaxY1 = useSpring(useTransform(mouseY, [0, 1], [-30, 30]), { stiffness: 100, damping: 30 });
-  const parallaxX2 = useSpring(useTransform(mouseX, [0, 1], [40, -40]), { stiffness: 80, damping: 25 });
-  const parallaxY2 = useSpring(useTransform(mouseY, [0, 1], [40, -40]), { stiffness: 80, damping: 25 });
-  const parallaxX3 = useSpring(useTransform(mouseX, [0, 1], [-20, 20]), { stiffness: 120, damping: 35 });
-  const parallaxY3 = useSpring(useTransform(mouseY, [0, 1], [-20, 20]), { stiffness: 120, damping: 35 });
-
-  // Handle mouse move for parallax
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
-    mouseX.set(x);
-    mouseY.set(y);
-  };
 
   useEffect(() => {
     fetchProducts();
@@ -146,155 +123,41 @@ const Products: React.FC = () => {
   };
 
   return (
-    <div 
-      ref={containerRef}
-      className="min-h-screen bg-background"
-      onMouseMove={handleMouseMove}
-    >
+    <div className="min-h-screen bg-background">
       <Navbar />
       <main className="pt-20">
-        {/* Elegant Hero Section */}
-        <section className="py-28 md:py-36 relative overflow-hidden">
-          {/* Refined Background */}
+        {/* Hero Section */}
+        <section className="py-16 md:py-24 relative overflow-hidden">
           <div className="absolute inset-0">
-            <div 
-              className="absolute inset-0"
-              style={{
-                background: `
-                  radial-gradient(ellipse 80% 60% at 50% 0%, hsl(var(--primary) / 0.08) 0%, transparent 70%),
-                  radial-gradient(ellipse 60% 50% at 80% 100%, hsl(var(--secondary) / 0.06) 0%, transparent 60%)
-                `
-              }}
-            />
-            {/* Subtle animated grain texture */}
-            <motion.div 
-              className="absolute inset-0 opacity-[0.015]"
-              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }}
-            />
-          </div>
-
-          {/* Elegant floating elements */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {/* Thin line accents */}
-            <motion.div
-              className="absolute top-1/4 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent"
-              animate={{ opacity: [0.3, 0.6, 0.3] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.div
-              className="absolute bottom-1/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-secondary/15 to-transparent"
-              animate={{ opacity: [0.2, 0.5, 0.2] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            />
-            
-            {/* Floating diamond shapes */}
-            <motion.div
-              className="absolute top-16 right-[12%] w-3 h-3 rotate-45 border border-primary/30"
-              animate={{ y: [0, -15, 0], opacity: [0.4, 0.8, 0.4] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              style={{ x: parallaxX1 }}
-            />
-            <motion.div
-              className="absolute bottom-24 left-[8%] w-2 h-2 rotate-45 bg-secondary/30"
-              animate={{ y: [0, 12, 0], opacity: [0.3, 0.7, 0.3] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-              style={{ x: parallaxX2 }}
-            />
-            <motion.div
-              className="absolute top-1/2 left-[18%] w-4 h-4 rotate-45 border border-primary/15"
-              animate={{ y: [0, -10, 0], rotate: [45, 90, 45] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              style={{ x: parallaxX3 }}
-            />
-            
-            {/* Soft glow orbs */}
-            <motion.div 
-              className="absolute top-1/3 left-1/3 w-64 h-64 bg-primary/5 rounded-full blur-[100px]"
-              animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }}
-              transition={{ duration: 8, repeat: Infinity }}
-            />
-            <motion.div 
-              className="absolute bottom-1/4 right-1/3 w-72 h-72 bg-secondary/5 rounded-full blur-[100px]"
-              animate={{ scale: [1.1, 1, 1.1], opacity: [0.2, 0.4, 0.2] }}
-              transition={{ duration: 10, repeat: Infinity, delay: 2 }}
-            />
+            <div className="absolute top-1/3 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+            <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-secondary/5 rounded-full blur-3xl" />
           </div>
           
           <div className="container mx-auto px-4 relative z-10">
             <div className="text-center max-w-3xl mx-auto">
-              {/* Decorative top element */}
-              <motion.div
-                className="flex items-center justify-center gap-3 mb-8"
+              <motion.h1 
+                className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.6 }}
-              >
-                <div className="w-8 h-px bg-gradient-to-r from-transparent to-primary/60" />
-                <Sparkles className="w-4 h-4 text-primary/60" />
-                <span className="text-xs font-semibold tracking-[0.3em] uppercase text-primary/70">
-                  {language === 'en' ? 'Premium Collection' : 'مجموعة مميزة'}
-                </span>
-                <Sparkles className="w-4 h-4 text-primary/60" />
-                <div className="w-8 h-px bg-gradient-to-l from-transparent to-primary/60" />
-              </motion.div>
-
-              {/* Title */}
-              <motion.h1 
-                className="font-display text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-[1.1]"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.7 }}
+                transition={{ duration: 0.6 }}
               >
                 <span className="text-foreground">
-                  {language === 'en' ? 'Explore Our ' : 'استكشف '}
+                  {language === 'en' ? 'Our ' : ''}
                 </span>
-                <span className="relative inline-block">
-                  <span className="text-gradient-neon">
-                    {language === 'en' ? 'Products' : 'منتجاتنا'}
-                  </span>
-                  <motion.div
-                    className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary rounded-full"
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ delay: 0.8, duration: 0.6, ease: "easeOut" }}
-                  />
+                <span className="text-gradient-neon">
+                  {language === 'en' ? 'Products' : 'منتجاتنا'}
                 </span>
               </motion.h1>
-
-              {/* Subtitle */}
               <motion.p 
-                className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed"
-                initial={{ opacity: 0, y: 20 }}
+                className="text-muted-foreground text-lg max-w-xl mx-auto"
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.6 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
               >
                 {language === 'en'
-                  ? 'Handpicked digital products designed to elevate your creative journey'
-                  : 'منتجات رقمية مختارة بعناية لتعزيز رحلتك الإبداعية'}
+                  ? 'Discover our premium digital products'
+                  : 'اكتشف منتجاتنا الرقمية المميزة'}
               </motion.p>
-
-              {/* Stats bar */}
-              <motion.div
-                className="flex items-center justify-center gap-8 mt-10"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-              >
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-foreground">{products.length}+</p>
-                  <p className="text-xs text-muted-foreground">{language === 'en' ? 'Products' : 'منتج'}</p>
-                </div>
-                <div className="w-px h-8 bg-border" />
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-foreground">{allCategories.length - 1}</p>
-                  <p className="text-xs text-muted-foreground">{language === 'en' ? 'Categories' : 'فئة'}</p>
-                </div>
-                <div className="w-px h-8 bg-border" />
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-primary">⭐</p>
-                  <p className="text-xs text-muted-foreground">{language === 'en' ? 'Top Quality' : 'جودة عالية'}</p>
-                </div>
-              </motion.div>
             </div>
           </div>
         </section>
