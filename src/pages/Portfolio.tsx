@@ -109,11 +109,7 @@ const Portfolio: React.FC = () => {
           </AnimatedSection>
 
           {/* Loading */}
-          {loading ? (
-            <div className="flex justify-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          ) : filteredItems.length === 0 ? (
+          {filteredItems.length === 0 && !loading ? (
             <div className="text-center py-16">
               <Image className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground text-lg">

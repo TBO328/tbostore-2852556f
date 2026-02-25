@@ -74,15 +74,7 @@ const Favorites: React.FC = () => {
   }, [favorites, favoritesLoading]);
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="pt-24 flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-        <Footer />
-      </div>
-    );
+    return null;
   }
 
   return (

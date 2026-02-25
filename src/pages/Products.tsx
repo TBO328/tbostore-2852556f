@@ -214,30 +214,7 @@ const Products: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Loading State */}
-            {loading ? (
-              <motion.div 
-                className="flex flex-col items-center justify-center py-24"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <motion.div
-                  className="relative w-20 h-20"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                >
-                  <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
-                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary" />
-                </motion.div>
-                <motion.p 
-                  className="mt-6 text-muted-foreground"
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  {language === 'en' ? 'Loading products...' : 'جاري تحميل المنتجات...'}
-                </motion.p>
-              </motion.div>
-            ) : (
+            {!loading && (
               <>
                 {/* Streamer Packages - Show only for specific categories, NOT for All */}
                 {activeCategory !== 'All' && (
