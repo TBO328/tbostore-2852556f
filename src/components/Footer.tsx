@@ -27,7 +27,7 @@ const Footer: React.FC = () => {
   return (
     <>
       {/* Wave Background - Below all content but above background */}
-      <div className="w-full h-80 md:h-[500px] -mt-32 md:-mt-48 relative pointer-events-none -z-10">
+      <div className="w-full h-80 md:h-[500px] -mt-32 md:-mt-48 relative pointer-events-none" style={{ zIndex: 0 }}>
         <img 
           src={footerWave} 
           alt="" 
