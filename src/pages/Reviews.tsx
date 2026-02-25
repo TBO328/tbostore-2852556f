@@ -97,11 +97,7 @@ const Reviews: React.FC = () => {
               </div>
             </AnimatedSection>
 
-            {loading ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              </div>
-            ) : reviews.length > 0 ? (
+            {reviews.length > 0 ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {reviews.map((review, index) => (
                   <AnimatedSection key={review.id} delay={index * 0.1}>

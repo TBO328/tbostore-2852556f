@@ -79,8 +79,10 @@ const PortfolioDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="pt-32 pb-16" />
+        <Footer />
       </div>
     );
   }
