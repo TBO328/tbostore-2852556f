@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Trash2, Plus, Minus } from 'lucide-react';
+import { Trash2, Plus, Minus, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -14,6 +14,8 @@ interface CartItemProps {
     price: number;
     quantity: number;
     image: string;
+    activationEmail?: string;
+    requiresEmail?: boolean;
   };
   index: number;
   onUpdateQuantity: (id: string | number, quantity: number) => void;
@@ -133,6 +135,12 @@ const CartItem3D: React.FC<CartItemProps> = ({ item, index, onUpdateQuantity, on
           <p className="text-primary font-bold mt-1">
             {formatPrice(item.price)}
           </p>
+          {item.activationEmail && (
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <Mail className="w-3 h-3" />
+              {item.activationEmail}
+            </p>
+          )}
         </div>
 
         {/* Quantity & Actions */}
