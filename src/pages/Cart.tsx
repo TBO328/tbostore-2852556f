@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, MessageCircle, Building2, Copy, Check, Loader2, Tag, X, CreditCard, Crown } from 'lucide-react';
+import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, MessageCircle, Building2, Copy, Check, Loader2, Tag, X, CreditCard, Crown, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -266,7 +266,7 @@ const Cart: React.FC = () => {
       const { data: orderNumberData } = await supabase.rpc('generate_order_number');
       const orderNumber = orderNumberData || `TBO-${Date.now()}`;
 
-      // Build notes with coupon and points info
+      // Build notes with coupon, points, and activation email info
       let notes = '';
       if (appliedCoupon) {
         notes += `Coupon: ${appliedCoupon.code} (-${appliedCoupon.discount}%)`;
@@ -274,6 +274,14 @@ const Cart: React.FC = () => {
       if (redeemedPoints > 0) {
         notes += notes ? ', ' : '';
         notes += `Points: ${redeemedPoints} (-${formatPrice(pointsDiscount)})`;
+      }
+      // Add activation emails from cart items
+      const activationEmails = items.filter(item => item.activationEmail).map(item => 
+        `${language === 'ar' ? item.nameAr : item.name}: ${item.activationEmail}`
+      );
+      if (activationEmails.length > 0) {
+        notes += notes ? ' | ' : '';
+        notes += `Activation Emails: ${activationEmails.join(', ')}`;
       }
 
       // Insert order with validated data
@@ -765,7 +773,7 @@ const Cart: React.FC = () => {
                           </>
                         ) : (
                           <>
-                            <MessageCircle className="w-5 h-5 mr-2" />
+                            <CheckCircle className="w-5 h-5 mr-2" />
                             {t('confirmOrder')}
                           </>
                         )}

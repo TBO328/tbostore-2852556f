@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Heart, ArrowLeft, Plus, Minus, Check, Loader2, Star, Shield, Truck, RefreshCw } from 'lucide-react';
+import { ShoppingCart, Heart, ArrowLeft, Plus, Minus, Check, Loader2, Star, Shield, Truck, RefreshCw, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
 import Navbar from '@/components/Navbar';
@@ -22,6 +23,8 @@ import { products as localProducts, Product } from '@/data/products';
 interface ExtendedProduct extends Product {
   has_pricing_options?: boolean;
   pricing_options?: PricingOption[] | null;
+  requires_email?: boolean;
+  subscription_duration?: string | null;
 }
 
 const ProductDetail: React.FC = () => {
@@ -32,6 +35,7 @@ const ProductDetail: React.FC = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
   const [designOptions, setDesignOptions] = useState<DesignOptions | null>(null);
+  const [activationEmail, setActivationEmail] = useState('');
   const imageRef = useRef<HTMLDivElement>(null);
   const [product, setProduct] = useState<ExtendedProduct | null>(null);
   const [productImages, setProductImages] = useState<string[]>([]);
@@ -102,6 +106,8 @@ const ProductDetail: React.FC = () => {
         rating: Number(data.rating) || 5,
         reviewsCount: data.reviews_count || 0,
         inStock: data.in_stock !== false,
+        requires_email: data.requires_email ?? false,
+        subscription_duration: data.subscription_duration || null,
         has_pricing_options: data.has_pricing_options ?? false,
         pricing_options: Array.isArray(data.pricing_options) 
           ? (data.pricing_options as unknown as PricingOption[]).map(opt => ({
@@ -186,6 +192,12 @@ const ProductDetail: React.FC = () => {
     : product.price;
 
   const handleAddToCart = () => {
+    // Validate activation email if required
+    if (product.requires_email && !activationEmail.trim()) {
+      toast.error(language === 'ar' ? 'يرجى إدخال البريد الإلكتروني للتفعيل' : 'Please enter the activation email');
+      return;
+    }
+
     if (imageRef.current && cartIconRef.current) {
       const imageRect = imageRef.current.getBoundingClientRect();
       triggerFlyAnimation(
@@ -206,6 +218,10 @@ const ProductDetail: React.FC = () => {
         nameAr: product.nameAr + optionLabel,
         price: currentPrice,
         image: product.image,
+        ...(product.requires_email && activationEmail.trim() ? { 
+          activationEmail: activationEmail.trim(),
+          requiresEmail: true 
+        } : {}),
       });
     }
     
@@ -362,6 +378,41 @@ const ProductDetail: React.FC = () => {
                   <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
                   <span className="text-green-500 font-medium">{t('inStock')}</span>
                 </motion.div>
+
+                {/* Activation Email Input - for products requiring email */}
+                {product.requires_email && (
+                  <motion.div
+                    className="p-5 rounded-2xl bg-gradient-card border border-primary/30 space-y-3"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.75 }}
+                  >
+                    <h3 className="font-display font-semibold text-lg text-foreground flex items-center gap-2">
+                      <Mail className="w-5 h-5 text-primary" />
+                      {language === 'ar' ? 'البريد الإلكتروني للتفعيل' : 'Activation Email'}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {language === 'ar' 
+                        ? 'أدخل البريد الإلكتروني المراد تفعيل الخدمة عليه'
+                        : 'Enter the email address to activate the service on'}
+                    </p>
+                    <Input
+                      type="email"
+                      value={activationEmail}
+                      onChange={(e) => setActivationEmail(e.target.value)}
+                      placeholder={language === 'ar' ? 'example@email.com' : 'example@email.com'}
+                      className="w-full"
+                      dir="ltr"
+                    />
+                    {product.subscription_duration && (
+                      <p className="text-xs text-muted-foreground">
+                        {language === 'ar' 
+                          ? `مدة الاشتراك: ${product.subscription_duration}`
+                          : `Subscription duration: ${product.subscription_duration}`}
+                      </p>
+                    )}
+                  </motion.div>
+                )}
 
                 {/* Description Card */}
                 <motion.div 

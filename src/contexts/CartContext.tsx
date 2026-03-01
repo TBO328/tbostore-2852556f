@@ -19,6 +19,8 @@ export interface CartItem {
   image: string;
   quantity: number;
   customization?: CartItemCustomization;
+  activationEmail?: string;
+  requiresEmail?: boolean;
 }
 
 interface CartContextType {
