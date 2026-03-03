@@ -25,6 +25,8 @@ interface ExtendedProduct extends Product {
   pricing_options?: PricingOption[] | null;
   requires_email?: boolean;
   subscription_duration?: string | null;
+  activation_instructions_en?: string | null;
+  activation_instructions_ar?: string | null;
 }
 
 const ProductDetail: React.FC = () => {
@@ -108,6 +110,8 @@ const ProductDetail: React.FC = () => {
         inStock: data.in_stock !== false,
         requires_email: data.requires_email ?? false,
         subscription_duration: data.subscription_duration || null,
+        activation_instructions_en: (data as unknown as { activation_instructions_en?: string }).activation_instructions_en || null,
+        activation_instructions_ar: (data as unknown as { activation_instructions_ar?: string }).activation_instructions_ar || null,
         has_pricing_options: data.has_pricing_options ?? false,
         pricing_options: Array.isArray(data.pricing_options) 
           ? (data.pricing_options as unknown as PricingOption[]).map(opt => ({
@@ -410,6 +414,20 @@ const ProductDetail: React.FC = () => {
                           ? `مدة الاشتراك: ${product.subscription_duration}`
                           : `Subscription duration: ${product.subscription_duration}`}
                       </p>
+                    )}
+                    {/* Activation Instructions */}
+                    {(product.activation_instructions_ar || product.activation_instructions_en) && (
+                      <div className="mt-3 p-3 rounded-xl bg-muted/50 border border-border">
+                        <h4 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-1.5">
+                          <Shield className="w-4 h-4 text-primary" />
+                          {language === 'ar' ? 'طريقة التفعيل' : 'Activation Instructions'}
+                        </h4>
+                        <p className="text-sm text-muted-foreground whitespace-pre-line">
+                          {language === 'ar' 
+                            ? (product.activation_instructions_ar || product.activation_instructions_en) 
+                            : (product.activation_instructions_en || product.activation_instructions_ar)}
+                        </p>
+                      </div>
                     )}
                   </motion.div>
                 )}
