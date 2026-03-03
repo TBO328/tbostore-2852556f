@@ -26,20 +26,18 @@ const Footer: React.FC = () => {
 
   return (
     <>
-      {/* Wave Background - Below all content but above background */}
-      <div className="w-full h-80 md:h-[500px] -mt-32 md:-mt-48 relative pointer-events-none" style={{ zIndex: 1 }}>
+      {/* Wave Background */}
+      <div className="w-full h-80 md:h-[500px] -mb-1 pointer-events-none relative">
         <img 
           src={footerWave} 
           alt="" 
           className="w-full h-full object-cover"
         />
-        {/* Seamless blend at top */}
         <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-background to-transparent" />
-        {/* Seamless blend at bottom */}
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-card to-transparent" />
       </div>
 
-      <footer className="bg-card border-t border-border relative overflow-hidden" style={{ zIndex: 2 }}>
+      <footer className="bg-card border-t border-border relative overflow-hidden">
         {/* Background Effects */}
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-neon-cyan/5 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-neon-magenta/5 rounded-full blur-3xl" />
