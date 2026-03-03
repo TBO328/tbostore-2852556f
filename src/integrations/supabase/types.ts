@@ -636,6 +636,8 @@ export type Database = {
       }
       products: {
         Row: {
+          activation_instructions_ar: string | null
+          activation_instructions_en: string | null
           category: string
           created_at: string
           description_ar: string | null
@@ -657,6 +659,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          activation_instructions_ar?: string | null
+          activation_instructions_en?: string | null
           category: string
           created_at?: string
           description_ar?: string | null
@@ -678,6 +682,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          activation_instructions_ar?: string | null
+          activation_instructions_en?: string | null
           category?: string
           created_at?: string
           description_ar?: string | null

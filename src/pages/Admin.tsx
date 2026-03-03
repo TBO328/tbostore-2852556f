@@ -128,7 +128,11 @@ const Admin: React.FC = () => {
     original_price: '',
     category: '',
     image_url: '',
-    in_stock: true
+    in_stock: true,
+    requires_email: false,
+    subscription_duration: '',
+    activation_instructions_en: '',
+    activation_instructions_ar: '',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -349,7 +353,11 @@ const Admin: React.FC = () => {
         images: allImages,
         in_stock: productForm.in_stock,
         has_pricing_options: hasPricingOptions && pricingOptions.length > 0,
-        pricing_options: pricingOptionsData
+        pricing_options: pricingOptionsData,
+        requires_email: productForm.requires_email,
+        subscription_duration: productForm.subscription_duration || null,
+        activation_instructions_en: productForm.activation_instructions_en || null,
+        activation_instructions_ar: productForm.activation_instructions_ar || null,
       };
 
       if (editingProduct) {
@@ -387,7 +395,11 @@ const Admin: React.FC = () => {
       original_price: '',
       category: '',
       image_url: '',
-      in_stock: true
+      in_stock: true,
+      requires_email: false,
+      subscription_duration: '',
+      activation_instructions_en: '',
+      activation_instructions_ar: '',
     });
     setImageFile(null);
     setImagePreview(null);
@@ -407,7 +419,11 @@ const Admin: React.FC = () => {
       original_price: product.original_price?.toString() || '',
       category: product.category,
       image_url: product.image_url || '',
-      in_stock: product.in_stock ?? true
+      in_stock: product.in_stock ?? true,
+      requires_email: product.requires_email ?? false,
+      subscription_duration: product.subscription_duration || '',
+      activation_instructions_en: (product as unknown as { activation_instructions_en?: string }).activation_instructions_en || '',
+      activation_instructions_ar: (product as unknown as { activation_instructions_ar?: string }).activation_instructions_ar || '',
     });
     setImagePreview(product.image_url || null);
     setImageFile(null);
@@ -831,6 +847,48 @@ const Admin: React.FC = () => {
                       options={pricingOptions}
                       onOptionsChange={setPricingOptions}
                     />
+
+                    {/* Requires Email Toggle */}
+                    <div className="space-y-3 p-4 rounded-xl border border-border bg-card/50">
+                      <div className="flex items-center gap-2">
+                        <Switch checked={productForm.requires_email} onCheckedChange={checked => setProductForm({ ...productForm, requires_email: checked })} />
+                        <Label>{language === 'en' ? 'Requires Activation Email' : 'يتطلب بريد إلكتروني للتفعيل'}</Label>
+                      </div>
+                      
+                      {productForm.requires_email && (
+                        <div className="space-y-3 pt-2">
+                          <div className="space-y-2">
+                            <Label>{language === 'en' ? 'Subscription Duration' : 'مدة الاشتراك'}</Label>
+                            <Input 
+                              value={productForm.subscription_duration} 
+                              onChange={e => setProductForm({ ...productForm, subscription_duration: e.target.value })} 
+                              placeholder={language === 'en' ? 'e.g. 1 Month, 1 Year' : 'مثال: شهر واحد، سنة'}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                              <Label>{language === 'en' ? 'Activation Instructions (EN)' : 'طريقة التفعيل (EN)'}</Label>
+                              <Textarea 
+                                value={productForm.activation_instructions_en} 
+                                onChange={e => setProductForm({ ...productForm, activation_instructions_en: e.target.value })} 
+                                placeholder={language === 'en' ? 'How to activate the subscription...' : 'كيفية تفعيل الاشتراك...'}
+                                rows={3}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>{language === 'en' ? 'طريقة التفعيل (عربي)' : 'طريقة التفعيل (عربي)'}</Label>
+                              <Textarea 
+                                value={productForm.activation_instructions_ar} 
+                                onChange={e => setProductForm({ ...productForm, activation_instructions_ar: e.target.value })} 
+                                placeholder={language === 'en' ? 'طريقة تفعيل الاشتراك...' : 'طريقة تفعيل الاشتراك...'}
+                                dir="rtl"
+                                rows={3}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     <div className="flex items-center gap-2">
                       <Switch checked={productForm.in_stock} onCheckedChange={checked => setProductForm({ ...productForm, in_stock: checked })} />
