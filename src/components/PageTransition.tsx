@@ -42,7 +42,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
         exit="out"
         variants={pageVariants}
         transition={pageTransition}
-        className="min-h-screen"
+        className="min-h-screen relative z-10"
       >
         {children}
       </motion.div>
