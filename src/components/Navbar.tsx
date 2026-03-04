@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingCart, Search, Moon, Sun, DollarSign, BadgeCheck } from 'lucide-react';
+import { Menu, X, Search, Moon, Sun, DollarSign, BadgeCheck, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
@@ -272,7 +272,7 @@ const Navbar: React.FC = () => {
                   } : {}} transition={{
                     duration: 0.5
                   }}>
-                      <ShoppingCart className="w-5 h-5" />
+                      <ShoppingBag className="w-5 h-5" />
                     </motion.div>
                     <AnimatePresence>
                       {itemCount > 0 && <motion.span key="cart-count" initial={{
