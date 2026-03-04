@@ -9,8 +9,8 @@ import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+  TooltipTrigger } from
+'@/components/ui/tooltip';
 
 const LoyaltyPointsBadge: React.FC = () => {
   const { language } = useLanguage();
@@ -30,21 +30,21 @@ const LoyaltyPointsBadge: React.FC = () => {
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-full border border-amber-500/30 cursor-pointer hover:border-amber-500/50 transition-all"
-            >
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-full cursor-pointer transition-all border-primary border border-solid shadow-none text-primary-foreground bg-[#077fc0]">
+              
               <motion.div
                 animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-              >
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}>
+                
                 <Coins className="w-4 h-4 text-amber-500" />
               </motion.div>
-              {loading ? (
-                <Loader2 className="w-3 h-3 animate-spin text-amber-500" />
-              ) : (
-                <span className="text-sm font-semibold text-amber-500">
+              {loading ?
+              <Loader2 className="w-3 h-3 animate-spin text-amber-500" /> :
+
+              <span className="text-sm font-semibold text-popover-foreground">
                   {points.toLocaleString()}
                 </span>
-              )}
+              }
             </motion.div>
           </Link>
         </TooltipTrigger>
@@ -54,16 +54,16 @@ const LoyaltyPointsBadge: React.FC = () => {
               {language === 'en' ? 'Loyalty Points' : 'نقاط الولاء'}
             </p>
             <p className="text-sm text-muted-foreground">
-              {language === 'en' 
-                ? `Worth ${pointsValue.toFixed(1)} SAR`
-                : `تساوي ${pointsValue.toFixed(1)} ريال`
+              {language === 'en' ?
+              `Worth ${pointsValue.toFixed(1)} SAR` :
+              `تساوي ${pointsValue.toFixed(1)} ريال`
               }
             </p>
           </div>
         </TooltipContent>
       </Tooltip>
-    </TooltipProvider>
-  );
+    </TooltipProvider>);
+
 };
 
 export default LoyaltyPointsBadge;
