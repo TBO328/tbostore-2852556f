@@ -115,7 +115,7 @@ const Navbar: React.FC = () => {
               </div>
               <div className="hidden md:flex flex-col">
                 <span className="font-display text-xl md:text-2xl font-bold text-foreground leading-none">
-                  TBO <span className="text-primary">STORE</span>
+                  TBO <span className="text-primary font-sans">STORE</span>
                 </span>
                 <span className="text-[10px] text-muted-foreground tracking-[0.2em] uppercase font-sans">Digital - products   </span>
               </div>
