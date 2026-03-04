@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, Star, Loader2, Shield, Zap, Headphones, ChevronDown, Gamepad2, CreditCard, Tv, Gift } from 'lucide-react';
+import { ArrowRight, Star, Loader2, Shield, Zap, Headphones, ChevronDown, Gamepad2, CreditCard, Tv, Gift, ChevronsLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
@@ -225,7 +225,7 @@ const Index: React.FC = () => {
                 <Link to="/products">
                   <Button variant="neon" size="lg" className="group shrink-0">
                     {language === 'en' ? 'View All' : 'عرض الكل'}
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    <ChevronsLeft className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
               </div>
