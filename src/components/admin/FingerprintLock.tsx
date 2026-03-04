@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Fingerprint, Lock, ShieldCheck } from 'lucide-react';
+import { Fingerprint, ShieldCheck, BadgeCheck } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface FingerprintLockProps {
@@ -26,7 +26,7 @@ const FingerprintLock: React.FC<FingerprintLockProps> = ({ onUnlock }) => {
     const startTime = Date.now();
     progressInterval.current = setInterval(() => {
       const elapsed = Date.now() - startTime;
-      const newProgress = Math.min((elapsed / HOLD_DURATION) * 100, 100);
+      const newProgress = Math.min(elapsed / HOLD_DURATION * 100, 100);
       setProgress(newProgress);
 
       if (newProgress >= 100) {
@@ -39,9 +39,9 @@ const FingerprintLock: React.FC<FingerprintLockProps> = ({ onUnlock }) => {
     }, 50);
 
     holdTimeout.current = setTimeout(() => {
+
       // Cleanup handled by progress interval
-    }, HOLD_DURATION);
-  };
+    }, HOLD_DURATION);};
 
   const handleEnd = () => {
     if (!isUnlocked) {
@@ -66,30 +66,30 @@ const FingerprintLock: React.FC<FingerprintLockProps> = ({ onUnlock }) => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5"
-      >
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
+        
         {/* Background Pattern */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 opacity-5">
-            {[...Array(20)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-64 h-64 border border-primary/20 rounded-full"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                }}
-                animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.1, 0.2, 0.1],
-                }}
-                transition={{
-                  duration: 4 + Math.random() * 2,
-                  repeat: Infinity,
-                  delay: Math.random() * 2,
-                }}
-              />
-            ))}
+            {[...Array(20)].map((_, i) =>
+            <motion.div
+              key={i}
+              className="absolute w-64 h-64 border border-primary/20 rounded-full"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`
+              }}
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.1, 0.2, 0.1]
+              }}
+              transition={{
+                duration: 4 + Math.random() * 2,
+                repeat: Infinity,
+                delay: Math.random() * 2
+              }} />
+
+            )}
           </div>
         </div>
 
@@ -99,10 +99,10 @@ const FingerprintLock: React.FC<FingerprintLockProps> = ({ onUnlock }) => {
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="mb-8"
-          >
+            className="mb-8">
+            
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Lock className="w-8 h-8 text-primary" />
+              <BadgeCheck className="w-8 h-8 text-primary" />
             </div>
           </motion.div>
 
@@ -111,19 +111,19 @@ const FingerprintLock: React.FC<FingerprintLockProps> = ({ onUnlock }) => {
             initial={{ y: -10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-2xl md:text-3xl font-bold text-foreground mb-2 text-center font-cairo"
-          >
+            className="text-2xl md:text-3xl font-bold text-foreground mb-2 text-center font-cairo">
+            
             {language === 'ar' ? 'لوحة التحكم' : 'Admin Panel'}
           </motion.h1>
           <motion.p
             initial={{ y: -10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="text-muted-foreground mb-12 text-center font-cairo"
-          >
-            {language === 'ar' 
-              ? 'اضغط مع الاستمرار على البصمة للدخول' 
-              : 'Hold the fingerprint to access'}
+            className="text-muted-foreground mb-12 text-center font-cairo">
+            
+            {language === 'ar' ?
+            'اضغط مع الاستمرار على البصمة للدخول' :
+            'Hold the fingerprint to access'}
           </motion.p>
 
           {/* Fingerprint Scanner */}
@@ -131,8 +131,8 @@ const FingerprintLock: React.FC<FingerprintLockProps> = ({ onUnlock }) => {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.5, type: 'spring' }}
-            className="relative"
-          >
+            className="relative">
+            
             {/* Progress Ring */}
             <svg className="w-48 h-48 -rotate-90" viewBox="0 0 100 100">
               <circle
@@ -142,8 +142,8 @@ const FingerprintLock: React.FC<FingerprintLockProps> = ({ onUnlock }) => {
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
-                className="text-muted/20"
-              />
+                className="text-muted/20" />
+              
               <motion.circle
                 cx="50"
                 cy="50"
@@ -153,9 +153,9 @@ const FingerprintLock: React.FC<FingerprintLockProps> = ({ onUnlock }) => {
                 strokeWidth="4"
                 strokeLinecap="round"
                 strokeDasharray={283}
-                strokeDashoffset={283 - (283 * progress) / 100}
-                className="drop-shadow-lg"
-              />
+                strokeDashoffset={283 - 283 * progress / 100}
+                className="drop-shadow-lg" />
+              
               <defs>
                 <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="hsl(var(--primary))" />
@@ -174,53 +174,53 @@ const FingerprintLock: React.FC<FingerprintLockProps> = ({ onUnlock }) => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className={`absolute inset-0 m-auto w-32 h-32 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 ${
-                isUnlocked
-                  ? 'bg-green-500/20 border-green-500'
-                  : isScanning
-                  ? 'bg-primary/20 border-primary'
-                  : 'bg-card border-border hover:border-primary/50'
-              } border-2`}
-              disabled={isUnlocked}
-            >
+              isUnlocked ?
+              'bg-green-500/20 border-green-500' :
+              isScanning ?
+              'bg-primary/20 border-primary' :
+              'bg-card border-border hover:border-primary/50'} border-2`
+              }
+              disabled={isUnlocked}>
+              
               <AnimatePresence mode="wait">
-                {isUnlocked ? (
-                  <motion.div
-                    key="unlocked"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="text-green-500"
-                  >
+                {isUnlocked ?
+                <motion.div
+                  key="unlocked"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="text-green-500">
+                  
                     <ShieldCheck className="w-16 h-16" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="fingerprint"
-                    animate={isScanning ? { 
-                      scale: [1, 1.1, 1],
-                    } : {}}
-                    transition={{ duration: 0.5, repeat: Infinity }}
-                    className={isScanning ? 'text-primary' : 'text-muted-foreground'}
-                  >
+                  </motion.div> :
+
+                <motion.div
+                  key="fingerprint"
+                  animate={isScanning ? {
+                    scale: [1, 1.1, 1]
+                  } : {}}
+                  transition={{ duration: 0.5, repeat: Infinity }}
+                  className={isScanning ? 'text-primary' : 'text-muted-foreground'}>
+                  
                     <Fingerprint className="w-16 h-16" />
                   </motion.div>
-                )}
+                }
               </AnimatePresence>
             </motion.button>
 
             {/* Scanning Lines */}
-            {isScanning && !isUnlocked && (
-              <motion.div
-                className="absolute inset-0 m-auto w-32 h-32 rounded-full overflow-hidden pointer-events-none"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
+            {isScanning && !isUnlocked &&
+            <motion.div
+              className="absolute inset-0 m-auto w-32 h-32 rounded-full overflow-hidden pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}>
+              
                 <motion.div
-                  className="absolute w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent"
-                  animate={{ y: [-64, 64] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-                />
+                className="absolute w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent"
+                animate={{ y: [-64, 64] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }} />
+              
               </motion.div>
-            )}
+            }
           </motion.div>
 
           {/* Status Text */}
@@ -228,19 +228,19 @@ const FingerprintLock: React.FC<FingerprintLockProps> = ({ onUnlock }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="mt-8 text-sm text-muted-foreground font-cairo"
-          >
-            {isUnlocked 
-              ? (language === 'ar' ? '✓ تم التحقق بنجاح' : '✓ Verified successfully')
-              : isScanning 
-                ? (language === 'ar' ? `جاري المسح... ${Math.round(progress)}%` : `Scanning... ${Math.round(progress)}%`)
-            : (language === 'ar' ? '2 ثانية للتحقق' : '2 seconds to verify')
+            className="mt-8 text-sm text-muted-foreground font-cairo">
+            
+            {isUnlocked ?
+            language === 'ar' ? '✓ تم التحقق بنجاح' : '✓ Verified successfully' :
+            isScanning ?
+            language === 'ar' ? `جاري المسح... ${Math.round(progress)}%` : `Scanning... ${Math.round(progress)}%` :
+            language === 'ar' ? '2 ثانية للتحقق' : '2 seconds to verify'
             }
           </motion.p>
         </div>
       </motion.div>
-    </AnimatePresence>
-  );
+    </AnimatePresence>);
+
 };
 
 export default FingerprintLock;
