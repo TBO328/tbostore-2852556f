@@ -25,7 +25,7 @@ export const orderSchema = z.object({
     image: z.string(),
   })).min(1, 'At least one item required').max(50),
   payment_method: z.enum(['stripe', 'stc_pay', 'bank_transfer']),
-  total_amount: z.number().positive().finite().max(9999999),
+  total_amount: z.number().nonnegative().finite().max(9999999),
 });
 
 // Product validation schema
