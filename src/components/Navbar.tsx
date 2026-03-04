@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingCart, Search, Moon, Sun, DollarSign, Lock } from 'lucide-react';
+import { Menu, X, ShoppingCart, Search, Moon, Sun, DollarSign, BadgeCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
@@ -97,14 +97,14 @@ const Navbar: React.FC = () => {
             <Link to="/" className="flex items-center gap-3 group">
               <div className="relative">
                 {/* Animated glow ring */}
-                <motion.div 
-                  className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/40 to-secondary/40 blur-lg scale-[1.8]"
-                  animate={{ opacity: [0.5, 0.8, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                />
+                <motion.div
+                className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/40 to-secondary/40 blur-lg scale-[1.8]"
+                animate={{ opacity: [0.5, 0.8, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} />
+              
                 <motion.img src={tboStoreLogo} alt="TBO Store" className="relative h-10 md:h-12 w-auto" whileHover={{
                 scale: 1.1,
-                rotate: [0, -5, 5, 0],
+                rotate: [0, -5, 5, 0]
               }} whileTap={{
                 scale: 0.95
               }} transition={{
@@ -123,13 +123,13 @@ const Navbar: React.FC = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-1 bg-muted/30 rounded-2xl px-2 py-1.5 border border-border/30">
-              {navLinks.map(link => <Link key={link.key} to={link.to} className={`relative px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 font-arabic ${isActive(link.to) ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+              {navLinks.map((link) => <Link key={link.key} to={link.to} className={`relative px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 font-arabic ${isActive(link.to) ? 'text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
                   {isActive(link.to) && <motion.div layoutId="navbar-pill" className="absolute inset-0 bg-gradient-to-r from-primary to-secondary rounded-xl shadow-lg shadow-primary/25" transition={{
                 type: 'spring',
                 stiffness: 350,
                 damping: 30
               }} />}
-                  <span className="relative z-10">{'labelEn' in link ? (language === 'ar' ? link.labelAr : link.labelEn) : t(link.key)}</span>
+                  <span className="relative z-10">{'labelEn' in link ? language === 'ar' ? link.labelAr : link.labelEn : t(link.key)}</span>
                 </Link>)}
             </div>
 
@@ -243,7 +243,7 @@ const Navbar: React.FC = () => {
                 scale: 0.95
               }}>
                     <Button variant="ghost" size="icon" className="text-primary">
-                      <Lock className="w-5 h-5" />
+                      <BadgeCheck className="w-5 h-5" />
                     </Button>
                   </motion.div>
                 </Link>}
@@ -351,7 +351,7 @@ const Navbar: React.FC = () => {
                 delay: index * 0.05
               }}>
                       <Link to={link.to} onClick={() => setIsMenuOpen(false)} className={`block px-4 py-3 rounded-lg transition-all duration-300 ${isActive(link.to) ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary hover:bg-muted'}`}>
-                        {'labelEn' in link ? (language === 'ar' ? link.labelAr : link.labelEn) : t(link.key)}
+                        {'labelEn' in link ? language === 'ar' ? link.labelAr : link.labelEn : t(link.key)}
                       </Link>
                     </motion.div>)}
                   
