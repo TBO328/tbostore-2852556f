@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, Star, Loader2, Shield, Zap, Headphones, ChevronDown, Gamepad2, CreditCard, Tv, Gift, ChevronsLeft } from 'lucide-react';
+import { ArrowRight, Star, Loader2, Shield, Zap, Headphones, ChevronDown, Gamepad2, CreditCard, Paintbrush, Gift, ChevronsLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
@@ -28,7 +28,7 @@ const Index: React.FC = () => {
   const categories = [
   { icon: Gamepad2, labelEn: 'Gaming', labelAr: 'ألعاب', color: 'from-emerald-500/20 to-teal-500/20', borderColor: 'border-emerald-500/30' },
   { icon: CreditCard, labelEn: 'Gift Cards', labelAr: 'بطاقات شحن', color: 'from-cyan-500/20 to-blue-500/20', borderColor: 'border-cyan-500/30' },
-  { icon: Tv, labelEn: 'Designs', labelAr: 'تصاميم', color: 'from-violet-500/20 to-purple-500/20', borderColor: 'border-violet-500/30' },
+  { icon: Paintbrush, labelEn: 'Designs', labelAr: 'تصاميم', color: 'from-violet-500/20 to-purple-500/20', borderColor: 'border-violet-500/30' },
   { icon: Gift, labelEn: 'Subscriptions', labelAr: 'اشتراكات', color: 'from-amber-500/20 to-orange-500/20', borderColor: 'border-amber-500/30' }];
 
 
@@ -57,9 +57,9 @@ const Index: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.04 }}
             transition={{ duration: 2 }}
-            className="absolute right-[-5%] top-1/2 -translate-y-1/2 z-0 hidden lg:block">
+            className="absolute left-1/2 -translate-x-1/2 bottom-[-10%] z-0 hidden lg:block">
             
-            <img src={tboStoreLogo} alt="" className="w-[700px] h-auto" />
+            <img src={tboStoreLogo} alt="" className="w-[600px] h-auto" />
           </motion.div>
 
           {/* Main Content - Asymmetric Layout */}
