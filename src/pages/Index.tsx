@@ -55,11 +55,11 @@ const Index: React.FC = () => {
           {/* Watermark Logo */}
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.04 }}
+            animate={{ opacity: 0.06 }}
             transition={{ duration: 2 }}
-            className="absolute left-1/2 -translate-x-1/2 bottom-[-10%] z-0 hidden lg:block">
+            className="absolute right-[-5%] bottom-[-15%] z-0 hidden lg:block">
             
-            <img src={tboStoreLogo} alt="" className="w-[600px] h-auto" />
+            <img src={tboStoreLogo} alt="" className="w-[600px] h-auto" style={{ maskImage: 'linear-gradient(to top, transparent 0%, black 40%)', WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 40%)' }} />
           </motion.div>
 
           {/* Main Content - Asymmetric Layout */}
