@@ -28,7 +28,7 @@ const Index: React.FC = () => {
   const categories = [
   { icon: Gamepad2, labelEn: 'Gaming', labelAr: 'ألعاب', color: 'from-emerald-500/20 to-teal-500/20', borderColor: 'border-emerald-500/30' },
   { icon: CreditCard, labelEn: 'Gift Cards', labelAr: 'بطاقات شحن', color: 'from-cyan-500/20 to-blue-500/20', borderColor: 'border-cyan-500/30' },
-  { icon: Tv, labelEn: 'Streaming', labelAr: 'بث مباشر', color: 'from-violet-500/20 to-purple-500/20', borderColor: 'border-violet-500/30' },
+  { icon: Tv, labelEn: 'Designs', labelAr: 'تصاميم', color: 'from-violet-500/20 to-purple-500/20', borderColor: 'border-violet-500/30' },
   { icon: Gift, labelEn: 'Subscriptions', labelAr: 'اشتراكات', color: 'from-amber-500/20 to-orange-500/20', borderColor: 'border-amber-500/30' }];
 
 
