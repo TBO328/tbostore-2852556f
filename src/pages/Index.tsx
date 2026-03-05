@@ -57,7 +57,7 @@ const Index: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.06 }}
             transition={{ duration: 2 }}
-            className="absolute right-[-5%] bottom-[-15%] z-0 hidden lg:block">
+            className="absolute right-[-5%] bottom-[-25%] z-0 hidden lg:block">
             
             <img src={tboStoreLogo} alt="" className="w-[600px] h-auto" style={{ maskImage: 'linear-gradient(to top, transparent 0%, black 40%)', WebkitMaskImage: 'linear-gradient(to top, transparent 0%, black 40%)' }} />
           </motion.div>
