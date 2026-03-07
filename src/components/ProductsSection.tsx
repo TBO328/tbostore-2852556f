@@ -1,26 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import ProductCard from './ProductCard';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { products, categories } from '@/data/products';
+import { useFeaturedProducts } from '@/hooks/useProducts';
+import { Loader2 } from 'lucide-react';
 
 const ProductsSection: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState('All');
   const { t, language } = useLanguage();
-
-  const filteredProducts = activeCategory === 'All'
-    ? products.slice(0, 8)
-    : products.filter(p => p.category === activeCategory).slice(0, 8);
-
-  const getCategoryLabel = (cat: string) => {
-    const labels: { [key: string]: { en: string; ar: string } } = {
-      'All': { en: 'All', ar: 'الكل' },
-      'Electronics': { en: 'Electronics', ar: 'إلكترونيات' },
-      'Fashion': { en: 'Fashion', ar: 'أزياء' },
-      'Accessories': { en: 'Accessories', ar: 'إكسسوارات' },
-      'Home Goods': { en: 'Home Goods', ar: 'مستلزمات منزلية' },
-    };
-    return labels[cat]?.[language] || cat;
-  };
+  const { products, loading } = useFeaturedProducts(8);
 
   return (
     <section id="products" className="py-20 md:py-32 bg-background relative overflow-hidden">
@@ -41,35 +28,46 @@ const ProductsSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Category Filter */}
-        <div className="flex flex-wrap justify-center gap-3 mb-12">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              className={`px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-300 ${
-                activeCategory === category
-                  ? 'bg-primary text-primary-foreground shadow-neon-cyan'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
-              }`}
-            >
-              {getCategoryLabel(category)}
-            </button>
-          ))}
-        </div>
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center py-16">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        )}
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((product, index) => (
-            <div
-              key={product.id}
-              className="animate-fade-in-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
+        {!loading && products.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {products.map((product, index) => (
+              <div
+                key={product.id}
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && products.length === 0 && (
+          <div className="text-center py-16 text-muted-foreground">
+            {language === 'en' ? 'No products available yet.' : 'لا توجد منتجات متاحة حالياً.'}
+          </div>
+        )}
+
+        {/* View All Link */}
+        {!loading && products.length > 0 && (
+          <div className="text-center mt-12">
+            <Link
+              to="/products"
+              className="inline-flex items-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-xl font-bold hover:opacity-90 transition-opacity"
             >
-              <ProductCard product={product} />
-            </div>
-          ))}
-        </div>
+              {language === 'en' ? 'View All Products' : 'عرض جميع المنتجات'}
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );
