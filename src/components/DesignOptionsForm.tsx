@@ -43,8 +43,21 @@ const AVAILABLE_COLORS = [
   { value: '#FF69B4', labelAr: 'زهري', labelEn: 'Hot Pink' },
 ];
 
+const isValidHex = (str: string): boolean => /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(str);
+const isValidRgb = (str: string): boolean => /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/i.test(str);
+
+const rgbToHex = (rgb: string): string | null => {
+  const match = rgb.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i);
+  if (!match) return null;
+  const [, r, g, b] = match.map(Number);
+  if (r > 255 || g > 255 || b > 255) return null;
+  return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+};
+
 const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }) => {
   const { language } = useLanguage();
+  const [customColorInput, setCustomColorInput] = useState('');
+  const [customColorError, setCustomColorError] = useState('');
   const [options, setOptions] = useState<DesignOptions>({
     hasSpecificDesign: '',
     designImage: null,
@@ -53,7 +66,6 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
     customerNotes: '',
     contactMethod: '',
   });
-
   const handleChange = (field: keyof DesignOptions, value: unknown) => {
     const newOptions = { ...options, [field]: value };
     setOptions(newOptions);
