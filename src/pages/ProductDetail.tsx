@@ -451,7 +451,7 @@ const ProductDetail: React.FC = () => {
                 </motion.div>
 
                 {/* Design Options Form - When enabled for product */}
-                {(product as unknown as { has_design_options?: boolean }).has_design_options && (
+                {product.has_design_options && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
