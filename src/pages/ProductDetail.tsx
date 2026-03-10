@@ -27,6 +27,7 @@ interface ExtendedProduct extends Product {
   subscription_duration?: string | null;
   activation_instructions_en?: string | null;
   activation_instructions_ar?: string | null;
+  has_design_options?: boolean;
 }
 
 const ProductDetail: React.FC = () => {
@@ -113,6 +114,7 @@ const ProductDetail: React.FC = () => {
         activation_instructions_en: (data as unknown as { activation_instructions_en?: string }).activation_instructions_en || null,
         activation_instructions_ar: (data as unknown as { activation_instructions_ar?: string }).activation_instructions_ar || null,
         has_pricing_options: data.has_pricing_options ?? false,
+        has_design_options: (data as unknown as { has_design_options?: boolean }).has_design_options ?? false,
         pricing_options: Array.isArray(data.pricing_options) 
           ? (data.pricing_options as unknown as PricingOption[]).map(opt => ({
               id: opt.id || String(Math.random()),
@@ -448,8 +450,8 @@ const ProductDetail: React.FC = () => {
                   </p>
                 </motion.div>
 
-                {/* Design Options Form - Only for Designs category */}
-                {product.category === 'Designs' && (
+                {/* Design Options Form - When enabled for product */}
+                {product.has_design_options && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

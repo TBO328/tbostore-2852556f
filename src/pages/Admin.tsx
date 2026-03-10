@@ -129,6 +129,7 @@ const Admin: React.FC = () => {
     category: '',
     image_url: '',
     in_stock: true,
+    has_design_options: false,
     requires_email: false,
     subscription_duration: '',
     activation_instructions_en: '',
@@ -352,6 +353,7 @@ const Admin: React.FC = () => {
         image_url: imageUrl || null,
         images: allImages,
         in_stock: productForm.in_stock,
+        has_design_options: productForm.has_design_options,
         has_pricing_options: hasPricingOptions && pricingOptions.length > 0,
         pricing_options: pricingOptionsData,
         requires_email: productForm.requires_email,
@@ -396,6 +398,7 @@ const Admin: React.FC = () => {
       category: '',
       image_url: '',
       in_stock: true,
+      has_design_options: false,
       requires_email: false,
       subscription_duration: '',
       activation_instructions_en: '',
@@ -420,6 +423,7 @@ const Admin: React.FC = () => {
       category: product.category,
       image_url: product.image_url || '',
       in_stock: product.in_stock ?? true,
+      has_design_options: (product as unknown as { has_design_options?: boolean }).has_design_options ?? false,
       requires_email: product.requires_email ?? false,
       subscription_duration: product.subscription_duration || '',
       activation_instructions_en: (product as unknown as { activation_instructions_en?: string }).activation_instructions_en || '',
@@ -888,6 +892,12 @@ const Admin: React.FC = () => {
                           </div>
                         </div>
                       )}
+                    </div>
+
+                    {/* Design Options Toggle */}
+                    <div className="flex items-center gap-2">
+                      <Switch checked={productForm.has_design_options} onCheckedChange={checked => setProductForm({ ...productForm, has_design_options: checked })} />
+                      <Label>{language === 'en' ? 'Show Design Options Form' : 'إظهار نموذج خيارات التصميم'}</Label>
                     </div>
 
                     <div className="flex items-center gap-2">

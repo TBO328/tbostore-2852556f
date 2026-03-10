@@ -642,6 +642,7 @@ export type Database = {
           created_at: string
           description_ar: string | null
           description_en: string | null
+          has_design_options: boolean | null
           has_pricing_options: boolean | null
           id: string
           image_url: string | null
@@ -665,6 +666,7 @@ export type Database = {
           created_at?: string
           description_ar?: string | null
           description_en?: string | null
+          has_design_options?: boolean | null
           has_pricing_options?: boolean | null
           id?: string
           image_url?: string | null
@@ -688,6 +690,7 @@ export type Database = {
           created_at?: string
           description_ar?: string | null
           description_en?: string | null
+          has_design_options?: boolean | null
           has_pricing_options?: boolean | null
           id?: string
           image_url?: string | null
