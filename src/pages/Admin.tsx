@@ -423,6 +423,7 @@ const Admin: React.FC = () => {
       category: product.category,
       image_url: product.image_url || '',
       in_stock: product.in_stock ?? true,
+      has_design_options: (product as unknown as { has_design_options?: boolean }).has_design_options ?? false,
       requires_email: product.requires_email ?? false,
       subscription_duration: product.subscription_duration || '',
       activation_instructions_en: (product as unknown as { activation_instructions_en?: string }).activation_instructions_en || '',
