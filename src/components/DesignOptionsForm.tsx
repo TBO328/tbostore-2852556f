@@ -280,8 +280,54 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
               </button>
             ))}
           </div>
+
+          {/* Custom Color Input */}
+          <div className="flex gap-2 items-start">
+            {/* Native Color Picker */}
+            <label className="relative shrink-0 cursor-pointer" title={language === 'ar' ? 'اختر من لوحة الألوان' : 'Pick from color palette'}>
+              <input
+                type="color"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                onChange={handleNativeColorPick}
+              />
+              <div className="w-10 h-10 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted hover:border-primary/50 transition-colors">
+                <Palette className="w-4 h-4 text-muted-foreground" />
+              </div>
+            </label>
+
+            {/* HEX / RGB Input */}
+            <div className="flex-1 space-y-1">
+              <div className="flex gap-2">
+                <Input
+                  value={customColorInput}
+                  onChange={(e) => {
+                    setCustomColorInput(e.target.value);
+                    setCustomColorError('');
+                  }}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleCustomColorAdd())}
+                  placeholder={language === 'ar' ? '#FF5733 أو rgb(255,87,51)' : '#FF5733 or rgb(255,87,51)'}
+                  className="bg-background border-border font-mono text-sm"
+                  dir="ltr"
+                  maxLength={30}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleCustomColorAdd}
+                  className="shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              {customColorError && (
+                <p className="text-xs text-destructive">{customColorError}</p>
+              )}
+            </div>
+          </div>
+
           <p className="text-xs text-muted-foreground">
-            {language === 'ar' ? 'يمكنك اختيار أكثر من لون' : 'You can select multiple colors'}
+            {language === 'ar' ? 'يمكنك اختيار من الألوان الجاهزة، أو من لوحة الألوان، أو إدخال كود HEX أو RGB' : 'Pick from preset colors, color palette, or enter HEX/RGB code'}
           </p>
         </div>
 
