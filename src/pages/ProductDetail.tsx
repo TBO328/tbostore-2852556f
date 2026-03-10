@@ -114,6 +114,7 @@ const ProductDetail: React.FC = () => {
         activation_instructions_en: (data as unknown as { activation_instructions_en?: string }).activation_instructions_en || null,
         activation_instructions_ar: (data as unknown as { activation_instructions_ar?: string }).activation_instructions_ar || null,
         has_pricing_options: data.has_pricing_options ?? false,
+        has_design_options: (data as unknown as { has_design_options?: boolean }).has_design_options ?? false,
         pricing_options: Array.isArray(data.pricing_options) 
           ? (data.pricing_options as unknown as PricingOption[]).map(opt => ({
               id: opt.id || String(Math.random()),
