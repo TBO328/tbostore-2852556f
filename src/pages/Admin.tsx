@@ -129,6 +129,7 @@ const Admin: React.FC = () => {
     category: '',
     image_url: '',
     in_stock: true,
+    has_design_options: false,
     requires_email: false,
     subscription_duration: '',
     activation_instructions_en: '',
