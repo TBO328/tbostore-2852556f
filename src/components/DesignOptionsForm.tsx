@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { MessageCircle, HelpCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Upload, Plus, X, Palette, MessageCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Select,
@@ -11,58 +11,80 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface DesignOptionsFormProps {
   onOptionsChange: (options: DesignOptions) => void;
 }
 
 export interface DesignOptions {
-  hasLogo: string;
-  color: string;
-  position: string;
+  hasSpecificDesign: string;
+  designImage: string | null;
+  colors: string[];
+  logoType: string;
+  customerNotes: string;
   contactMethod: string;
 }
+
+const AVAILABLE_COLORS = [
+  { value: '#FF0000', labelAr: 'أحمر', labelEn: 'Red' },
+  { value: '#0000FF', labelAr: 'أزرق', labelEn: 'Blue' },
+  { value: '#00FF00', labelAr: 'أخضر', labelEn: 'Green' },
+  { value: '#800080', labelAr: 'بنفسجي', labelEn: 'Purple' },
+  { value: '#FFA500', labelAr: 'برتقالي', labelEn: 'Orange' },
+  { value: '#FFC0CB', labelAr: 'وردي', labelEn: 'Pink' },
+  { value: '#000000', labelAr: 'أسود', labelEn: 'Black' },
+  { value: '#FFFFFF', labelAr: 'أبيض', labelEn: 'White' },
+  { value: '#FFD700', labelAr: 'ذهبي', labelEn: 'Gold' },
+  { value: '#C0C0C0', labelAr: 'فضي', labelEn: 'Silver' },
+  { value: '#00FFFF', labelAr: 'سماوي', labelEn: 'Cyan' },
+  { value: '#FF69B4', labelAr: 'زهري', labelEn: 'Hot Pink' },
+];
 
 const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }) => {
   const { language } = useLanguage();
   const [options, setOptions] = useState<DesignOptions>({
-    hasLogo: '',
-    color: '',
-    position: '',
+    hasSpecificDesign: '',
+    designImage: null,
+    colors: [],
+    logoType: '',
+    customerNotes: '',
     contactMethod: '',
   });
 
-  const handleChange = (field: keyof DesignOptions, value: string) => {
+  const handleChange = (field: keyof DesignOptions, value: unknown) => {
     const newOptions = { ...options, [field]: value };
     setOptions(newOptions);
     onOptionsChange(newOptions);
   };
 
-  const logoOptions = [
-    { value: 'yes', labelAr: 'نعم', labelEn: 'Yes' },
-    { value: 'no', labelAr: 'لا', labelEn: 'No' },
-    { value: 'need_design', labelAr: 'أحتاج تصميم شعار', labelEn: 'Need logo design' },
-  ];
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        handleChange('designImage', reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-  const colorOptions = [
-    { value: 'red', labelAr: 'أحمر', labelEn: 'Red' },
-    { value: 'blue', labelAr: 'أزرق', labelEn: 'Blue' },
-    { value: 'green', labelAr: 'أخضر', labelEn: 'Green' },
-    { value: 'purple', labelAr: 'بنفسجي', labelEn: 'Purple' },
-    { value: 'orange', labelAr: 'برتقالي', labelEn: 'Orange' },
-    { value: 'pink', labelAr: 'وردي', labelEn: 'Pink' },
-    { value: 'black', labelAr: 'أسود', labelEn: 'Black' },
-    { value: 'white', labelAr: 'أبيض', labelEn: 'White' },
-    { value: 'custom', labelAr: 'لون مخصص', labelEn: 'Custom color' },
-  ];
+  const addColor = (color: string) => {
+    if (!options.colors.includes(color)) {
+      handleChange('colors', [...options.colors, color]);
+    }
+  };
 
-  const positionOptions = [
-    { value: 'center', labelAr: 'في المنتصف', labelEn: 'Center' },
-    { value: 'top', labelAr: 'في الأعلى', labelEn: 'Top' },
-    { value: 'bottom', labelAr: 'في الأسفل', labelEn: 'Bottom' },
-    { value: 'left', labelAr: 'على اليسار', labelEn: 'Left' },
-    { value: 'right', labelAr: 'على اليمين', labelEn: 'Right' },
-    { value: 'custom', labelAr: 'موقع مخصص', labelEn: 'Custom position' },
+  const removeColor = (color: string) => {
+    handleChange('colors', options.colors.filter(c => c !== color));
+  };
+
+  const logoTypeOptions = [
+    { value: 'streamer', labelAr: 'ستريمر', labelEn: 'Streamer' },
+    { value: 'store', labelAr: 'متجر', labelEn: 'Store' },
+    { value: 'other', labelAr: 'أخرى', labelEn: 'Other' },
   ];
 
   return (
@@ -72,40 +94,159 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
       className="space-y-6 p-6 rounded-xl bg-card/50 border border-border"
     >
       {/* Header */}
-      <div className="text-center space-y-2">
-        <p className="text-muted-foreground flex items-center justify-center gap-2">
-          {language === 'ar' ? 'بحاجة إلى مساعدة' : 'Need help'} 🎨 ?
+      <div className="text-center space-y-1">
+        <h3 className="font-display font-semibold text-lg text-foreground flex items-center justify-center gap-2">
+          <Palette className="w-5 h-5 text-primary" />
+          {language === 'ar' ? 'خيارات التصميم' : 'Design Options'}
+        </h3>
+        <p className="text-sm text-muted-foreground">
+          {language === 'ar' ? 'حدد تفاصيل التصميم المطلوب' : 'Specify your design requirements'}
         </p>
-        <a
-          href="https://wa.me/966500000000"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary hover:underline flex items-center justify-center gap-2"
-        >
-          <MessageCircle className="w-4 h-4" />
-          {language === 'ar' ? 'تواصل مع الدعم الفني عبر الواتساب' : 'Contact support via WhatsApp'}
-        </a>
       </div>
 
-      {/* Form Fields */}
       <div className="space-y-5">
-        {/* Has Logo */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label className="text-foreground font-medium">
-              {language === 'ar' ? 'هل لديك شعار؟' : 'Do you have a logo?'}
-              <span className="text-destructive mr-1">*</span>
-            </Label>
-            <span className="text-xs text-muted-foreground">
-              {language === 'ar' ? 'اختر' : 'Select'}
-            </span>
+        {/* 1. Has Specific Design */}
+        <div className="space-y-3">
+          <Label className="text-foreground font-medium">
+            {language === 'ar' ? 'هل عندك شكل معين؟' : 'Do you have a specific design?'}
+            <span className="text-destructive mr-1">*</span>
+          </Label>
+          <RadioGroup
+            value={options.hasSpecificDesign}
+            onValueChange={(v) => handleChange('hasSpecificDesign', v)}
+            className="flex gap-4"
+          >
+            <div className="flex items-center gap-2">
+              <RadioGroupItem value="yes" id="design-yes" />
+              <Label htmlFor="design-yes" className="cursor-pointer">
+                {language === 'ar' ? 'نعم' : 'Yes'}
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <RadioGroupItem value="no" id="design-no" />
+              <Label htmlFor="design-no" className="cursor-pointer">
+                {language === 'ar' ? 'لا' : 'No'}
+              </Label>
+            </div>
+          </RadioGroup>
+
+          {/* Image Upload - shown only when "yes" */}
+          <AnimatePresence>
+            {options.hasSpecificDesign === 'yes' && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                {options.designImage ? (
+                  <div className="relative w-full h-40 rounded-xl overflow-hidden border border-border">
+                    <img src={options.designImage} alt="Design" className="w-full h-full object-contain bg-muted" />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() => handleChange('designImage', null)}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 transition-colors bg-muted/30">
+                    <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                    <span className="text-sm text-muted-foreground">
+                      {language === 'ar' ? 'ارفق صورة التصميم' : 'Upload your design image'}
+                    </span>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                  </label>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* 2. Colors */}
+        <div className="space-y-3">
+          <Label className="text-foreground font-medium">
+            {language === 'ar' ? 'اللون أو الألوان المطلوبة' : 'Desired color(s)'}
+            <span className="text-destructive mr-1">*</span>
+          </Label>
+
+          {/* Selected Colors */}
+          {options.colors.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {options.colors.map((color) => {
+                const colorInfo = AVAILABLE_COLORS.find(c => c.value === color);
+                return (
+                  <motion.div
+                    key={color}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border"
+                  >
+                    <span
+                      className="w-4 h-4 rounded-full border border-border"
+                      style={{ backgroundColor: color }}
+                    />
+                    <span className="text-sm text-foreground">
+                      {colorInfo ? (language === 'ar' ? colorInfo.labelAr : colorInfo.labelEn) : color}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeColor(color)}
+                      className="text-muted-foreground hover:text-destructive transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Color Picker Grid */}
+          <div className="grid grid-cols-6 gap-2">
+            {AVAILABLE_COLORS.map((color) => (
+              <button
+                key={color.value}
+                type="button"
+                onClick={() => addColor(color.value)}
+                className={`group relative w-full aspect-square rounded-lg border-2 transition-all ${
+                  options.colors.includes(color.value)
+                    ? 'border-primary scale-110 shadow-md'
+                    : 'border-border hover:border-primary/50 hover:scale-105'
+                }`}
+                style={{ backgroundColor: color.value }}
+                title={language === 'ar' ? color.labelAr : color.labelEn}
+              >
+                {options.colors.includes(color.value) && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <span className="w-4 h-4 rounded-full bg-background/80 flex items-center justify-center">
+                      <span className="text-foreground text-xs">✓</span>
+                    </span>
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
-          <Select value={options.hasLogo} onValueChange={(v) => handleChange('hasLogo', v)}>
+          <p className="text-xs text-muted-foreground">
+            {language === 'ar' ? 'يمكنك اختيار أكثر من لون' : 'You can select multiple colors'}
+          </p>
+        </div>
+
+        {/* 3. Logo Type */}
+        <div className="space-y-2">
+          <Label className="text-foreground font-medium">
+            {language === 'ar' ? 'نوع الشعار' : 'Logo type'}
+            <span className="text-destructive mr-1">*</span>
+          </Label>
+          <Select value={options.logoType} onValueChange={(v) => handleChange('logoType', v)}>
             <SelectTrigger className="w-full bg-background border-border">
-              <SelectValue placeholder={language === 'ar' ? 'اختر' : 'Select'} />
+              <SelectValue placeholder={language === 'ar' ? 'اختر نوع الشعار' : 'Select logo type'} />
             </SelectTrigger>
             <SelectContent className="bg-popover border-border z-50">
-              {logoOptions.map((opt) => (
+              {logoTypeOptions.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {language === 'ar' ? opt.labelAr : opt.labelEn}
                 </SelectItem>
@@ -114,73 +255,37 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
           </Select>
         </div>
 
-        {/* Color */}
+        {/* 4. Customer Notes */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label className="text-foreground font-medium">
-              {language === 'ar' ? 'اللون' : 'Color'}
-              <span className="text-destructive mr-1">*</span>
-            </Label>
-            <span className="text-xs text-muted-foreground">
-              {language === 'ar' ? 'اختر' : 'Select'}
-            </span>
-          </div>
-          <Select value={options.color} onValueChange={(v) => handleChange('color', v)}>
-            <SelectTrigger className="w-full bg-background border-border">
-              <SelectValue placeholder={language === 'ar' ? 'اختر' : 'Select'} />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border z-50">
-              {colorOptions.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {language === 'ar' ? opt.labelAr : opt.labelEn}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Position */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label className="text-foreground font-medium">
-              {language === 'ar' ? 'موقع التركيب؟' : 'Installation position?'}
-              <span className="text-destructive mr-1">*</span>
-            </Label>
-            <span className="text-xs text-muted-foreground">
-              {language === 'ar' ? 'اختر' : 'Select'}
-            </span>
-          </div>
-          <Select value={options.position} onValueChange={(v) => handleChange('position', v)}>
-            <SelectTrigger className="w-full bg-background border-border">
-              <SelectValue placeholder={language === 'ar' ? 'اختر' : 'Select'} />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border z-50">
-              {positionOptions.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {language === 'ar' ? opt.labelAr : opt.labelEn}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Contact Method */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label className="text-foreground font-medium">
-              {language === 'ar' ? 'وسيلة التواصل' : 'Contact method'}
-              <span className="text-destructive mr-1">*</span>
-            </Label>
-            <span className="text-xs text-muted-foreground">
-              {language === 'ar' ? 'مثال: msh1lm' : 'Example: msh1lm'}
-            </span>
-          </div>
-          <Input
-            value={options.contactMethod}
-            onChange={(e) => handleChange('contactMethod', e.target.value)}
-            placeholder={language === 'ar' ? 'Discord: msh1lm' : 'Discord: msh1lm'}
-            className="w-full bg-background border-border"
+          <Label className="text-foreground font-medium">
+            {language === 'ar' ? 'ملاحظات العميل' : 'Customer notes'}
+          </Label>
+          <Textarea
+            value={options.customerNotes}
+            onChange={(e) => handleChange('customerNotes', e.target.value)}
+            placeholder={language === 'ar' ? 'اكتب أي شيء تحتاجه زيادة...' : 'Write any additional requirements...'}
+            className="w-full bg-background border-border min-h-[80px]"
           />
+        </div>
+
+        {/* 5. Contact Method */}
+        <div className="space-y-2">
+          <Label className="text-foreground font-medium">
+            {language === 'ar' ? 'وسيلة التواصل' : 'Contact method'}
+            <span className="text-destructive mr-1">*</span>
+          </Label>
+          <div className="flex items-center gap-2">
+            <MessageCircle className="w-4 h-4 text-muted-foreground" />
+            <Input
+              value={options.contactMethod}
+              onChange={(e) => handleChange('contactMethod', e.target.value)}
+              placeholder={language === 'ar' ? 'Discord: ja2b' : 'Discord: ja2b'}
+              className="w-full bg-background border-border"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {language === 'ar' ? 'مثال: Discord: ja2b' : 'Example: Discord: ja2b'}
+          </p>
         </div>
       </div>
     </motion.div>
