@@ -27,6 +27,7 @@ interface ExtendedProduct extends Product {
   subscription_duration?: string | null;
   activation_instructions_en?: string | null;
   activation_instructions_ar?: string | null;
+  has_design_options?: boolean;
 }
 
 const ProductDetail: React.FC = () => {
