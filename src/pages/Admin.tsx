@@ -353,6 +353,7 @@ const Admin: React.FC = () => {
         image_url: imageUrl || null,
         images: allImages,
         in_stock: productForm.in_stock,
+        has_design_options: productForm.has_design_options,
         has_pricing_options: hasPricingOptions && pricingOptions.length > 0,
         pricing_options: pricingOptionsData,
         requires_email: productForm.requires_email,
