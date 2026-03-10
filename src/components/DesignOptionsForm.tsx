@@ -84,13 +84,51 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
   };
 
   const addColor = (color: string) => {
-    if (!options.colors.includes(color)) {
-      handleChange('colors', [...options.colors, color]);
+    const normalized = color.toUpperCase();
+    if (!options.colors.includes(normalized)) {
+      handleChange('colors', [...options.colors, normalized]);
     }
   };
 
   const removeColor = (color: string) => {
     handleChange('colors', options.colors.filter(c => c !== color));
+  };
+
+  const handleCustomColorAdd = () => {
+    const trimmed = customColorInput.trim();
+    if (!trimmed) return;
+    
+    let hexColor: string | null = null;
+    
+    // Check HEX
+    if (trimmed.startsWith('#')) {
+      if (isValidHex(trimmed)) {
+        hexColor = trimmed.length === 4
+          ? '#' + trimmed[1] + trimmed[1] + trimmed[2] + trimmed[2] + trimmed[3] + trimmed[3]
+          : trimmed;
+      }
+    } else if (trimmed.toLowerCase().startsWith('rgb')) {
+      hexColor = rgbToHex(trimmed);
+    } else if (/^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/.test(trimmed)) {
+      const withHash = '#' + trimmed;
+      if (isValidHex(withHash)) {
+        hexColor = withHash.length === 4
+          ? '#' + withHash[1] + withHash[1] + withHash[2] + withHash[2] + withHash[3] + withHash[3]
+          : withHash;
+      }
+    }
+
+    if (hexColor) {
+      addColor(hexColor.toUpperCase());
+      setCustomColorInput('');
+      setCustomColorError('');
+    } else {
+      setCustomColorError(language === 'ar' ? 'صيغة لون غير صحيحة' : 'Invalid color format');
+    }
+  };
+
+  const handleNativeColorPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    addColor(e.target.value.toUpperCase());
   };
 
   const logoTypeOptions = [
