@@ -894,6 +894,12 @@ const Admin: React.FC = () => {
                       )}
                     </div>
 
+                    {/* Design Options Toggle */}
+                    <div className="flex items-center gap-2">
+                      <Switch checked={productForm.has_design_options} onCheckedChange={checked => setProductForm({ ...productForm, has_design_options: checked })} />
+                      <Label>{language === 'en' ? 'Show Design Options Form' : 'إظهار نموذج خيارات التصميم'}</Label>
+                    </div>
+
                     <div className="flex items-center gap-2">
                       <Switch checked={productForm.in_stock} onCheckedChange={checked => setProductForm({ ...productForm, in_stock: checked })} />
                       <Label>{language === 'en' ? 'In Stock' : 'متوفر'}</Label>
