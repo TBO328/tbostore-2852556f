@@ -229,6 +229,7 @@ const PortfolioManagement: React.FC = () => {
         media_files: formData.media_files as unknown as any,
         display_order: formData.display_order,
         is_active: formData.is_active,
+        category: formData.category,
       };
 
       if (editingItem) {
