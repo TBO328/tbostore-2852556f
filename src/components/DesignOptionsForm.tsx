@@ -28,20 +28,21 @@ export interface DesignOptions {
   contactMethod: string;
 }
 
-const AVAILABLE_COLORS = [
-  { value: '#FF0000', labelAr: 'أحمر', labelEn: 'Red' },
-  { value: '#0000FF', labelAr: 'أزرق', labelEn: 'Blue' },
-  { value: '#00FF00', labelAr: 'أخضر', labelEn: 'Green' },
-  { value: '#800080', labelAr: 'بنفسجي', labelEn: 'Purple' },
-  { value: '#FFA500', labelAr: 'برتقالي', labelEn: 'Orange' },
-  { value: '#FFC0CB', labelAr: 'وردي', labelEn: 'Pink' },
-  { value: '#000000', labelAr: 'أسود', labelEn: 'Black' },
-  { value: '#FFFFFF', labelAr: 'أبيض', labelEn: 'White' },
-  { value: '#FFD700', labelAr: 'ذهبي', labelEn: 'Gold' },
-  { value: '#C0C0C0', labelAr: 'فضي', labelEn: 'Silver' },
-  { value: '#00FFFF', labelAr: 'سماوي', labelEn: 'Cyan' },
-  { value: '#FF69B4', labelAr: 'زهري', labelEn: 'Hot Pink' },
-];
+const COLOR_NAMES: Record<string, string> = {
+  red: '#FF0000', blue: '#0000FF', green: '#008000', purple: '#800080',
+  orange: '#FFA500', pink: '#FFC0CB', black: '#000000', white: '#FFFFFF',
+  gold: '#FFD700', silver: '#C0C0C0', cyan: '#00FFFF', navy: '#000080',
+  coral: '#FF7F50', teal: '#008080', maroon: '#800000', lime: '#00FF00',
+  olive: '#808000', aqua: '#00FFFF', salmon: '#FA8072', indigo: '#4B0082',
+  violet: '#EE82EE', turquoise: '#40E0D0', beige: '#F5F5DC', ivory: '#FFFFF0',
+  khaki: '#F0E68C', lavender: '#E6E6FA', magenta: '#FF00FF', tan: '#D2B48C',
+  chocolate: '#D2691E', crimson: '#DC143C', tomato: '#FF6347', wheat: '#F5DEB3',
+  skyblue: '#87CEEB', plum: '#DDA0DD', orchid: '#DA70D6', peru: '#CD853F',
+  sienna: '#A0522D', firebrick: '#B22222', darkgreen: '#006400', darkblue: '#00008B',
+  أحمر: '#FF0000', أزرق: '#0000FF', أخضر: '#008000', بنفسجي: '#800080',
+  برتقالي: '#FFA500', وردي: '#FFC0CB', أسود: '#000000', أبيض: '#FFFFFF',
+  ذهبي: '#FFD700', فضي: '#C0C0C0', سماوي: '#00FFFF', زهري: '#FF69B4',
+};
 
 const isValidHex = (str: string): boolean => /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(str);
 const isValidRgb = (str: string): boolean => /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/i.test(str);

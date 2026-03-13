@@ -550,6 +550,7 @@ export type Database = {
       }
       portfolio_items: {
         Row: {
+          category: string | null
           created_at: string
           description_ar: string | null
           description_en: string | null
@@ -565,6 +566,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category?: string | null
           created_at?: string
           description_ar?: string | null
           description_en?: string | null
@@ -580,6 +582,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category?: string | null
           created_at?: string
           description_ar?: string | null
           description_en?: string | null
