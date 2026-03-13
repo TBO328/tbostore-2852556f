@@ -53,8 +53,15 @@ interface PortfolioItem {
   media_files: MediaFile[];
   display_order: number;
   is_active: boolean;
-  created_at: string;
+  category: string | null;
 }
+
+const PORTFOLIO_CATEGORIES = [
+  { value: 'streamers', labelAr: 'تصاميمنا للستريمرز', labelEn: 'Streamer Designs' },
+  { value: 'stores', labelAr: 'تصاميمنا للمتاجر', labelEn: 'Store Designs' },
+  { value: 'other', labelAr: 'تصاميمنا الأخرى', labelEn: 'Other Designs' },
+];
+
 
 const PortfolioManagement: React.FC = () => {
   const { language } = useLanguage();
