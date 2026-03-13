@@ -446,6 +446,21 @@ const PortfolioManagement: React.FC = () => {
                 </div>
               </div>
 
+              {/* Category */}
+              <div className="space-y-2">
+                <Label>{language === 'ar' ? 'القسم' : 'Category'}</Label>
+                <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PORTFOLIO_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {language === 'ar' ? cat.labelAr : cat.labelEn}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Display Order & Active */}
               <div className="flex items-center justify-between">
                 <div className="space-y-2 flex-1 mr-4">
