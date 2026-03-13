@@ -135,8 +135,11 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
     }
   };
 
-  const handleNativeColorPick = (e: React.ChangeEvent<HTMLInputElement>) => {
-    addColor(e.target.value.toUpperCase());
+  const nativeColorRef = React.useRef<HTMLInputElement>(null);
+  const handleNativeColorPick = () => {
+    if (nativeColorRef.current) {
+      addColor(nativeColorRef.current.value.toUpperCase());
+    }
   };
 
   const logoTypeOptions = [
