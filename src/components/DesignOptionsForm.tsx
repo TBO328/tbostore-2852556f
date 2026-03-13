@@ -101,8 +101,15 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
     
     let hexColor: string | null = null;
     
+    // Check color name (English or Arabic)
+    const lowerTrimmed = trimmed.toLowerCase();
+    if (COLOR_NAMES[lowerTrimmed]) {
+      hexColor = COLOR_NAMES[lowerTrimmed];
+    } else if (COLOR_NAMES[trimmed]) {
+      hexColor = COLOR_NAMES[trimmed];
+    }
     // Check HEX
-    if (trimmed.startsWith('#')) {
+    else if (trimmed.startsWith('#')) {
       if (isValidHex(trimmed)) {
         hexColor = trimmed.length === 4
           ? '#' + trimmed[1] + trimmed[1] + trimmed[2] + trimmed[2] + trimmed[3] + trimmed[3]
@@ -124,7 +131,7 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
       setCustomColorInput('');
       setCustomColorError('');
     } else {
-      setCustomColorError(language === 'ar' ? 'صيغة لون غير صحيحة' : 'Invalid color format');
+      setCustomColorError(language === 'ar' ? 'صيغة لون غير صحيحة. جرب اسم لون مثل navy أو كود HEX أو RGB' : 'Invalid color format. Try a color name like navy, or HEX/RGB code');
     }
   };
 
