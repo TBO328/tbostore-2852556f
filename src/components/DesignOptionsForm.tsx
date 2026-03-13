@@ -315,7 +315,7 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
           </div>
 
           <p className="text-xs text-muted-foreground">
-            {language === 'ar' ? 'يمكنك اختيار من الألوان الجاهزة، أو من لوحة الألوان، أو إدخال كود HEX أو RGB' : 'Pick from preset colors, color palette, or enter HEX/RGB code'}
+            {language === 'ar' ? 'يمكنك اختيار من لوحة الألوان، أو إدخال اسم لون (مثل navy, coral) أو كود HEX أو RGB' : 'Pick from color palette, enter a color name (e.g. navy, coral), or HEX/RGB code'}
           </p>
         </div>
 

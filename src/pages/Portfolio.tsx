@@ -20,14 +20,21 @@ interface PortfolioItem {
   media_type: string;
   thumbnail_url: string | null;
   display_order: number;
+  category: string | null;
 }
+
+const PORTFOLIO_CATEGORIES = [
+  { value: 'streamers', labelAr: 'تصاميمنا للستريمرز', labelEn: 'Our Streamer Designs' },
+  { value: 'stores', labelAr: 'تصاميمنا للمتاجر', labelEn: 'Our Store Designs' },
+  { value: 'other', labelAr: 'تصاميمنا الأخرى', labelEn: 'Our Other Designs' },
+];
 
 const Portfolio: React.FC = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>('all');
+  const [activeCategory, setActiveCategory] = useState('streamers');
 
   useEffect(() => {
     fetchItems();
@@ -41,23 +48,18 @@ const Portfolio: React.FC = () => {
       .order('display_order', { ascending: true });
 
     if (!error && data) {
-      setItems(data);
+      setItems(data as PortfolioItem[]);
     }
     setLoading(false);
   };
 
-  const filteredItems = filter === 'all'
-    ? items
-    : items.filter(item => item.media_type === filter);
+  const filteredItems = items.filter(item => (item.category || 'streamers') === activeCategory);
 
   const getMediaTypeIcon = (type: string) => {
     switch (type) {
-      case 'video':
-        return <Video className="w-4 h-4" />;
-      case 'gif':
-        return <FileImage className="w-4 h-4" />;
-      default:
-        return <Image className="w-4 h-4" />;
+      case 'video': return <Video className="w-4 h-4" />;
+      case 'gif': return <FileImage className="w-4 h-4" />;
+      default: return <Image className="w-4 h-4" />;
     }
   };
 
@@ -82,44 +84,43 @@ const Portfolio: React.FC = () => {
             </div>
           </AnimatedSection>
 
-          {/* Filter Tabs */}
+          {/* Category Tabs */}
           <AnimatedSection delay={0.1}>
             <div className="flex justify-center gap-2 mb-8 flex-wrap">
-              {[
-                { value: 'all', label: language === 'ar' ? 'الكل' : 'All' },
-                { value: 'image', label: language === 'ar' ? 'صور' : 'Images' },
-                { value: 'video', label: language === 'ar' ? 'فيديوهات' : 'Videos' },
-                { value: 'gif', label: 'GIFs' },
-              ].map((option) => (
+              {PORTFOLIO_CATEGORIES.map((cat) => (
                 <motion.button
-                  key={option.value}
-                  onClick={() => setFilter(option.value)}
+                  key={cat.value}
+                  onClick={() => setActiveCategory(cat.value)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`px-6 py-2 rounded-full transition-all ${
-                    filter === option.value
-                      ? 'bg-primary text-primary-foreground'
+                  className={`px-6 py-2.5 rounded-full transition-all font-medium ${
+                    activeCategory === cat.value
+                      ? 'bg-primary text-primary-foreground shadow-lg'
                       : 'bg-muted text-muted-foreground hover:bg-muted/80'
                   }`}
                 >
-                  {option.label}
+                  {language === 'ar' ? cat.labelAr : cat.labelEn}
                 </motion.button>
               ))}
             </div>
           </AnimatedSection>
 
           {/* Loading */}
-          {filteredItems.length === 0 && !loading ? (
+          {loading ? (
+            <div className="flex justify-center py-16">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : filteredItems.length === 0 ? (
             <div className="text-center py-16">
               <Image className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground text-lg">
-                {language === 'ar' ? 'لا توجد أعمال في هذه الفئة' : 'No works in this category'}
+                {language === 'ar' ? 'لا توجد أعمال في هذا القسم' : 'No works in this section'}
               </p>
             </div>
           ) : (
             /* Gallery Grid */
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <AnimatePresence>
+              <AnimatePresence mode="popLayout">
                 {filteredItems.map((item, index) => (
                   <AnimatedSection key={item.id} delay={index * 0.05}>
                     <motion.div
@@ -133,7 +134,6 @@ const Portfolio: React.FC = () => {
                     >
                       <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
                         <AspectRatio ratio={16 / 9}>
-                          {/* Show thumbnail if available, otherwise show media */}
                           {item.thumbnail_url ? (
                             <img
                               src={item.thumbnail_url}
