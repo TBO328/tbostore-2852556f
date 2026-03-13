@@ -271,7 +271,8 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
               <input
                 type="color"
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                onChange={handleNativeColorPick}
+                onBlur={handleNativeColorPick}
+                onInput={() => {}} /* prevent live updates on hover */
               />
               <div className="w-10 h-10 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted hover:border-primary/50 transition-colors">
                 <Palette className="w-4 h-4 text-muted-foreground" />
