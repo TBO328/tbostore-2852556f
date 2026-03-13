@@ -235,7 +235,8 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
           {options.colors.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {options.colors.map((color) => {
-                const colorInfo = AVAILABLE_COLORS.find(c => c.value === color);
+                // Find name from COLOR_NAMES
+                const colorName = Object.entries(COLOR_NAMES).find(([, v]) => v === color)?.[0];
                 return (
                   <motion.div
                     key={color}
@@ -248,7 +249,7 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
                       style={{ backgroundColor: color }}
                     />
                     <span className="text-sm text-foreground">
-                      {colorInfo ? (language === 'ar' ? colorInfo.labelAr : colorInfo.labelEn) : color}
+                      {colorName || color}
                     </span>
                     <button
                       type="button"
@@ -262,32 +263,6 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
               })}
             </div>
           )}
-
-          {/* Color Picker Grid */}
-          <div className="grid grid-cols-6 gap-2">
-            {AVAILABLE_COLORS.map((color) => (
-              <button
-                key={color.value}
-                type="button"
-                onClick={() => addColor(color.value)}
-                className={`group relative w-full aspect-square rounded-lg border-2 transition-all ${
-                  options.colors.includes(color.value)
-                    ? 'border-primary scale-110 shadow-md'
-                    : 'border-border hover:border-primary/50 hover:scale-105'
-                }`}
-                style={{ backgroundColor: color.value }}
-                title={language === 'ar' ? color.labelAr : color.labelEn}
-              >
-                {options.colors.includes(color.value) && (
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <span className="w-4 h-4 rounded-full bg-background/80 flex items-center justify-center">
-                      <span className="text-foreground text-xs">✓</span>
-                    </span>
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
 
           {/* Custom Color Input */}
           <div className="flex gap-2 items-start">
