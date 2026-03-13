@@ -130,6 +130,7 @@ const PortfolioManagement: React.FC = () => {
         media_files: item.media_files || [],
         display_order: item.display_order,
         is_active: item.is_active,
+        category: item.category || 'streamers',
       });
     } else {
       setEditingItem(null);
