@@ -53,8 +53,15 @@ interface PortfolioItem {
   media_files: MediaFile[];
   display_order: number;
   is_active: boolean;
-  created_at: string;
+  category: string | null;
 }
+
+const PORTFOLIO_CATEGORIES = [
+  { value: 'streamers', labelAr: 'تصاميمنا للستريمرز', labelEn: 'Streamer Designs' },
+  { value: 'stores', labelAr: 'تصاميمنا للمتاجر', labelEn: 'Store Designs' },
+  { value: 'other', labelAr: 'تصاميمنا الأخرى', labelEn: 'Other Designs' },
+];
+
 
 const PortfolioManagement: React.FC = () => {
   const { language } = useLanguage();
@@ -86,6 +93,7 @@ const PortfolioManagement: React.FC = () => {
     media_files: [] as MediaFile[],
     display_order: 0,
     is_active: true,
+    category: 'streamers',
   });
 
   useEffect(() => { fetchItems(); }, []);
@@ -122,13 +130,14 @@ const PortfolioManagement: React.FC = () => {
         media_files: item.media_files || [],
         display_order: item.display_order,
         is_active: item.is_active,
+        category: item.category || 'streamers',
       });
     } else {
       setEditingItem(null);
       setFormData({
         title_en: '', title_ar: '', description_en: '', description_ar: '',
         media_url: '', media_type: 'image', thumbnail_url: '',
-        media_files: [], display_order: items.length, is_active: true,
+        media_files: [], display_order: items.length, is_active: true, category: 'streamers',
       });
     }
     setDialogOpen(true);
@@ -220,6 +229,7 @@ const PortfolioManagement: React.FC = () => {
         media_files: formData.media_files as unknown as any,
         display_order: formData.display_order,
         is_active: formData.is_active,
+        category: formData.category,
       };
 
       if (editingItem) {
@@ -434,6 +444,21 @@ const PortfolioManagement: React.FC = () => {
                   <Label>{language === 'ar' ? 'الوصف (عربي)' : 'Description (Arabic)'}</Label>
                   <Textarea value={formData.description_ar} onChange={(e) => setFormData(prev => ({ ...prev, description_ar: e.target.value }))} rows={3} dir="rtl" />
                 </div>
+              </div>
+
+              {/* Category */}
+              <div className="space-y-2">
+                <Label>{language === 'ar' ? 'القسم' : 'Category'}</Label>
+                <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PORTFOLIO_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {language === 'ar' ? cat.labelAr : cat.labelEn}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Display Order & Active */}

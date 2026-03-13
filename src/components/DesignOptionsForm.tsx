@@ -28,20 +28,21 @@ export interface DesignOptions {
   contactMethod: string;
 }
 
-const AVAILABLE_COLORS = [
-  { value: '#FF0000', labelAr: 'أحمر', labelEn: 'Red' },
-  { value: '#0000FF', labelAr: 'أزرق', labelEn: 'Blue' },
-  { value: '#00FF00', labelAr: 'أخضر', labelEn: 'Green' },
-  { value: '#800080', labelAr: 'بنفسجي', labelEn: 'Purple' },
-  { value: '#FFA500', labelAr: 'برتقالي', labelEn: 'Orange' },
-  { value: '#FFC0CB', labelAr: 'وردي', labelEn: 'Pink' },
-  { value: '#000000', labelAr: 'أسود', labelEn: 'Black' },
-  { value: '#FFFFFF', labelAr: 'أبيض', labelEn: 'White' },
-  { value: '#FFD700', labelAr: 'ذهبي', labelEn: 'Gold' },
-  { value: '#C0C0C0', labelAr: 'فضي', labelEn: 'Silver' },
-  { value: '#00FFFF', labelAr: 'سماوي', labelEn: 'Cyan' },
-  { value: '#FF69B4', labelAr: 'زهري', labelEn: 'Hot Pink' },
-];
+const COLOR_NAMES: Record<string, string> = {
+  red: '#FF0000', blue: '#0000FF', green: '#008000', purple: '#800080',
+  orange: '#FFA500', pink: '#FFC0CB', black: '#000000', white: '#FFFFFF',
+  gold: '#FFD700', silver: '#C0C0C0', cyan: '#00FFFF', navy: '#000080',
+  coral: '#FF7F50', teal: '#008080', maroon: '#800000', lime: '#00FF00',
+  olive: '#808000', aqua: '#00FFFF', salmon: '#FA8072', indigo: '#4B0082',
+  violet: '#EE82EE', turquoise: '#40E0D0', beige: '#F5F5DC', ivory: '#FFFFF0',
+  khaki: '#F0E68C', lavender: '#E6E6FA', magenta: '#FF00FF', tan: '#D2B48C',
+  chocolate: '#D2691E', crimson: '#DC143C', tomato: '#FF6347', wheat: '#F5DEB3',
+  skyblue: '#87CEEB', plum: '#DDA0DD', orchid: '#DA70D6', peru: '#CD853F',
+  sienna: '#A0522D', firebrick: '#B22222', darkgreen: '#006400', darkblue: '#00008B',
+  أحمر: '#FF0000', أزرق: '#0000FF', أخضر: '#008000', بنفسجي: '#800080',
+  برتقالي: '#FFA500', وردي: '#FFC0CB', أسود: '#000000', أبيض: '#FFFFFF',
+  ذهبي: '#FFD700', فضي: '#C0C0C0', سماوي: '#00FFFF', زهري: '#FF69B4',
+};
 
 const isValidHex = (str: string): boolean => /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(str);
 const isValidRgb = (str: string): boolean => /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/i.test(str);
@@ -100,8 +101,15 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
     
     let hexColor: string | null = null;
     
+    // Check color name (English or Arabic)
+    const lowerTrimmed = trimmed.toLowerCase();
+    if (COLOR_NAMES[lowerTrimmed]) {
+      hexColor = COLOR_NAMES[lowerTrimmed];
+    } else if (COLOR_NAMES[trimmed]) {
+      hexColor = COLOR_NAMES[trimmed];
+    }
     // Check HEX
-    if (trimmed.startsWith('#')) {
+    else if (trimmed.startsWith('#')) {
       if (isValidHex(trimmed)) {
         hexColor = trimmed.length === 4
           ? '#' + trimmed[1] + trimmed[1] + trimmed[2] + trimmed[2] + trimmed[3] + trimmed[3]
@@ -123,12 +131,15 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
       setCustomColorInput('');
       setCustomColorError('');
     } else {
-      setCustomColorError(language === 'ar' ? 'صيغة لون غير صحيحة' : 'Invalid color format');
+      setCustomColorError(language === 'ar' ? 'صيغة لون غير صحيحة. جرب اسم لون مثل navy أو كود HEX أو RGB' : 'Invalid color format. Try a color name like navy, or HEX/RGB code');
     }
   };
 
-  const handleNativeColorPick = (e: React.ChangeEvent<HTMLInputElement>) => {
-    addColor(e.target.value.toUpperCase());
+  const nativeColorRef = React.useRef<HTMLInputElement>(null);
+  const handleNativeColorPick = () => {
+    if (nativeColorRef.current) {
+      addColor(nativeColorRef.current.value.toUpperCase());
+    }
   };
 
   const logoTypeOptions = [
@@ -227,7 +238,8 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
           {options.colors.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {options.colors.map((color) => {
-                const colorInfo = AVAILABLE_COLORS.find(c => c.value === color);
+                // Find name from COLOR_NAMES
+                const colorName = Object.entries(COLOR_NAMES).find(([, v]) => v === color)?.[0];
                 return (
                   <motion.div
                     key={color}
@@ -240,7 +252,7 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
                       style={{ backgroundColor: color }}
                     />
                     <span className="text-sm text-foreground">
-                      {colorInfo ? (language === 'ar' ? colorInfo.labelAr : colorInfo.labelEn) : color}
+                      {colorName || color}
                     </span>
                     <button
                       type="button"
@@ -255,40 +267,16 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
             </div>
           )}
 
-          {/* Color Picker Grid */}
-          <div className="grid grid-cols-6 gap-2">
-            {AVAILABLE_COLORS.map((color) => (
-              <button
-                key={color.value}
-                type="button"
-                onClick={() => addColor(color.value)}
-                className={`group relative w-full aspect-square rounded-lg border-2 transition-all ${
-                  options.colors.includes(color.value)
-                    ? 'border-primary scale-110 shadow-md'
-                    : 'border-border hover:border-primary/50 hover:scale-105'
-                }`}
-                style={{ backgroundColor: color.value }}
-                title={language === 'ar' ? color.labelAr : color.labelEn}
-              >
-                {options.colors.includes(color.value) && (
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <span className="w-4 h-4 rounded-full bg-background/80 flex items-center justify-center">
-                      <span className="text-foreground text-xs">✓</span>
-                    </span>
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-
           {/* Custom Color Input */}
           <div className="flex gap-2 items-start">
             {/* Native Color Picker */}
             <label className="relative shrink-0 cursor-pointer" title={language === 'ar' ? 'اختر من لوحة الألوان' : 'Pick from color palette'}>
               <input
+                ref={nativeColorRef}
                 type="color"
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                onChange={handleNativeColorPick}
+                onChange={() => {}} /* needed for React */
+                onBlur={handleNativeColorPick}
               />
               <div className="w-10 h-10 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted hover:border-primary/50 transition-colors">
                 <Palette className="w-4 h-4 text-muted-foreground" />
@@ -327,7 +315,7 @@ const DesignOptionsForm: React.FC<DesignOptionsFormProps> = ({ onOptionsChange }
           </div>
 
           <p className="text-xs text-muted-foreground">
-            {language === 'ar' ? 'يمكنك اختيار من الألوان الجاهزة، أو من لوحة الألوان، أو إدخال كود HEX أو RGB' : 'Pick from preset colors, color palette, or enter HEX/RGB code'}
+            {language === 'ar' ? 'يمكنك اختيار من لوحة الألوان، أو إدخال اسم لون (مثل navy, coral) أو كود HEX أو RGB' : 'Pick from color palette, enter a color name (e.g. navy, coral), or HEX/RGB code'}
           </p>
         </div>
 
