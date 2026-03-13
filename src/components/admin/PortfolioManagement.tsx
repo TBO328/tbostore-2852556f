@@ -137,7 +137,7 @@ const PortfolioManagement: React.FC = () => {
       setFormData({
         title_en: '', title_ar: '', description_en: '', description_ar: '',
         media_url: '', media_type: 'image', thumbnail_url: '',
-        media_files: [], display_order: items.length, is_active: true,
+        media_files: [], display_order: items.length, is_active: true, category: 'streamers',
       });
     }
     setDialogOpen(true);
