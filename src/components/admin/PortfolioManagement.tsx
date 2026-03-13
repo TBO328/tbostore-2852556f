@@ -93,6 +93,7 @@ const PortfolioManagement: React.FC = () => {
     media_files: [] as MediaFile[],
     display_order: 0,
     is_active: true,
+    category: 'streamers',
   });
 
   useEffect(() => { fetchItems(); }, []);
