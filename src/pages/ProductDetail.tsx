@@ -465,6 +465,20 @@ const ProductDetail: React.FC = () => {
                   </motion.div>
                 )}
 
+                {/* Dynamic Custom Questions Form */}
+                {product.custom_questions && product.custom_questions.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.95 }}
+                  >
+                    <DynamicQuestionsForm
+                      questions={product.custom_questions as any}
+                      onAnswersChange={setCustomAnswers}
+                    />
+                  </motion.div>
+                )}
+
                 {/* Quantity & Add to Cart */}
                 <motion.div 
                   className="space-y-4"
