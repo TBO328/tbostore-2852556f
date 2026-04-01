@@ -34,6 +34,7 @@ import LoyaltyManagement from '@/components/admin/LoyaltyManagement';
 import PaymentsManagement from '@/components/admin/PaymentsManagement';
 import FingerprintLock from '@/components/admin/FingerprintLock';
 import PricingOptionsEditor, { PricingOption } from '@/components/admin/PricingOptionsEditor';
+import CustomQuestionsBuilder, { CustomQuestion } from '@/components/admin/CustomQuestionsBuilder';
 import CategoriesManagement from '@/components/admin/CategoriesManagement';
 import RanksManagement from '@/components/admin/RanksManagement';
 import ExpensesManagement from '@/components/admin/ExpensesManagement';
