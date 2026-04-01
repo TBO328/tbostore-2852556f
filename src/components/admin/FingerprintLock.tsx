@@ -13,8 +13,8 @@ const FingerprintLock: React.FC<FingerprintLockProps> = ({ onUnlock }) => {
   const [progress, setProgress] = useState(0);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
-  const holdTimeout = useRef<NodeJS.Timeout | null>(null);
-  const progressInterval = useRef<NodeJS.Timeout | null>(null);
+  const holdTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const HOLD_DURATION = 2000; // 2 seconds (faster unlock)
 
