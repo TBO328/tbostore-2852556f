@@ -147,6 +147,10 @@ const Admin: React.FC = () => {
   // Multiple images support
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [uploadingAdditionalImage, setUploadingAdditionalImage] = useState(false);
+  
+  // Custom questions state
+  const [hasCustomQuestions, setHasCustomQuestions] = useState(false);
+  const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
 
   // Available categories - loaded from database
   const [availableCategories, setAvailableCategories] = useState<{value: string; labelEn: string; labelAr: string}[]>([]);
