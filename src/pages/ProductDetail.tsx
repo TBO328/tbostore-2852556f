@@ -13,6 +13,7 @@ import ProductCard from '@/components/ProductCard';
 import PriceDisplay from '@/components/PriceDisplay';
 import ProductImageGallery from '@/components/ProductImageGallery';
 import DesignOptionsForm, { DesignOptions } from '@/components/DesignOptionsForm';
+import DynamicQuestionsForm from '@/components/DynamicQuestionsForm';
 import PricingOptionsSelector, { PricingOption } from '@/components/PricingOptionsSelector';
 import ProductPointsBadge from '@/components/ProductPointsBadge';
 import { toast } from 'sonner';
