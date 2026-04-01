@@ -365,6 +365,7 @@ const Admin: React.FC = () => {
         subscription_duration: productForm.subscription_duration || null,
         activation_instructions_en: productForm.activation_instructions_en || null,
         activation_instructions_ar: productForm.activation_instructions_ar || null,
+        custom_questions: hasCustomQuestions && customQuestions.length > 0 ? customQuestions : null,
       };
 
       if (editingProduct) {
