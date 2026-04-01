@@ -40,6 +40,7 @@ const ProductDetail: React.FC = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
   const [designOptions, setDesignOptions] = useState<DesignOptions | null>(null);
+  const [customAnswers, setCustomAnswers] = useState<Record<string, unknown>>({});
   const [activationEmail, setActivationEmail] = useState('');
   const imageRef = useRef<HTMLDivElement>(null);
   const [product, setProduct] = useState<ExtendedProduct | null>(null);
