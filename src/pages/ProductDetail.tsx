@@ -29,6 +29,7 @@ interface ExtendedProduct extends Product {
   activation_instructions_en?: string | null;
   activation_instructions_ar?: string | null;
   has_design_options?: boolean;
+  custom_questions?: Array<{ id: string; question_ar: string; question_en: string; type: string; required: boolean; options?: { label_ar: string; label_en: string }[] }> | null;
 }
 
 const ProductDetail: React.FC = () => {
