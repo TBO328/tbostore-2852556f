@@ -914,6 +914,14 @@ const Admin: React.FC = () => {
                       <Label>{language === 'en' ? 'Show Design Options Form' : 'إظهار نموذج خيارات التصميم'}</Label>
                     </div>
 
+                    {/* Custom Questions Builder */}
+                    <CustomQuestionsBuilder
+                      enabled={hasCustomQuestions}
+                      onEnabledChange={setHasCustomQuestions}
+                      questions={customQuestions}
+                      onQuestionsChange={setCustomQuestions}
+                    />
+
                     <div className="flex items-center gap-2">
                       <Switch checked={productForm.in_stock} onCheckedChange={checked => setProductForm({ ...productForm, in_stock: checked })} />
                       <Label>{language === 'en' ? 'In Stock' : 'متوفر'}</Label>
