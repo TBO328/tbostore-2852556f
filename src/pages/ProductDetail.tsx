@@ -118,12 +118,13 @@ const ProductDetail: React.FC = () => {
         activation_instructions_ar: (data as unknown as { activation_instructions_ar?: string }).activation_instructions_ar || null,
         has_pricing_options: data.has_pricing_options ?? false,
         has_design_options: (data as unknown as { has_design_options?: boolean }).has_design_options ?? false,
+        custom_questions: (data as unknown as { custom_questions?: ExtendedProduct['custom_questions'] }).custom_questions || null,
         pricing_options: Array.isArray(data.pricing_options) 
           ? (data.pricing_options as unknown as PricingOption[]).map(opt => ({
               id: opt.id || String(Math.random()),
               label_en: opt.label_en || '',
               label_ar: opt.label_ar || '',
-              price: parseFloat(String(opt.price)) || 0 // Force parse to ensure numeric value
+              price: parseFloat(String(opt.price)) || 0
             }))
           : null,
       };
