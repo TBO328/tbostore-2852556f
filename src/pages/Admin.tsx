@@ -451,6 +451,12 @@ const Admin: React.FC = () => {
     setHasPricingOptions(extendedProduct.has_pricing_options ?? false);
     setPricingOptions(extendedProduct.pricing_options || []);
     
+    // Load custom questions
+    const extProduct = product as unknown as { custom_questions?: CustomQuestion[] | null };
+    const cq = extProduct.custom_questions || [];
+    setHasCustomQuestions(cq.length > 0);
+    setCustomQuestions(cq);
+    
     setProductDialogOpen(true);
   };
 
