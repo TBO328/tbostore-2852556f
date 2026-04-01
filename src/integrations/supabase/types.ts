@@ -643,6 +643,7 @@ export type Database = {
           activation_instructions_en: string | null
           category: string
           created_at: string
+          custom_questions: Json | null
           description_ar: string | null
           description_en: string | null
           has_design_options: boolean | null
@@ -667,6 +668,7 @@ export type Database = {
           activation_instructions_en?: string | null
           category: string
           created_at?: string
+          custom_questions?: Json | null
           description_ar?: string | null
           description_en?: string | null
           has_design_options?: boolean | null
@@ -691,6 +693,7 @@ export type Database = {
           activation_instructions_en?: string | null
           category?: string
           created_at?: string
+          custom_questions?: Json | null
           description_ar?: string | null
           description_en?: string | null
           has_design_options?: boolean | null

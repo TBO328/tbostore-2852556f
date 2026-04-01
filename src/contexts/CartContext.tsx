@@ -45,7 +45,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isShaking, setIsShaking] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const cartIconRef = useRef<HTMLDivElement>(null);
-  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Listen for auth state changes
   useEffect(() => {

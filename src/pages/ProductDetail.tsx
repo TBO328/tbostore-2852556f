@@ -13,6 +13,7 @@ import ProductCard from '@/components/ProductCard';
 import PriceDisplay from '@/components/PriceDisplay';
 import ProductImageGallery from '@/components/ProductImageGallery';
 import DesignOptionsForm, { DesignOptions } from '@/components/DesignOptionsForm';
+import DynamicQuestionsForm from '@/components/DynamicQuestionsForm';
 import PricingOptionsSelector, { PricingOption } from '@/components/PricingOptionsSelector';
 import ProductPointsBadge from '@/components/ProductPointsBadge';
 import { toast } from 'sonner';
@@ -28,6 +29,7 @@ interface ExtendedProduct extends Product {
   activation_instructions_en?: string | null;
   activation_instructions_ar?: string | null;
   has_design_options?: boolean;
+  custom_questions?: Array<{ id: string; question_ar: string; question_en: string; type: string; required: boolean; options?: { label_ar: string; label_en: string }[] }> | null;
 }
 
 const ProductDetail: React.FC = () => {
@@ -38,6 +40,7 @@ const ProductDetail: React.FC = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
   const [designOptions, setDesignOptions] = useState<DesignOptions | null>(null);
+  const [customAnswers, setCustomAnswers] = useState<Record<string, unknown>>({});
   const [activationEmail, setActivationEmail] = useState('');
   const imageRef = useRef<HTMLDivElement>(null);
   const [product, setProduct] = useState<ExtendedProduct | null>(null);
@@ -115,12 +118,13 @@ const ProductDetail: React.FC = () => {
         activation_instructions_ar: (data as unknown as { activation_instructions_ar?: string }).activation_instructions_ar || null,
         has_pricing_options: data.has_pricing_options ?? false,
         has_design_options: (data as unknown as { has_design_options?: boolean }).has_design_options ?? false,
+        custom_questions: (data as unknown as { custom_questions?: ExtendedProduct['custom_questions'] }).custom_questions || null,
         pricing_options: Array.isArray(data.pricing_options) 
           ? (data.pricing_options as unknown as PricingOption[]).map(opt => ({
               id: opt.id || String(Math.random()),
               label_en: opt.label_en || '',
               label_ar: opt.label_ar || '',
-              price: parseFloat(String(opt.price)) || 0 // Force parse to ensure numeric value
+              price: parseFloat(String(opt.price)) || 0
             }))
           : null,
       };
@@ -458,6 +462,20 @@ const ProductDetail: React.FC = () => {
                     transition={{ delay: 0.9 }}
                   >
                     <DesignOptionsForm onOptionsChange={setDesignOptions} />
+                  </motion.div>
+                )}
+
+                {/* Dynamic Custom Questions Form */}
+                {product.custom_questions && product.custom_questions.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.95 }}
+                  >
+                    <DynamicQuestionsForm
+                      questions={product.custom_questions as any}
+                      onAnswersChange={setCustomAnswers}
+                    />
                   </motion.div>
                 )}
 

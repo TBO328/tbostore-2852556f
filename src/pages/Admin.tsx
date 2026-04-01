@@ -34,6 +34,7 @@ import LoyaltyManagement from '@/components/admin/LoyaltyManagement';
 import PaymentsManagement from '@/components/admin/PaymentsManagement';
 import FingerprintLock from '@/components/admin/FingerprintLock';
 import PricingOptionsEditor, { PricingOption } from '@/components/admin/PricingOptionsEditor';
+import CustomQuestionsBuilder, { CustomQuestion } from '@/components/admin/CustomQuestionsBuilder';
 import CategoriesManagement from '@/components/admin/CategoriesManagement';
 import RanksManagement from '@/components/admin/RanksManagement';
 import ExpensesManagement from '@/components/admin/ExpensesManagement';
@@ -146,6 +147,10 @@ const Admin: React.FC = () => {
   // Multiple images support
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const [uploadingAdditionalImage, setUploadingAdditionalImage] = useState(false);
+  
+  // Custom questions state
+  const [hasCustomQuestions, setHasCustomQuestions] = useState(false);
+  const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
 
   // Available categories - loaded from database
   const [availableCategories, setAvailableCategories] = useState<{value: string; labelEn: string; labelAr: string}[]>([]);
@@ -360,6 +365,7 @@ const Admin: React.FC = () => {
         subscription_duration: productForm.subscription_duration || null,
         activation_instructions_en: productForm.activation_instructions_en || null,
         activation_instructions_ar: productForm.activation_instructions_ar || null,
+        custom_questions: hasCustomQuestions && customQuestions.length > 0 ? JSON.parse(JSON.stringify(customQuestions)) : null,
       };
 
       if (editingProduct) {
@@ -409,6 +415,8 @@ const Admin: React.FC = () => {
     setAdditionalImages([]);
     setHasPricingOptions(false);
     setPricingOptions([]);
+    setHasCustomQuestions(false);
+    setCustomQuestions([]);
   };
 
   const editProduct = (product: Product) => {
@@ -442,6 +450,12 @@ const Admin: React.FC = () => {
     };
     setHasPricingOptions(extendedProduct.has_pricing_options ?? false);
     setPricingOptions(extendedProduct.pricing_options || []);
+    
+    // Load custom questions
+    const extProduct = product as unknown as { custom_questions?: CustomQuestion[] | null };
+    const cq = extProduct.custom_questions || [];
+    setHasCustomQuestions(cq.length > 0);
+    setCustomQuestions(cq);
     
     setProductDialogOpen(true);
   };
@@ -899,6 +913,14 @@ const Admin: React.FC = () => {
                       <Switch checked={productForm.has_design_options} onCheckedChange={checked => setProductForm({ ...productForm, has_design_options: checked })} />
                       <Label>{language === 'en' ? 'Show Design Options Form' : 'إظهار نموذج خيارات التصميم'}</Label>
                     </div>
+
+                    {/* Custom Questions Builder */}
+                    <CustomQuestionsBuilder
+                      enabled={hasCustomQuestions}
+                      onEnabledChange={setHasCustomQuestions}
+                      questions={customQuestions}
+                      onQuestionsChange={setCustomQuestions}
+                    />
 
                     <div className="flex items-center gap-2">
                       <Switch checked={productForm.in_stock} onCheckedChange={checked => setProductForm({ ...productForm, in_stock: checked })} />
