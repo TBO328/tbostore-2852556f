@@ -415,6 +415,8 @@ const Admin: React.FC = () => {
     setAdditionalImages([]);
     setHasPricingOptions(false);
     setPricingOptions([]);
+    setHasCustomQuestions(false);
+    setCustomQuestions([]);
   };
 
   const editProduct = (product: Product) => {
