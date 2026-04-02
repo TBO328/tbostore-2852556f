@@ -132,6 +132,13 @@ const menuItems = [
     color: 'text-amber-500'
   },
   {
+    id: 'referrals',
+    icon: UserPlus,
+    labelEn: 'Referrals',
+    labelAr: 'الإحالات',
+    color: 'text-teal-500'
+  },
+  {
     id: 'ranks',
     icon: Crown,
     labelEn: 'Ranks',

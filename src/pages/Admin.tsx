@@ -626,6 +626,9 @@ const Admin: React.FC = () => {
       case 'portfolio':
         return <PortfolioManagement />;
       
+      case 'referrals':
+        return <ReferralsManagement />;
+      
       case 'products':
         return (
           <div>
