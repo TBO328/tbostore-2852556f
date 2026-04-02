@@ -173,6 +173,11 @@ const LoyaltyPoints: React.FC = () => {
           </div>
         </motion.div>
 
+        {/* Referral Section */}
+        <div className="mb-10">
+          <ReferralSection />
+        </div>
+
         {/* Transaction History */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
