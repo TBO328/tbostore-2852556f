@@ -98,8 +98,8 @@ const ReferralSection: React.FC = () => {
               </h3>
               <p className="text-sm text-muted-foreground">
                 {language === 'en'
-                  ? 'Earn 50 points for each friend who signs up!'
-                  : 'اكسب 50 نقطة مع كل صديق يسجل!'}
+                  ? 'Earn 5 points for each friend who signs up!'
+                  : 'اكسب 5 نقاط مع كل صديق يسجل!'}
               </p>
             </div>
           </div>
