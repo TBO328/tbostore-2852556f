@@ -348,6 +348,12 @@ const Profile: React.FC = () => {
             {/* Divider */}
             <div className="my-6 border-t border-border" />
 
+            {/* Referral Section */}
+            <ReferralSection />
+
+            {/* Divider */}
+            <div className="my-6 border-t border-border" />
+
             {/* Account Actions */}
             <div className="space-y-3">
               {/* Reset Password */}
