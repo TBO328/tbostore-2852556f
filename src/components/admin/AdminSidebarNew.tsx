@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShoppingBag, Package, Star, Users, Handshake, Ticket, Settings, 
   FileText, Home, LogOut, Palette, Sparkles, MousePointer, Calendar, 
-  Coins, LayoutDashboard, X, ChevronRight, Tag, Crown, MessageCircle, Image, BarChart3
+  Coins, LayoutDashboard, X, ChevronRight, Tag, Crown, MessageCircle, Image, BarChart3, UserPlus
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
