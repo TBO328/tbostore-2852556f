@@ -40,6 +40,7 @@ import RanksManagement from '@/components/admin/RanksManagement';
 import ExpensesManagement from '@/components/admin/ExpensesManagement';
 import ChatsManagement from '@/components/admin/ChatsManagement';
 import PortfolioManagement from '@/components/admin/PortfolioManagement';
+import ReferralsManagement from '@/components/admin/ReferralsManagement';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -624,6 +625,9 @@ const Admin: React.FC = () => {
       
       case 'portfolio':
         return <PortfolioManagement />;
+      
+      case 'referrals':
+        return <ReferralsManagement />;
       
       case 'products':
         return (

@@ -88,9 +88,43 @@ const Auth: React.FC = () => {
     }
   };
 
+  // Blocked disposable email domains
+  const BLOCKED_EMAIL_DOMAINS = [
+    'tempmail.com', 'throwaway.email', 'guerrillamail.com', 'mailinator.com',
+    'yopmail.com', 'sharklasers.com', 'guerrillamailblock.com', 'grr.la',
+    'dispostable.com', 'trashmail.com', 'tempail.com', 'temp-mail.org',
+    'fakeinbox.com', 'mailnesia.com', 'maildrop.cc', 'discard.email',
+    'tmpmail.net', 'tmpmail.org', 'bupmail.com', 'emailondeck.com',
+    'mintemail.com', 'mohmal.com', 'burpcollaborator.net', 'mailcatch.com',
+    'tmail.ws', 'harakirimail.com', 'getairmail.com', 'meltmail.com',
+    'spamdecoy.net', 'trashinbox.com', 'mailexpire.com', 'tempr.email',
+    '10minutemail.com', 'guerrillamail.info', 'grr.la', 'guerrillamail.net',
+    'guerrillamail.org', 'guerrillamail.de', 'spam4.me', 'trashmail.me',
+    'trashmail.net', 'byom.de', 'spamgourmet.com', 'mytemp.email',
+    'throwam.com', 'mailnull.com', 'jetable.org', 'tempinbox.com',
+  ];
+
+  const isBlockedEmail = (emailAddr: string): boolean => {
+    const domain = emailAddr.split('@')[1]?.toLowerCase();
+    return BLOCKED_EMAIL_DOMAINS.includes(domain);
+  };
+
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // Block temp emails on signup
+    if (!isLogin && isBlockedEmail(email)) {
+      toast({
+        title: language === 'en' ? 'Email Not Allowed' : 'البريد غير مسموح',
+        description: language === 'en'
+          ? 'Temporary/disposable emails are not allowed. Please use a real email.'
+          : 'البريد الإلكتروني المؤقت غير مسموح به. الرجاء استخدام بريد حقيقي.',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
 
     try {
       if (isLogin) {
