@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, Loader2, Phone, MessageSquare, Sparkles, Shield, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -35,12 +35,25 @@ const Auth: React.FC = () => {
   const [isNewPhoneUser, setIsNewPhoneUser] = useState(false);
   
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const referralCode = searchParams.get('ref') || '';
   const { toast } = useToast();
   const { language } = useLanguage();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
+        // Process referral if exists
+        if (referralCode && event === 'SIGNED_IN') {
+          try {
+            await supabase.rpc('process_referral', {
+              p_referral_code: referralCode,
+              p_new_user_id: session.user.id,
+            });
+          } catch (e) {
+            console.log('Referral processing:', e);
+          }
+        }
         navigate('/');
       }
     });
@@ -52,7 +65,7 @@ const Auth: React.FC = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, referralCode]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);

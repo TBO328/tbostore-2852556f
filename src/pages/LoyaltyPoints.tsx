@@ -11,6 +11,7 @@ import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import ReferralSection from '@/components/ReferralSection';
 
 const LoyaltyPoints: React.FC = () => {
   const { language, t } = useLanguage();
@@ -171,6 +172,11 @@ const LoyaltyPoints: React.FC = () => {
             })}
           </div>
         </motion.div>
+
+        {/* Referral Section */}
+        <div className="mb-10">
+          <ReferralSection />
+        </div>
 
         {/* Transaction History */}
         <motion.div

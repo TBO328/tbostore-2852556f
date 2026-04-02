@@ -12,6 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import UserRankBadge from '@/components/UserRankBadge';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import ReferralSection from '@/components/ReferralSection';
 
 const Profile: React.FC = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -343,6 +344,12 @@ const Profile: React.FC = () => {
                 {language === 'en' ? 'Save Changes' : 'حفظ التغييرات'}
               </Button>
             </div>
+
+            {/* Divider */}
+            <div className="my-6 border-t border-border" />
+
+            {/* Referral Section */}
+            <ReferralSection />
 
             {/* Divider */}
             <div className="my-6 border-t border-border" />

@@ -725,6 +725,8 @@ export type Database = {
           is_blacklisted: boolean | null
           phone_number: string | null
           rank_id: string | null
+          referral_code: string | null
+          referred_by: string | null
           updated_at: string
           user_id: string
         }
@@ -737,6 +739,8 @@ export type Database = {
           is_blacklisted?: boolean | null
           phone_number?: string | null
           rank_id?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           updated_at?: string
           user_id: string
         }
@@ -749,6 +753,8 @@ export type Database = {
           is_blacklisted?: boolean | null
           phone_number?: string | null
           rank_id?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -807,6 +813,30 @@ export type Database = {
           name_en?: string
           properties?: Json | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          points_awarded: number
+          referred_id: string
+          referrer_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points_awarded?: number
+          referred_id: string
+          referrer_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points_awarded?: number
+          referred_id?: string
+          referrer_id?: string
         }
         Relationships: []
       }
@@ -1040,6 +1070,13 @@ export type Database = {
           reviews_count: number
         }[]
       }
+      get_referral_stats: {
+        Args: { p_user_id: string }
+        Returns: {
+          total_points_earned: number
+          total_referrals: number
+        }[]
+      }
       get_user_details_for_admin: {
         Args: { p_user_id: string }
         Returns: {
@@ -1086,6 +1123,10 @@ export type Database = {
         Returns: boolean
       }
       is_owner: { Args: { _user_id: string }; Returns: boolean }
+      process_referral: {
+        Args: { p_new_user_id: string; p_referral_code: string }
+        Returns: boolean
+      }
       redeem_loyalty_points: {
         Args: {
           p_description_ar?: string
