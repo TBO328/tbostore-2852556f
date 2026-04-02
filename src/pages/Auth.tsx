@@ -35,6 +35,8 @@ const Auth: React.FC = () => {
   const [isNewPhoneUser, setIsNewPhoneUser] = useState(false);
   
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const referralCode = searchParams.get('ref') || '';
   const { toast } = useToast();
   const { language } = useLanguage();
 
