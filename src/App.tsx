@@ -90,7 +90,7 @@ const App = () => (
                   <VisualEditorProvider>
                     <Snowflakes />
                     <GlobalCursor />
-                    <ScreenshotProtection />
+                    
                     <SplashScreen />
                     <AnimatedRoutes />
                     <VisualEditorOverlay />
