@@ -41,19 +41,8 @@ const Auth: React.FC = () => {
   const { language } = useLanguage();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
-        // Process referral if exists
-        if (referralCode && event === 'SIGNED_IN') {
-          try {
-            await supabase.rpc('process_referral', {
-              p_referral_code: referralCode,
-              p_new_user_id: session.user.id,
-            });
-          } catch (e) {
-            console.log('Referral processing:', e);
-          }
-        }
         navigate('/');
       }
     });
@@ -65,7 +54,7 @@ const Auth: React.FC = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, referralCode]);
+  }, [navigate]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -154,7 +143,7 @@ const Auth: React.FC = () => {
           });
         }
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -178,6 +167,19 @@ const Auth: React.FC = () => {
             throw error;
           }
         } else {
+          // Process referral after successful signup
+          if (referralCode && signUpData?.user?.id) {
+            try {
+              console.log('Processing referral:', referralCode, 'for user:', signUpData.user.id);
+              const { data: refResult, error: refError } = await supabase.rpc('process_referral', {
+                p_referral_code: referralCode,
+                p_new_user_id: signUpData.user.id,
+              });
+              console.log('Referral result:', refResult, 'error:', refError);
+            } catch (e) {
+              console.error('Referral processing error:', e);
+            }
+          }
           toast({
             title: language === 'en' ? 'Account Created!' : 'تم إنشاء الحساب!',
             description: language === 'en' 
