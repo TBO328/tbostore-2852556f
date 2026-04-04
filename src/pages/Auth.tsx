@@ -143,7 +143,7 @@ const Auth: React.FC = () => {
           });
         }
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -167,6 +167,19 @@ const Auth: React.FC = () => {
             throw error;
           }
         } else {
+          // Process referral after successful signup
+          if (referralCode && signUpData?.user?.id) {
+            try {
+              console.log('Processing referral:', referralCode, 'for user:', signUpData.user.id);
+              const { data: refResult, error: refError } = await supabase.rpc('process_referral', {
+                p_referral_code: referralCode,
+                p_new_user_id: signUpData.user.id,
+              });
+              console.log('Referral result:', refResult, 'error:', refError);
+            } catch (e) {
+              console.error('Referral processing error:', e);
+            }
+          }
           toast({
             title: language === 'en' ? 'Account Created!' : 'تم إنشاء الحساب!',
             description: language === 'en' 
