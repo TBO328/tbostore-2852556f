@@ -41,19 +41,8 @@ const Auth: React.FC = () => {
   const { language } = useLanguage();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
-        // Process referral if exists
-        if (referralCode && event === 'SIGNED_IN') {
-          try {
-            await supabase.rpc('process_referral', {
-              p_referral_code: referralCode,
-              p_new_user_id: session.user.id,
-            });
-          } catch (e) {
-            console.log('Referral processing:', e);
-          }
-        }
         navigate('/');
       }
     });
@@ -65,7 +54,7 @@ const Auth: React.FC = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, referralCode]);
+  }, [navigate]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
