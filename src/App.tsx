@@ -37,7 +37,7 @@ import AISupportButton from "./components/AISupportButton";
 import VisualEditorOverlay from "./components/admin/VisualEditorOverlay";
 import Snowflakes from "./components/Snowflakes";
 import GlobalCursor from "./components/GlobalCursor";
-import ScreenshotProtection from "./components/ScreenshotProtection";
+
 import CustomerChat from "./components/CustomerChat";
 import SplashScreen from "./components/SplashScreen";
 
