@@ -139,6 +139,13 @@ const menuItems = [
     color: 'text-teal-500'
   },
   {
+    id: 'affiliates',
+    icon: Handshake,
+    labelEn: 'Affiliates',
+    labelAr: 'الشراكات',
+    color: 'text-orange-500'
+  },
+  {
     id: 'ranks',
     icon: Crown,
     labelEn: 'Ranks',
