@@ -32,6 +32,7 @@ import MyOrders from "./pages/MyOrders";
 import LoyaltyPoints from "./pages/LoyaltyPoints";
 import Portfolio from "./pages/Portfolio";
 import PortfolioDetail from "./pages/PortfolioDetail";
+import StreamerDashboard from "./pages/StreamerDashboard";
 import PageTransition from "./components/PageTransition";
 import AISupportButton from "./components/AISupportButton";
 import VisualEditorOverlay from "./components/admin/VisualEditorOverlay";
@@ -69,6 +70,7 @@ const AnimatedRoutes = () => {
         <Route path="/favorites" element={<PageTransition><Favorites /></PageTransition>} />
         <Route path="/my-orders" element={<PageTransition><MyOrders /></PageTransition>} />
         <Route path="/loyalty-points" element={<PageTransition><LoyaltyPoints /></PageTransition>} />
+        <Route path="/streamer-dashboard" element={<PageTransition><StreamerDashboard /></PageTransition>} />
         <Route path="/checkout/success" element={<PageTransition><CheckoutSuccess /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
