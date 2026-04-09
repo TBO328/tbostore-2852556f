@@ -41,6 +41,93 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_orders: {
+        Row: {
+          affiliate_id: string
+          commission_amount: number
+          created_at: string
+          id: string
+          order_amount: number
+          order_id: string
+          status: string
+        }
+        Insert: {
+          affiliate_id: string
+          commission_amount?: number
+          created_at?: string
+          id?: string
+          order_amount?: number
+          order_id: string
+          status?: string
+        }
+        Update: {
+          affiliate_id?: string
+          commission_amount?: number
+          created_at?: string
+          id?: string
+          order_amount?: number
+          order_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_orders_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_orders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliates: {
+        Row: {
+          affiliate_code: string
+          channel_name: string | null
+          channel_url: string | null
+          commission_percent: number
+          created_at: string
+          id: string
+          is_active: boolean
+          total_earnings: number
+          total_orders: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          affiliate_code: string
+          channel_name?: string | null
+          channel_url?: string | null
+          commission_percent?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          total_earnings?: number
+          total_orders?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          affiliate_code?: string
+          channel_name?: string | null
+          channel_url?: string | null
+          commission_percent?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          total_earnings?: number
+          total_orders?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -1123,6 +1210,14 @@ export type Database = {
         Returns: boolean
       }
       is_owner: { Args: { _user_id: string }; Returns: boolean }
+      process_affiliate_order: {
+        Args: {
+          p_affiliate_code: string
+          p_order_amount: number
+          p_order_id: string
+        }
+        Returns: boolean
+      }
       process_referral: {
         Args: { p_new_user_id: string; p_referral_code: string }
         Returns: boolean
