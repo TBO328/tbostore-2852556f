@@ -42,6 +42,7 @@ import ChatsManagement from '@/components/admin/ChatsManagement';
 import PortfolioManagement from '@/components/admin/PortfolioManagement';
 import ReferralsManagement from '@/components/admin/ReferralsManagement';
 import AffiliateManagement from '@/components/admin/AffiliateManagement';
+import StreamerProfilesManagement from '@/components/admin/StreamerProfilesManagement';
 import sarSymbol from '@/assets/sar-symbol.png';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -1024,6 +1025,9 @@ const Admin: React.FC = () => {
 
       case 'affiliates':
         return <AffiliateManagement />;
+
+      case 'streamer-profiles':
+        return <StreamerProfilesManagement />;
 
       case 'coupons':
         return (

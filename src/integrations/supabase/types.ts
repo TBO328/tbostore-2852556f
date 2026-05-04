@@ -1011,6 +1011,93 @@ export type Database = {
         }
         Relationships: []
       }
+      streamer_portfolio_items: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          id: string
+          portfolio_item_id: string
+          streamer_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          portfolio_item_id: string
+          streamer_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          portfolio_item_id?: string
+          streamer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "streamer_portfolio_items_portfolio_item_id_fkey"
+            columns: ["portfolio_item_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "streamer_portfolio_items_streamer_id_fkey"
+            columns: ["streamer_id"]
+            isOneToOne: false
+            referencedRelation: "streamer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      streamer_profiles: {
+        Row: {
+          avatar_url: string | null
+          banner_url: string | null
+          bio_ar: string | null
+          bio_en: string | null
+          created_at: string
+          display_name: string
+          display_order: number | null
+          id: string
+          is_active: boolean
+          slug: string
+          social_links: Json | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          banner_url?: string | null
+          bio_ar?: string | null
+          bio_en?: string | null
+          created_at?: string
+          display_name: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          slug: string
+          social_links?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          banner_url?: string | null
+          bio_ar?: string | null
+          bio_en?: string | null
+          created_at?: string
+          display_name?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          slug?: string
+          social_links?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_carts: {
         Row: {
           abandoned_coupon_sent_at: string | null

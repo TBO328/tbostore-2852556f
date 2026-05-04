@@ -33,7 +33,9 @@ import LoyaltyPoints from "./pages/LoyaltyPoints";
 import Portfolio from "./pages/Portfolio";
 import PortfolioDetail from "./pages/PortfolioDetail";
 import StreamerDashboard from "./pages/StreamerDashboard";
+import StreamerProfile from "./pages/StreamerProfile";
 import PageTransition from "./components/PageTransition";
+import Scene3D from "./components/Scene3D";
 import AISupportButton from "./components/AISupportButton";
 import VisualEditorOverlay from "./components/admin/VisualEditorOverlay";
 import Snowflakes from "./components/Snowflakes";
@@ -71,6 +73,7 @@ const AnimatedRoutes = () => {
         <Route path="/my-orders" element={<PageTransition><MyOrders /></PageTransition>} />
         <Route path="/loyalty-points" element={<PageTransition><LoyaltyPoints /></PageTransition>} />
         <Route path="/streamer-dashboard" element={<PageTransition><StreamerDashboard /></PageTransition>} />
+        <Route path="/streamer/:slug" element={<PageTransition><StreamerProfile /></PageTransition>} />
         <Route path="/checkout/success" element={<PageTransition><CheckoutSuccess /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
@@ -90,6 +93,7 @@ const App = () => (
               <LanguageProvider>
                 <CartProvider>
                   <VisualEditorProvider>
+                    <Scene3D />
                     <Snowflakes />
                     <GlobalCursor />
                     

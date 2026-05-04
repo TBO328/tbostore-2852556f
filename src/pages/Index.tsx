@@ -11,6 +11,7 @@ import { useMultiplePageContent } from '@/hooks/usePageContent';
 import tboStoreLogo from '@/assets/tbo-store-logo.png';
 import heroBgPattern from '@/assets/hero-bg-pattern.jpg';
 import PartnersStrip from '@/components/PartnersStrip';
+import Scroll3DWrapper from '@/components/Scroll3DWrapper';
 
 const Index: React.FC = () => {
   const { t, language } = useLanguage();
@@ -184,13 +185,13 @@ const Index: React.FC = () => {
         </section>
 
         {/* === FEATURED PRODUCTS === */}
-        <ProductsSection />
+        <Scroll3DWrapper intensity={0.7}><ProductsSection /></Scroll3DWrapper>
 
         {/* Partners */}
-        <PartnersStrip />
+        <Scroll3DWrapper intensity={0.5}><PartnersStrip /></Scroll3DWrapper>
 
         {/* === REVIEWS === */}
-        <ReviewsSection />
+        <Scroll3DWrapper intensity={0.7}><ReviewsSection /></Scroll3DWrapper>
       </main>
       <Footer />
     </div>);
