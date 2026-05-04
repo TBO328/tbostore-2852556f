@@ -159,6 +159,13 @@ const menuItems = [
     labelAr: 'أعمالنا',
     color: 'text-rose-500'
   },
+  {
+    id: 'streamer-profiles',
+    icon: Users,
+    labelEn: 'Streamer Profiles',
+    labelAr: 'بروفايلات الستريمرز',
+    color: 'text-fuchsia-500'
+  },
   { type: 'divider', labelEn: 'Customization', labelAr: 'التخصيص' },
   {
     id: 'seasonal-themes',
